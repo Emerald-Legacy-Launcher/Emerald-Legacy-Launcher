@@ -78,4 +78,4 @@ Special thanks to all the preservationists keeping the LCE spirit alive!!!
 
 ---
 
-***This project is licensed under the GNU GPL v3 License - see the LICENSE file for details.***
+***This project is licensed under the GNU GPL v3 License - see the LICENSE file for details.*** 
