@@ -244,15 +244,14 @@ async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
                 return Ok(());
             }
         }
-        return Err("No Linux runner selected in settings.".into());
+        Err("No Linux runner selected in settings.".into())
     }
 
     #[cfg(not(target_os = "linux"))]
     {
         let _ = Command::new(&game_exe).spawn().map_err(|e| e.to_string())?;
+        Ok(())
     }
-
-    Ok(())
 }
 
 pub fn run() {
