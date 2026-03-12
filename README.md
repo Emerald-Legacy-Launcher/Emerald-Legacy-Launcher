@@ -21,6 +21,9 @@
 
 ---
 
+<img width="1355" height="922" alt="image" src="https://github.com/user-attachments/assets/6798dd00-4c7c-4b57-9116-7648ce90ae93" />
+
+
 ### PROJECT OVERVIEW
 Emerald Legacy Launcher started as a solo project to create a better way to play Legacy Console Edition. Over time, other developers joined the effort, bringing expertise from various preservation projects into one place. 
 
