@@ -24,11 +24,5 @@
 .DS_Store
 Thumbs.db
 
-# Build output
-/app-icon.png
-/src-tauri/icons/*.png
-/src-tauri/icons/*.ico
-/src-tauri/icons/*.icns
-
 # Log files
 *.log

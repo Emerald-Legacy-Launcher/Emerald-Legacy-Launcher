@@ -189,8 +189,7 @@ export default function App() {
       <audio ref={musicRef} onEnded={playRandomMusic} />
       <aside className="w-64 bg-[#2a2a2a] border-r-4 border-black p-6 flex flex-col gap-2 z-20 shadow-[inset_-4px_0_#555]">
         <div className="mb-10 px-2">
-          <h2 className="text-emerald-500 text-3xl italic tracking-tighter">EMERALD LEGACY</h2>
-          <p className="text-[10px] text-slate-500 uppercase tracking-widest">Launcher</p>
+          <img src="/images/logo.png" />
         </div>
         <nav className="flex flex-col gap-3">
           <button onClick={() => { playSfx('click.wav'); setActiveTab("home"); updateAllStatus(); }} className={`p-4 legacy-btn justify-start ${activeTab === "home" ? "active-tab" : ""}`}>HOME</button>
