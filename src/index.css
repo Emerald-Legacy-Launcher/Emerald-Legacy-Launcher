@@ -1,11 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Fonts and Globals */
 @font-face {
   font-family: 'Minecraft';
   src: url('/fonts/Mojangles.ttf') format('truetype');
 }
-
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
 
 * {
   border-radius: 0 !important;
@@ -28,7 +29,6 @@ main::before {
   content: "";
   position: absolute;
   inset: 0;
-  /*background: rgba(0, 0, 0, 0.7);*/
   z-index: 0;
 }
 
@@ -41,6 +41,15 @@ main::before {
   scrollbar-width: none;
 }
 
+.sidebar-progress {
+  background: #2a2a2a;
+  border-top: 4px solid #000;
+  padding: 20px;
+  position: relative;
+  box-shadow: inset 0 4px #444;
+}
+
+/* Legacy UI Components */
 .legacy-btn {
   @apply transition-all duration-75 flex items-center justify-center;
   background: #bebebe;
@@ -81,14 +90,6 @@ main::before {
 .legacy-select:focus {
   outline: 4px solid #fff;
   outline-offset: -8px;
-}
-
-.sidebar-progress {
-  background: #2a2a2a;
-  border-top: 4px solid #000;
-  padding: 20px;
-  position: relative;
-  box-shadow: inset 0 4px #444;
 }
 
 .mc-progress-container {
@@ -133,6 +134,7 @@ main::before {
 }
 
 .mc-range {
+  appearance: none;
   -webkit-appearance: none;
   background: #000;
   height: 12px;
@@ -167,12 +169,6 @@ main::before {
   transform: scale(1.1);
 }
 
-.social-btn svg {
-  fill: white;
-  width: 32px;
-  height: 32px;
-}
-
 .btn-discord {
   background: #5865F2 !important;
   box-shadow: inset 4px 4px #8ea1e1, inset -4px -4px #313338 !important;
@@ -203,7 +199,6 @@ main::before {
   from {
     transform: rotate(-20deg) scale(1);
   }
-
   to {
     transform: rotate(-20deg) scale(1.05);
   }
