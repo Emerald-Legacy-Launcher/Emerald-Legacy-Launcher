@@ -7,7 +7,23 @@ use futures_util::StreamExt;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use tokio_util::sync::CancellationToken;
-use tauri_plugin_opener::OpenerExt; 
+use tauri_plugin_opener::OpenerExt;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+pub struct AppConfig {
+    pub username: String,
+    pub linux_runner: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct Runner {
+    pub id: String,
+    pub name: String,
+    pub path: String,
+    pub r#type: String,
+}
 
 pub struct DownloadState { pub token: Arc<Mutex<Option<CancellationToken>>> }
 
@@ -17,17 +33,78 @@ fn get_app_dir(app: &AppHandle) -> PathBuf {
     })
 }
 
-#[tauri::command]
-fn save_config(app: AppHandle, username: String) {
-    let path = get_app_dir(&app).join("emerald_legacy_config.txt");
-    let _ = fs::create_dir_all(path.parent().unwrap());
-    let _ = fs::write(path, &username);
+fn get_config_path(app: &AppHandle) -> PathBuf {
+    get_app_dir(app).join("emerald_legacy_config.json")
 }
 
 #[tauri::command]
-fn load_config(app: AppHandle) -> String {
-    let path = get_app_dir(&app).join("emerald_legacy_config.txt");
-    fs::read_to_string(path).unwrap_or_default()
+fn save_config(app: AppHandle, config: AppConfig) {
+    let path = get_config_path(&app);
+    let _ = fs::create_dir_all(path.parent().unwrap());
+    if let Ok(json) = serde_json::to_string(&config) {
+        let _ = fs::write(path, json);
+    }
+}
+
+#[tauri::command]
+fn load_config(app: AppHandle) -> AppConfig {
+    let path = get_config_path(&app);
+    if let Ok(content) = fs::read_to_string(path) {
+        if let Ok(config) = serde_json::from_str(&content) {
+            return config;
+        }
+    }
+    
+    let old_path = get_app_dir(&app).join("emerald_legacy_config.txt");
+    let username = fs::read_to_string(old_path).unwrap_or_else(|_| "Player".into());
+    AppConfig { username, linux_runner: None }
+}
+
+#[tauri::command]
+fn get_available_runners() -> Vec<Runner> {
+    let mut runners = Vec::new();
+
+    #[cfg(target_os = "linux")]
+    {
+        if let Ok(output) = Command::new("which").arg("wine").output() {
+            if output.status.success() {
+                let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
+                runners.push(Runner {
+                    id: "wine".to_string(),
+                    name: "System Wine".to_string(),
+                    path,
+                    r#type: "wine".to_string(),
+                });
+            }
+        }
+
+        let home = std::env::var("HOME").unwrap_or_default();
+        let steam_paths = [
+            format!("{}/.steam/steam/steamapps/common", home),
+            format!("{}/.local/share/Steam/steamapps/common", home),
+        ];
+
+        for base_path in steam_paths {
+            if let Ok(entries) = fs::read_dir(base_path) {
+                for entry in entries.flatten() {
+                    let path = entry.path();
+                    if path.is_dir() {
+                        let name = entry.file_name().to_string_lossy().to_string();
+                        if name.starts_with("Proton") {
+                            runners.push(Runner {
+                                id: format!("proton_{}", name),
+                                name: name,
+                                path: path.to_string_lossy().to_string(),
+                                r#type: "proton".to_string(),
+                            });
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    runners
 }
 
 #[tauri::command]
@@ -89,6 +166,13 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
     drop(file);
     { *state.token.lock().await = None; }
     
+    #[cfg(target_os = "linux")]
+    let status = Command::new("unzip")
+        .args(["-q", zip_path.to_str().unwrap(), "-d", instance_dir.to_str().unwrap()])
+        .status()
+        .map_err(|e| e.to_string())?;
+
+    #[cfg(not(target_os = "linux"))]
     let status = Command::new("tar")
         .args(["-xf", zip_path.to_str().unwrap(), "-C", instance_dir.to_str().unwrap()])
         .status()
@@ -125,8 +209,8 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
 async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
     let root = get_app_dir(&app);
     let instance_dir = root.join("instances").join(&instanceId);
-    let config_path = root.join("emerald_legacy_config.txt");
-    let username = fs::read_to_string(config_path).unwrap_or_else(|_| "Player".into());
+    let config = load_config(app.clone());
+    let username = config.username;
     
     let _ = fs::write(instance_dir.join("username.txt"), &username);
     
@@ -135,7 +219,38 @@ async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
         return Err("Game executable not found in instance folder.".into());
     }
 
-    let _ = Command::new(&game_exe).spawn().map_err(|e| e.to_string())?;
+    #[cfg(target_os = "linux")]
+    {
+        if let Some(runner_id) = config.linux_runner {
+            let runners = get_available_runners();
+            if let Some(runner) = runners.into_iter().find(|r| r.id == runner_id) {
+                let mut cmd = if runner.r#type == "proton" {
+                    let proton_exe = PathBuf::from(&runner.path).join("proton");
+                    let mut c = Command::new(proton_exe);
+                    let compat_data = instance_dir.join("proton_prefix");
+                    fs::create_dir_all(&compat_data).map_err(|e| e.to_string())?;
+                    c.env("STEAM_COMPAT_CLIENT_INSTALL_PATH", "");
+                    c.env("STEAM_COMPAT_DATA_PATH", compat_data.to_str().unwrap());
+                    c.arg("run");
+                    c
+                } else {
+                    Command::new(runner.path)
+                };
+
+                cmd.arg(&game_exe)
+                   .current_dir(&instance_dir)
+                   .spawn()
+                   .map_err(|e| e.to_string())?;
+                return Ok(());
+            }
+        }
+        return Err("No Linux runner selected in settings.".into());
+    }
+
+    #[cfg(not(target_os = "linux"))]
+    {
+        let _ = Command::new(&game_exe).spawn().map_err(|e| e.to_string())?;
+    }
 
     Ok(())
 }
@@ -144,7 +259,7 @@ pub fn run() {
     tauri::Builder::default()
         .manage(DownloadState { token: Arc::new(Mutex::new(None)) })
         .plugin(tauri_plugin_opener::init())
-        .invoke_handler(tauri::generate_handler![launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download])
+        .invoke_handler(tauri::generate_handler![launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners])
         .run(tauri::generate_context!())
         .expect("error");
 }

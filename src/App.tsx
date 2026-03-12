@@ -5,13 +5,26 @@ import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 const Icons = {
-  Discord: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M6 6h20v4h2v12h-2v4h-4v-4h-8v4H6v-4H4V10h2V6zm4 6v4h4v-4h-4zm8 0v4h4v-4h-4z"/></svg>,
-  Github: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M12 4h8v4h4v4h4v8h-4v4h-4v4h-8v-4H8v-4H4v-8h4V8h4V4zm2 8v4h4v-4h-4z"/></svg>,
-  Reddit: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M10 4h12v4h4v4h2v12h-2v4H10v-4H4V12h2V8h4V4zm2 10v4h8v-4h-8z"/></svg>,
+  Discord: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M6 6h20v4h2v12h-2v4h-4v-4h-8v4H6v-4H4V10h2V6zm4 6v4h4v-4h-4zm8 0v4h4v-4h-4z" /></svg>,
+  Github: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M12 4h8v4h4v4h4v8h-4v4h-4v4h-8v-4H8v-4H4v-8h4V8h4V4zm2 8v4h4v-4h-4z" /></svg>,
+  Reddit: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M10 4h12v4h4v4h2v12h-2v4H10v-4H4V12h2V8h4V4zm2 10v4h8v-4h-8z" /></svg>,
   Volume: ({ level }: { level: number }) => (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M4 12h8l8-8v24l-8-8H4v-8z"/>{level > 0 && <path d="M24 12h2v8h-2z"/>}{level > 0.5 && <path d="M28 8h2v16h-2z"/>}</svg>
-  )
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M4 12h8l8-8v24l-8-8H4v-8z" />{level > 0 && <path d="M24 12h2v8h-2z" />}{level > 0.5 && <path d="M28 8h2v16h-2z" />}</svg>
+  ),
+  Linux: () => <svg width="32" height="32" viewBox="0 0 32 32" fill="currentColor"><path d="M16 4c-3.3 0-6 2.7-6 6 0 1.2.4 2.3 1 3.2C8.7 15.1 7 18.3 7 22h2c0-3.9 3.1-7 7-7s7 3.1 7 7h2c0-3.7-1.7-6.9-4-8.8.6-.9 1-2 1-3.2 0-3.3-2.7-6-6-6zm0 2c2.2 0 4 1.8 4 4s-1.8 4-4 4-4-1.8-4-4 1.8-4 4-4z" /></svg>
 };
+
+interface Runner {
+  id: string;
+  name: string;
+  path: string;
+  type: string;
+}
+
+interface AppConfig {
+  username: string;
+  linuxRunner?: string;
+}
 
 let audioCtx: AudioContext | null = null;
 let sfxGain: GainNode | null = null;
@@ -23,16 +36,19 @@ export default function App() {
   const [isFirstRun, setIsFirstRun] = useState(true);
   const [isRunning, setIsRunning] = useState(false);
   const [installingInstance, setInstallingInstance] = useState<string | null>(null);
-  const [downloadProgress, setDownloadProgress] = useState<number>(0); 
+  const [downloadProgress, setDownloadProgress] = useState<number>(0);
   const [installedStatus, setInstalledStatus] = useState<Record<string, boolean>>({ vanilla_tu19: false, vanilla_tu24: false });
   const [selectedInstance, setSelectedInstance] = useState<string>("vanilla_tu19");
   const [reinstallModal, setReinstallModal] = useState<{ id: string, url: string } | null>(null);
-  const [mcNotif, setMcNotif] = useState<{t: string, m: string} | null>(null);
-  
+  const [mcNotif, setMcNotif] = useState<{ t: string, m: string } | null>(null);
+  const [availableRunners, setAvailableRunners] = useState<Runner[]>([]);
+  const [selectedRunner, setSelectedRunner] = useState<string>("");
+  const [isLinux, setIsLinux] = useState(false);
+
   const [musicVol, setMusicVol] = useState(parseFloat(localStorage.getItem("musicVol") || "0.4"));
   const [sfxVol, setSfxVol] = useState(parseFloat(localStorage.getItem("sfxVol") || "0.7"));
   const [isMuted, setIsMuted] = useState(localStorage.getItem("isMuted") === "true");
-  
+
   const musicRef = useRef<HTMLAudioElement | null>(null);
   const lastTrack = useRef<number>(0);
 
@@ -80,7 +96,7 @@ export default function App() {
     lastTrack.current = track;
     musicRef.current.src = `/music/music${track}.ogg`;
     musicRef.current.volume = isMuted ? 0 : musicVol;
-    musicRef.current.play().catch(() => {});
+    musicRef.current.play().catch(() => { });
   };
 
   const fadeAndLaunch = async () => {
@@ -97,17 +113,17 @@ export default function App() {
       }, 50);
     }
     setTimeout(async () => {
-        try {
-            await invoke("launch_game", { instanceId: selectedInstance });
-        } catch (e) {
-            alert(`Failed to launch game: ${e}`);
-        } finally {
-            setIsRunning(false);
-            if (musicRef.current) { 
-                musicRef.current.volume = isMuted ? 0 : musicVol; 
-                playRandomMusic(); 
-            }
+      try {
+        await invoke("launch_game", { instanceId: selectedInstance });
+      } catch (e) {
+        alert(`Failed to launch game: ${e}`);
+      } finally {
+        setIsRunning(false);
+        if (musicRef.current) {
+          musicRef.current.volume = isMuted ? 0 : musicVol;
+          playRandomMusic();
         }
+      }
     }, 1500);
   };
 
@@ -118,7 +134,7 @@ export default function App() {
       setMcNotif({ t: "Success!", m: "Ready to play." }); playSfx('orb.ogg');
       setTimeout(() => setMcNotif(null), 4000);
       updateAllStatus();
-    } catch (e) { 
+    } catch (e) {
       console.error(e);
       alert("Error during installation: " + e);
     }
@@ -132,14 +148,24 @@ export default function App() {
   };
 
   useEffect(() => {
-    invoke("load_config").then((n) => {
-      const savedName = n as string;
-      if (savedName && savedName.trim() !== "") {
-        setUsername(savedName);
+    invoke("load_config").then((c) => {
+      const config = c as AppConfig;
+      if (config.username && config.username.trim() !== "") {
+        setUsername(config.username);
         setIsFirstRun(false);
         setTimeout(playRandomMusic, 1000);
       }
+      if (config.linuxRunner) setSelectedRunner(config.linuxRunner);
     });
+
+    const platform = window.navigator.platform.toLowerCase();
+    if (platform.includes("linux")) {
+      setIsLinux(true);
+      invoke<Runner[]>("get_available_runners").then(runners => {
+        setAvailableRunners(runners);
+      });
+    }
+
     updateAllStatus();
     const unlisten = listen<number>("download-progress", (e) => setDownloadProgress(Math.round(e.payload)));
     return () => { unlisten.then(f => f()); };
@@ -152,7 +178,7 @@ export default function App() {
         <div className="bg-[#2a2a2a] p-10 border-4 border-black w-full max-w-2xl text-center shadow-[inset_4px_4px_#555,inset_-4px_-4px_#111]">
           <h2 className="text-4xl text-emerald-400 mb-4">Welcome to Emerald Legacy!</h2>
           <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="w-full bg-black border-4 border-emerald-900 p-4 text-3xl text-center mb-8 outline-none" placeholder="Username..." />
-          <button onClick={() => { ensureAudio(); playSfx('click.wav'); invoke("save_config", { username }); setIsFirstRun(false); setTimeout(playRandomMusic, 500); }} disabled={!username.trim()} className="legacy-btn py-4 px-12 text-3xl w-full">Start Setup</button>
+          <button onClick={() => { ensureAudio(); playSfx('click.wav'); invoke("save_config", { config: { username, linuxRunner: isLinux ? selectedRunner : undefined } }); setIsFirstRun(false); setTimeout(playRandomMusic, 500); }} disabled={!username.trim() || (isLinux && availableRunners.length === 0)} className="legacy-btn py-4 px-12 text-3xl w-full">Start Setup</button>
         </div>
       </div>
     );
@@ -172,7 +198,20 @@ export default function App() {
           <button onClick={() => { playSfx('click.wav'); setActiveTab("settings"); }} className={`p-4 legacy-btn justify-start ${activeTab === "settings" ? "active-tab" : ""}`}>SETTINGS</button>
         </nav>
 
-        <div onClick={() => { playSfx('click.wav'); openUrl("https://github.com/KayJannOnGit"); }} className="mt-auto pt-6 flex flex-col items-center border-t-4 border-black/30 cursor-pointer group">
+        {installingInstance && (
+          <div className="sidebar-progress mt-auto">
+            <div className="flex justify-between mb-3 text-slate-300 font-bold text-[10px] uppercase tracking-widest px-1">
+              <span>Installing</span>
+              <button onClick={() => { playSfx('back.ogg'); invoke("cancel_download"); }} className="text-red-500 hover:underline">CANCEL</button>
+            </div>
+            <div className="mc-progress-container">
+              <div className="mc-progress-bar transition-all duration-300" style={{ width: `${downloadProgress}%` }}></div>
+              <div className="mc-progress-text">{downloadProgress}%</div>
+            </div>
+          </div>
+        )}
+
+        <div onClick={() => { playSfx('click.wav'); openUrl("https://github.com/KayJannOnGit"); }} className={`${installingInstance ? "pt-6" : "mt-auto pt-6"} flex flex-col items-center border-t-4 border-black/30 cursor-pointer group`}>
           <span className="text-slate-500 text-[10px] uppercase">Developed by</span>
           <span className="text-emerald-500 text-sm font-bold group-hover:underline">KayJann</span>
         </div>
@@ -189,11 +228,11 @@ export default function App() {
               <div className="bg-black/80 p-8 border-4 border-black w-[550px] flex flex-col gap-6 mt-12">
                 {installedStatus.vanilla_tu19 || installedStatus.vanilla_tu24 ? (
                   <>
-                    <select value={selectedInstance} onChange={e => { playSfx('click.wav'); setSelectedInstance(e.target.value); }} className="w-full bg-[#2a2a2a] border-4 border-black p-3 text-2xl text-white outline-none">
-                       {installedStatus.vanilla_tu19 && <option value="vanilla_tu19">Vanilla Nightly (TU19)</option>}
-                       {installedStatus.vanilla_tu24 && <option value="vanilla_tu24">Vanilla TU24</option>}
+                    <select value={selectedInstance} onChange={e => { playSfx('click.wav'); setSelectedInstance(e.target.value); }} className="w-full legacy-select p-3 text-2xl outline-none">
+                      {installedStatus.vanilla_tu19 && <option value="vanilla_tu19">Vanilla Nightly (TU19)</option>}
+                      {installedStatus.vanilla_tu24 && <option value="vanilla_tu24">Vanilla TU24</option>}
                     </select>
-                    <button onClick={fadeAndLaunch} disabled={isRunning || !!installingInstance} className="legacy-btn py-4 text-6xl w-full">{installingInstance ? "DOWNLOADING..." : isRunning ? "RUNNING..." : "PLAY"}</button>
+                    <button onClick={fadeAndLaunch} disabled={isRunning || !!installingInstance} className="legacy-btn py-4 text-6xl w-full">{installingInstance ? "WAITING..." : isRunning ? "RUNNING..." : "PLAY"}</button>
                   </>
                 ) : (
                   <div className="text-center">
@@ -209,7 +248,7 @@ export default function App() {
             <div className="w-full max-w-3xl bg-black/80 p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
               <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Instances</h2>
               <div className="flex flex-col gap-6">
-                
+
                 {/* TU19 */}
                 <div className="flex justify-between items-center bg-[#2a2a2a] border-4 border-black p-6">
                   <div><h3 className="text-2xl font-bold">Vanilla Nightly (TU19)</h3><p className="text-slate-400 text-sm">Leaked 4J Studios build.</p></div>
@@ -247,17 +286,6 @@ export default function App() {
                   </div>
                 ))}
               </div>
-              {installingInstance && (
-                <div className="mt-8 p-6 border-4 border-emerald-500 bg-[#1a2a1a] relative">
-                  <div className="flex justify-between mb-3 text-emerald-400 font-bold text-xl uppercase">
-                    <span>Downloading {downloadProgress}%</span>
-                    <button onClick={() => { playSfx('back.ogg'); invoke("cancel_download"); }} className="legacy-btn px-3 py-1 text-sm cancel-download-btn">Cancel</button>
-                  </div>
-                  <div className="w-full bg-black border-4 border-emerald-900 h-8">
-                    <div className="bg-emerald-500 h-full transition-all duration-300" style={{ width: `${downloadProgress}%` }}></div>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
@@ -269,19 +297,40 @@ export default function App() {
                   <label className="text-xl text-slate-400 italic">In-game Username</label>
                   <div className="flex gap-4">
                     <input type="text" value={username} onChange={e => setUsername(e.target.value)} className="flex-1 bg-black border-4 border-slate-700 p-4 text-3xl outline-none focus:border-emerald-500" />
-                    <button onClick={() => { playSfx('wood click.wav'); invoke("save_config", { username }); }} className="legacy-btn px-8 text-2xl relative">Save</button>
+                    <button onClick={() => { playSfx('wood click.wav'); invoke("save_config", { config: { username, linuxRunner: selectedRunner || undefined } }); }} className="legacy-btn px-8 text-2xl relative">Save</button>
                   </div>
                 </div>
-                
+
+                {isLinux && (
+                  <div className="flex flex-col gap-4">
+                    <label className="text-xl text-slate-400 italic flex items-center gap-2"><Icons.Linux /> Linux Runner</label>
+                    <div className="flex flex-col gap-2">
+                      <select
+                        value={selectedRunner}
+                        onChange={e => { playSfx('click.wav'); setSelectedRunner(e.target.value); }}
+                        className="w-full legacy-select p-4 text-2xl outline-none focus:border-emerald-500"
+                      >
+                        <option value="" disabled>Select a runner...</option>
+                        {availableRunners.map(r => (
+                          <option key={r.id} value={r.id}>{r.name} ({r.type})</option>
+                        ))}
+                      </select>
+                      {availableRunners.length === 0 && (
+                        <p className="text-red-500 text-sm">No Proton or Wine installations found. Please install Steam or Wine.</p>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
-                  <label className="text-xl flex items-center gap-4"><Icons.Volume level={musicVol}/> Audio Controls</label>
+                  <label className="text-xl flex items-center gap-4"><Icons.Volume level={musicVol} /> Audio Controls</label>
                   <div className="grid grid-cols-2 gap-8">
                     <div className="flex flex-col gap-2">
-                      <span className="text-sm uppercase opacity-50">Music {Math.round(musicVol*100)}%</span>
+                      <span className="text-sm uppercase opacity-50">Music {Math.round(musicVol * 100)}%</span>
                       <input type="range" min="0" max="1" step="0.01" value={musicVol} onChange={e => setMusicVol(parseFloat(e.target.value))} className="mc-range" />
                     </div>
                     <div className="flex flex-col gap-2">
-                      <span className="text-sm uppercase opacity-50">SFX {Math.round(sfxVol*100)}%</span>
+                      <span className="text-sm uppercase opacity-50">SFX {Math.round(sfxVol * 100)}%</span>
                       <input type="range" min="0" max="1" step="0.01" value={sfxVol} onChange={e => setSfxVol(parseFloat(e.target.value))} className="mc-range" />
                     </div>
                   </div>
@@ -289,17 +338,17 @@ export default function App() {
                 </div>
 
                 <div className="about-section border-4 border-black bg-[#2a2a2a] p-6 shadow-[inset_4px_4px_#555]">
-                   <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">About the project</h3>
-                   <p className="text-xl text-white leading-relaxed mb-6 opacity-90">
-                     I'm <span className="text-emerald-400">KayJann</span>, and I absolutely love this project! It's my very first one, 
-                     and my goal is to create a central hub for the LCE community to bring us all together.
-                   </p>
-                   <h3 className="text-sm text-slate-500 mb-4 uppercase tracking-widest">Social Links</h3>
-                              <div className="flex gap-6">
-                                 <button onClick={() => openUrl("https://discord.gg/nzbxB8Hxjh")} className="social-btn btn-discord" title="Discord"><Icons.Discord /></button>
-                                 <button onClick={() => openUrl("https://github.com/KayJannOnGit")} className="social-btn btn-github" title="GitHub"><Icons.Github /></button>
-                                 <button onClick={() => openUrl("https://reddit.com/user/KayJann")} className="social-btn btn-reddit" title="Reddit"><Icons.Reddit /></button>
-                              </div>                </div>
+                  <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">About the project</h3>
+                  <p className="text-xl text-white leading-relaxed mb-6 opacity-90">
+                    I'm <span className="text-emerald-400">KayJann</span>, and I absolutely love this project! It's my very first one,
+                    and my goal is to create a central hub for the LCE community to bring us all together.
+                  </p>
+                  <h3 className="text-sm text-slate-500 mb-4 uppercase tracking-widest">Social Links</h3>
+                  <div className="flex gap-6">
+                    <button onClick={() => openUrl("https://discord.gg/nzbxB8Hxjh")} className="social-btn btn-discord" title="Discord"><Icons.Discord /></button>
+                    <button onClick={() => openUrl("https://github.com/KayJannOnGit")} className="social-btn btn-github" title="GitHub"><Icons.Github /></button>
+                    <button onClick={() => openUrl("https://reddit.com/user/KayJann")} className="social-btn btn-reddit" title="Reddit"><Icons.Reddit /></button>
+                  </div>                </div>
               </div>
             </div>
           )}
