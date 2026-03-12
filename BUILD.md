@@ -15,10 +15,3 @@
 pnpm install  # or npm
 pnpm tauri build  # or npm
 ```
-
-## Notes
-On GNU/Linux, the build might fail due to missing logos (because still Alpha, contributions to fix this are welcome).
-To fix that, build with this command instead:
-```sh
-pnpm tauri build --no-bundle
-```
