@@ -16,27 +16,13 @@
 
 body {
   margin: 0;
-  background-color: #0c0a09;
+  background: #0c0a09;
 }
 
 .no-scrollbar::-webkit-scrollbar { display: none; }
 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-/* --- LEGACY UI --- */
-.minecraft-dirt {
-  background-image: url('/images/dirt-background.png');
-  background-repeat: repeat;
-  background-size: 64px;
-  image-rendering: pixelated;
-}
-
-.legacy-panel-shadow {
-  box-shadow: inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.2);
-}
-
-.legacy-text-shadow {
-  text-shadow: 2px 2px 0px #3f3f3f;
-}
+.legacy-text-shadow { text-shadow: 2px 2px 0px #3f3f3f; }
 
 .legacy-btn {
   transition: all 0.1s;
@@ -60,55 +46,82 @@ body {
   box-shadow: inset -4px -4px #ffffff, inset 4px 4px #555555 !important;
 }
 
+.legacy-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(100%);
+}
+
+.legacy-select {
+  background: #bebebe;
+  border: 4px solid #000;
+  color: #3e3e3e;
+  box-shadow: inset 4px 4px #ffffff, inset -4px -4px #555555;
+  cursor: pointer;
+}
+
+.mc-range {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  background: #000;
+  border: 2px solid #555;
+  outline: none;
+}
+
+.mc-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 32px;
+  background: #bebebe;
+  border: 2px solid #000;
+  box-shadow: inset 2px 2px #fff, inset -2px -2px #555;
+  cursor: pointer;
+}
+
 .mc-progress-container {
-  background: #313131 !important;
-  border: 4px solid #000 !important;
-  height: 32px !important;
-  position: relative;
+  background: #313131;
+  border: 4px solid #000;
+  height: 32px;
   display: flex;
   align-items: center;
   padding: 0 4px;
 }
 
 .mc-progress-bar {
-  background: #55FF55 !important;
-  height: 16px !important;
-  box-shadow: inset -2px -2px #00AA00, inset 2px 2px #AAFFAA !important;
+  background: #55FF55;
+  height: 16px;
+  box-shadow: inset -2px -2px #00AA00, inset 2px 2px #AAFFAA;
 }
 
-.mc-progress-text {
-  position: absolute;
-  width: 100%;
-  text-align: center;
-  color: #fff;
-  text-shadow: 2px 2px #000;
-  font-size: 14px;
-  z-index: 10;
-  pointer-events: none;
+.splash-text {
+  color: #ffff00 !important;
+  text-shadow: 3px 3px 0px #3f3f00;
+  animation: splash-pulse 0.4s infinite alternate;
 }
 
-/* --- LEGACY PANORAMA ANIMATION --- */
-@keyframes spin-panorama {
-  0% { transform: rotateY(0deg); }
-  100% { transform: rotateY(360deg); } 
+@keyframes splash-pulse {
+  from { transform: rotate(-20deg) scale(1); }
+  to { transform: rotate(-20deg) scale(1.05); }
 }
 
-.panorama-camera {
-  perspective: 800px;
-  perspective-origin: 50% 50%;
+@keyframes sga-burst {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(calc(-50% + var(--vX)), calc(-50% + var(--vY))) scale(1.2) rotate(var(--rot)); opacity: 0; }
 }
 
-.panorama-cube {
-  transform-style: preserve-3d;
-  animation: spin-panorama 180s infinite linear;
+.particle-burst {
+  animation: sga-burst 0.8s ease-out forwards;
+  filter: drop-shadow(0 0 8px rgba(180, 100, 255, 0.9));
 }
 
-.panorama-face {
-  position: absolute;
-  width: 1028px; /* Slightly larger to hide CSS edge seams */
-  height: 1028px;
-  left: -514px;
-  top: -514px;
-  image-rendering: pixelated;
-  backface-visibility: hidden;
+@keyframes pan-legacy {
+  0% { background-position: 0% center; }
+  100% { background-position: 100% center; }
+}
+
+.legacy-panorama-pan {
+  animation: pan-legacy 60s ease-in-out infinite alternate;
 }

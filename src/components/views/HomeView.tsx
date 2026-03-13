@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 interface HomeViewProps {
   username: string;
@@ -12,78 +12,107 @@ interface HomeViewProps {
   setActiveTab: (tab: string) => void;
 }
 
-export const HomeView: React.FC<HomeViewProps> = ({
-  username,
-  selectedInstance,
-  setSelectedInstance,
-  installedStatus,
-  isRunning,
-  installingInstance,
-  fadeAndLaunch,
-  playSfx,
-  setActiveTab,
-}) => {
-  const hasInstalledInstance = installedStatus.vanilla_tu19 || installedStatus.vanilla_tu24;
+const SPLASH_OPTIONS = [
+  "Also try Terraria!",
+  "Contains zero polygons!",
+  "Now with 100% more bugs!",
+  "Hello, World!",
+  "As seen on TV!",
+  "99% Sugar Free!",
+  "100% pure Java!",
+  "Minceraft!",
+  "Feature, not a bug!",
+  "Join our Discord!"
+];
+
+export const HomeView: React.FC<HomeViewProps> = (props) => {
+  const { 
+    username, 
+    selectedInstance, 
+    setSelectedInstance, 
+    installedStatus, 
+    isRunning, 
+    installingInstance, 
+    fadeAndLaunch, 
+    playSfx, 
+    setActiveTab 
+  } = props;
+
+  const name = username.length > 20 ? `${username.slice(0, 16)}...` : username;
+  const [splash, setSplash] = useState(`Welcome, ${name}!`);
+
+  const handleSplashUpdate = () => {
+    playSfx('orb.ogg');
+    const next = SPLASH_OPTIONS.filter(s => s !== splash);
+    setSplash(next[Math.floor(Math.random() * next.length)]);
+  };
+
+  const hasGame = installedStatus.vanilla_tu19 || installedStatus.vanilla_tu24;
+  const isLocked = isRunning || !!installingInstance;
 
   return (
-    <div className="flex flex-col items-center text-center animate-in fade-in w-full">
-      <div className="relative mb-12 flex flex-col items-center">
-        <img src="/images/MenuTitle.png" className="w-[600px] drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)]" alt="Menu Title" />
-        <div className="splash-text absolute bottom-0 -right-4 text-3xl">
-          Welcome, {username}!
+    <div className="relative w-full h-full flex flex-col items-center justify-center animate-in fade-in duration-500">
+      
+      <div className="absolute top-12 flex flex-col items-center">
+        <div className="relative">
+          <img 
+            src="/images/MenuTitle.png" 
+            className="w-[540px] drop-shadow-2xl select-none" 
+            alt="Minecraft" 
+          />
+          
+          <div className="absolute bottom-8 right-6 w-0 h-0 flex items-center justify-center z-20">
+            <div 
+              onClick={handleSplashUpdate}
+              className="splash-text text-3xl cursor-pointer hover:brightness-110 active:scale-95 transition-all"
+              style={{ 
+                pointerEvents: 'auto', 
+                whiteSpace: 'nowrap',
+                transformOrigin: 'center' 
+              }}
+            >
+              {splash}
+            </div>
+          </div>
         </div>
       </div>
-      
-      <div className="bg-black/60 backdrop-blur-sm p-10 border-4 border-stone-800 w-[600px] flex flex-col gap-8 mt-4 shadow-[0_0_40px_rgba(0,0,0,0.8)] relative">
-        
-        {hasInstalledInstance ? (
-          <>
+
+      <div className="w-[600px] p-10 bg-black/60 backdrop-blur-md border-4 border-stone-800 shadow-2xl relative z-10">
+        {hasGame ? (
+          <div className="flex flex-col gap-8">
             <select
               value={selectedInstance}
               onChange={(e) => {
                 playSfx('click.wav');
                 setSelectedInstance(e.target.value);
               }}
-              className="w-full bg-[#bebebe] border-4 border-black p-3 text-2xl outline-none text-[#3e3e3e] shadow-[inset_4px_4px_#ffffff,_inset_-4px_-4px_#555555] cursor-pointer"
-              style={{ fontFamily: 'Minecraft, sans-serif' }}
+              className="w-full bg-[#bebebe] border-4 border-black p-3 text-2xl text-[#3e3e3e] shadow-[inset_4px_4px_#fff,inset_-4px_-4px_#555] outline-none cursor-pointer"
             >
-              {installedStatus.vanilla_tu19 && (
-                <option value="vanilla_tu19">Vanilla Nightly (TU19)</option>
-              )}
-              {installedStatus.vanilla_tu24 && (
-                <option value="vanilla_tu24">Vanilla TU24</option>
-              )}
+              {installedStatus.vanilla_tu19 && <option value="vanilla_tu19">Vanilla Nightly (TU19)</option>}
+              {installedStatus.vanilla_tu24 && <option value="vanilla_tu24">Vanilla TU24</option>}
             </select>
 
             <button
               onClick={fadeAndLaunch}
-              disabled={isRunning || !!installingInstance}
+              disabled={isLocked}
               onMouseEnter={() => playSfx('hover')}
-              className={`group relative flex items-center justify-center w-full h-[80px] transition-transform duration-100 ${
-                isRunning || !!installingInstance 
-                  ? "bg-[url('/images/button.png')] opacity-50 grayscale cursor-not-allowed" 
-                  : "bg-[url('/images/button.png')] hover:bg-[url('/images/button_highlighted.png')] hover:scale-105 shadow-2xl cursor-pointer"
-              } bg-[length:100%_100%] bg-center bg-no-repeat`}
+              className={`h-20 text-4xl text-[#3e3e3e] hover:text-white legacy-text-shadow transition-all bg-[length:100%_100%] bg-no-repeat ${
+                isLocked 
+                  ? "bg-[url('/images/button.png')] opacity-50 grayscale cursor-default" 
+                  : "bg-[url('/images/button.png')] hover:bg-[url('/images/button_highlighted.png')] hover:scale-[1.02] active:scale-95 cursor-pointer"
+              }`}
             >
-              <span className="text-[40px] tracking-wider text-[#3e3e3e] group-hover:text-white legacy-text-shadow mt-1" style={{ fontFamily: 'Minecraft, sans-serif' }}>
-                {installingInstance ? "WAITING..." : isRunning ? "RUNNING..." : "PLAY"}
-              </span>
+              {installingInstance ? "INSTALLING..." : isRunning ? "RUNNING..." : "PLAY"}
             </button>
-          </>
+          </div>
         ) : (
-          <div className="text-center flex flex-col items-center">
-            <p className="text-3xl text-red-400 mb-8 font-bold uppercase legacy-text-shadow">Game not installed</p>
+          <div className="flex flex-col items-center gap-6">
+            <h2 className="text-3xl text-red-500 legacy-text-shadow uppercase">Missing Game Files</h2>
             <button
-              onClick={() => {
-                playSfx('click.wav');
-                setActiveTab("versions");
-              }}
-              onMouseEnter={() => playSfx('hover')}
-              className="group relative flex items-center justify-center w-[80%] h-[64px] transition-transform duration-100 bg-[url('/images/button.png')] hover:bg-[url('/images/button_highlighted.png')] hover:scale-105 shadow-2xl cursor-pointer bg-[length:100%_100%] bg-center bg-no-repeat"
+              onClick={() => { playSfx('click.wav'); setActiveTab("versions"); }}
+              className="w-3/4 h-16 text-2xl bg-[url('/images/button.png')] bg-[length:100%_100%] hover:bg-[url('/images/button_highlighted.png')] active:scale-95 transition-all text-[#3e3e3e] hover:text-white legacy-text-shadow"
             >
-              <span className="text-[28px] tracking-wider text-[#3e3e3e] group-hover:text-white legacy-text-shadow mt-1" style={{ fontFamily: 'Minecraft, sans-serif' }}>
-                Go to Versions
-              </span>
+              Check Versions
             </button>
           </div>
         )}

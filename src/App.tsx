@@ -6,14 +6,15 @@ import { useLauncher } from "./hooks/useLauncher";
 import { TauriService } from "./services/tauri";
 import { AppConfig, Runner, ReinstallModalData, McNotification } from "./types";
 import { Sidebar } from "./components/layout/Sidebar";
-import { HomeView } from "./components/views/HomeView"; // <-- Switched back to HomeView
+import { HomeView } from "./components/views/HomeView";
 import { VersionsView } from "./components/views/VersionsView";
 import { SettingsView } from "./components/views/SettingsView";
 import { FirstRunView } from "./components/views/FirstRunView";
 import { ReinstallModal } from "./components/modals/ReinstallModal";
 import { TeamModal } from "./components/modals/TeamModal";
 import { Notification } from "./components/common/Notification";
-import { PanoramaBackground } from "./components/common/PanoramaBackground"; // <-- Your 3D Background
+import { PanoramaBackground } from "./components/common/PanoramaBackground";
+import { ClickParticles } from "./components/common/ClickParticles";
 import "./index.css";
 
 export default function App() {
@@ -34,23 +35,28 @@ export default function App() {
   const { isRunning, fadeAndLaunch } = useLauncher(selectedInstance, musicRef, isMuted, musicVol, playRandomMusic, playSfx);
 
   useEffect(() => {
-    TauriService.loadConfig().then((c) => {
-      const config = c as AppConfig;
-      if (config.username && config.username.trim() !== "") {
+    const initApp = async () => {
+      const config = await TauriService.loadConfig() as AppConfig;
+      
+      if (config.username?.trim()) {
         setUsername(config.username);
         setIsFirstRun(false);
         setTimeout(playRandomMusic, 1000);
       }
-      if (config.linuxRunner) setSelectedRunner(config.linuxRunner);
-    });
+      
+      if (config.linuxRunner) {
+        setSelectedRunner(config.linuxRunner);
+      }
 
-    const platform = window.navigator.platform.toLowerCase();
-    if (platform.includes("linux")) {
-      setIsLinux(true);
-      TauriService.getAvailableRunners().then((runners) => {
+      const platform = window.navigator.platform.toLowerCase();
+      if (platform.includes("linux")) {
+        setIsLinux(true);
+        const runners = await TauriService.getAvailableRunners();
         setAvailableRunners(runners);
-      });
-    }
+      }
+    };
+
+    initApp();
   }, []);
 
   if (isFirstRun) {
@@ -70,13 +76,10 @@ export default function App() {
   }
 
   return (
-    <div
-      className="h-screen flex select-none overflow-hidden bg-black text-white"
-      onContextMenu={(e) => e.preventDefault()}
-    >
+    <div className="h-screen flex select-none overflow-hidden bg-black text-white" onContextMenu={(e) => e.preventDefault()}>
+      <ClickParticles />
       <audio ref={musicRef} onEnded={playRandomMusic} />
 
-      {/* Team's Sidebar - Always Visible */}
       <Sidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -87,12 +90,10 @@ export default function App() {
         showTeamModal={() => setTeamModalVisible(true)}
       />
 
-      <main className="flex-1 relative h-full flex items-center justify-center overflow-hidden">
-        
-        {/* Your 3D Panorama is injected behind all the views! */}
+      <main className="flex-1 relative h-full flex flex-col overflow-hidden">
         <PanoramaBackground />
 
-        <div className="h-full flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
+        <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
           {activeTab === "home" && (
             <HomeView
               username={username}
@@ -141,24 +142,13 @@ export default function App() {
           <ReinstallModal
             data={reinstallModal}
             onCancel={() => setReinstallModal(null)}
-            onConfirm={(id, url) => {
-              executeInstall(id, url);
-              setReinstallModal(null);
-            }}
+            onConfirm={(id, url) => { executeInstall(id, url); setReinstallModal(null); }}
             playSfx={playSfx}
           />
         )}
 
-        {teamModalVisible && (
-          <TeamModal
-            onClose={() => setTeamModalVisible(false)}
-            playSfx={playSfx}
-          />
-        )}
-
-        {mcNotif && (
-          <Notification title={mcNotif.t} message={mcNotif.m} />
-        )}
+        {teamModalVisible && <TeamModal onClose={() => setTeamModalVisible(false)} playSfx={playSfx} />}
+        {mcNotif && <Notification title={mcNotif.t} message={mcNotif.m} />}
       </main>
     </div>
   );
