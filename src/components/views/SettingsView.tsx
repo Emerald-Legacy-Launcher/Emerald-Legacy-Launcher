@@ -17,6 +17,8 @@ interface SettingsViewProps {
   setSfxVol: (vol: number) => void;
   isMuted: boolean;
   setIsMuted: (muted: boolean) => void;
+  showClickParticles: boolean;
+  setShowClickParticles: (show: boolean) => void;
   playSfx: (name: string, multiplier?: number) => void;
   showTeamModal: () => void;
 }
@@ -34,6 +36,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   setSfxVol,
   isMuted,
   setIsMuted,
+  showClickParticles,
+  setShowClickParticles,
   playSfx,
   showTeamModal,
 }) => {
@@ -140,13 +144,36 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
 
+        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+          <label className="text-xl flex items-center gap-4">
+            Visual Effects (Accessibility)
+          </label>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center justify-between">
+              <span className="text-xl">Click Visual Effect</span>
+              <button
+                onClick={() => {
+                  setShowClickParticles(!showClickParticles);
+                  playSfx('wood click.wav');
+                }}
+                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showClickParticles ? 'opacity-50' : ''}`}
+              >
+                {showClickParticles ? 'ENABLED' : 'DISABLED'}
+              </button>
+            </div>
+            <p className="text-sm text-slate-400 italic">
+              Disabling this will remove the floating particles when clicking.
+            </p>
+          </div>
+        </div>
+
         <div className="about-section border-4 border-black bg-[#2a2a2a] p-6 shadow-[inset_4px_4px_#555]">
           <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">
             About the project
           </h3>
           <p className="text-xl text-white leading-relaxed mb-6 opacity-90">
             This project is proudly maintained by the{' '}
-            <span 
+            <span
               className="text-emerald-400 cursor-pointer hover:underline"
               onClick={() => {
                 playSfx('click.wav');

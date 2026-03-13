@@ -8,6 +8,7 @@ export interface Runner {
 export interface AppConfig {
   username: string;
   linuxRunner?: string;
+  showClickParticles?: boolean;
 }
 
 export interface InstalledStatus {

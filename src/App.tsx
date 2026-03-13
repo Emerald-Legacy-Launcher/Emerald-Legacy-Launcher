@@ -29,7 +29,12 @@ export default function App() {
   const [isLinux, setIsLinux] = useState(false);
   const [teamModalVisible, setTeamModalVisible] = useState(false);
 
-  const { musicVol, setMusicVol, sfxVol, setSfxVol, isMuted, setIsMuted } = useSettings();
+  const {
+    musicVol, setMusicVol,
+    sfxVol, setSfxVol,
+    isMuted, setIsMuted,
+    showClickParticles, setShowClickParticles
+  } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
   const { installedStatus, installingInstance, downloadProgress, executeInstall, updateAllStatus } = useGameInstances(playSfx, setMcNotif);
   const { isRunning, fadeAndLaunch } = useLauncher(selectedInstance, musicRef, isMuted, musicVol, playRandomMusic, playSfx);
@@ -37,13 +42,13 @@ export default function App() {
   useEffect(() => {
     const initApp = async () => {
       const config = await TauriService.loadConfig() as AppConfig;
-      
+
       if (config.username?.trim()) {
         setUsername(config.username);
         setIsFirstRun(false);
         setTimeout(playRandomMusic, 1000);
       }
-      
+
       if (config.linuxRunner) {
         setSelectedRunner(config.linuxRunner);
       }
@@ -77,7 +82,7 @@ export default function App() {
 
   return (
     <div className="h-screen flex select-none overflow-hidden bg-black text-white" onContextMenu={(e) => e.preventDefault()}>
-      <ClickParticles />
+      {showClickParticles && <ClickParticles />}
       <audio ref={musicRef} onEnded={playRandomMusic} />
 
       <Sidebar
@@ -132,6 +137,8 @@ export default function App() {
               setSfxVol={setSfxVol}
               isMuted={isMuted}
               setIsMuted={setIsMuted}
+              showClickParticles={showClickParticles}
+              setShowClickParticles={setShowClickParticles}
               playSfx={playSfx}
               showTeamModal={() => setTeamModalVisible(true)}
             />
