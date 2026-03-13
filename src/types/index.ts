@@ -9,6 +9,7 @@ export interface AppConfig {
   username: string;
   linuxRunner?: string;
   showClickParticles?: boolean;
+  skinBase64?: string;
 }
 
 export interface InstalledStatus {

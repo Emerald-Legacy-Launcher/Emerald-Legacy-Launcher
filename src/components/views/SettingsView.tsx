@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { Icons } from '../Icons';
 import { TauriService } from '../../services/tauri';
 import { Runner } from '../../types';
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { SkinViewer } from '../common/SkinViewer';
 
 interface SettingsViewProps {
   username: string;
@@ -21,6 +22,8 @@ interface SettingsViewProps {
   setShowClickParticles: (show: boolean) => void;
   playSfx: (name: string, multiplier?: number) => void;
   showTeamModal: () => void;
+  skinBase64?: string;
+  setSkinBase64: (skin: string) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -40,7 +43,38 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   setShowClickParticles,
   playSfx,
   showTeamModal,
+  skinBase64,
+  setSkinBase64,
 }) => {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleSkinUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const url = event.target?.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const cvs = document.createElement('canvas');
+        cvs.width = 64;
+        cvs.height = 32;
+        const ctx = cvs.getContext('2d');
+        if (ctx) {
+          ctx.drawImage(img, 0, 0, 64, 32, 0, 0, 64, 32);
+          const base64 = cvs.toDataURL('image/png');
+          setSkinBase64(base64);
+          TauriService.saveConfig({
+            username,
+            linuxRunner: selectedRunner || undefined,
+            skinBase64: base64,
+          });
+        }
+      };
+      img.src = url;
+    };
+    reader.readAsDataURL(file);
+  };
   return (
     <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
       <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Settings</h2>
@@ -60,6 +94,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 TauriService.saveConfig({
                   username,
                   linuxRunner: selectedRunner || undefined,
+                  skinBase64: skinBase64,
                 });
               }}
               className="legacy-btn px-8 text-2xl relative"
@@ -142,6 +177,53 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           >
             {isMuted ? "UNMUTE ALL" : "MUTE ALL"}
           </button>
+        </div>
+
+        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+          <label className="text-xl flex items-center gap-4">
+            Custom Player Skin
+          </label>
+          <div className="flex flex-col md:flex-row gap-8 items-center">
+            <div className="w-[180px] h-[250px] bg-black/40 border-4 border-black relative">
+              <SkinViewer skinUrl={skinBase64 || null} />
+            </div>
+            <div className="flex-1 flex flex-col gap-4 w-full">
+              <p className="text-sm text-slate-400 italic">
+                Upload a standard 64x64 or 64x32 PNG skin file. This skin will be visible in-game and in the launcher.
+              </p>
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleSkinUpload} 
+                accept="image/png" 
+                className="hidden" 
+              />
+              <div className="flex gap-4">
+                <button
+                  onClick={() => { playSfx('wood click.wav'); fileInputRef.current?.click(); }}
+                  className="legacy-btn flex-1 py-3 text-xl"
+                >
+                  UPLOAD SKIN
+                </button>
+                {skinBase64 && (
+                  <button
+                    onClick={() => { 
+                      playSfx('pop.wav'); 
+                      setSkinBase64(""); 
+                      TauriService.saveConfig({
+                        username,
+                        linuxRunner: selectedRunner || undefined,
+                        skinBase64: undefined,
+                      });
+                    }}
+                    className="legacy-btn bg-red-900/20 hover:bg-red-900/40 px-6 py-3"
+                  >
+                    RESET
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">

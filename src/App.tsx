@@ -28,6 +28,7 @@ export default function App() {
   const [selectedRunner, setSelectedRunner] = useState<string>("");
   const [isLinux, setIsLinux] = useState(false);
   const [teamModalVisible, setTeamModalVisible] = useState(false);
+  const [skinBase64, setSkinBase64] = useState<string | undefined>(undefined);
 
   const {
     musicVol, setMusicVol,
@@ -51,6 +52,10 @@ export default function App() {
 
       if (config.linuxRunner) {
         setSelectedRunner(config.linuxRunner);
+      }
+
+      if (config.skinBase64) {
+        setSkinBase64(config.skinBase64);
       }
 
       const platform = window.navigator.platform.toLowerCase();
@@ -110,6 +115,7 @@ export default function App() {
               fadeAndLaunch={fadeAndLaunch}
               playSfx={playSfx}
               setActiveTab={setActiveTab}
+              skinBase64={skinBase64}
             />
           )}
 
@@ -141,6 +147,8 @@ export default function App() {
               setShowClickParticles={setShowClickParticles}
               playSfx={playSfx}
               showTeamModal={() => setTeamModalVisible(true)}
+              skinBase64={skinBase64}
+              setSkinBase64={setSkinBase64}
             />
           )}
         </div>

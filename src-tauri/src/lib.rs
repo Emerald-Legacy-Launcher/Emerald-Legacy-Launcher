@@ -15,6 +15,7 @@ use serde::{Deserialize, Serialize};
 pub struct AppConfig {
     pub username: String,
     pub linux_runner: Option<String>,
+    pub skin_base64: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -57,7 +58,7 @@ fn load_config(app: AppHandle) -> AppConfig {
     
     let old_path = get_app_dir(&app).join("emerald_legacy_config.txt");
     let username = fs::read_to_string(old_path).unwrap_or_else(|_| "Player".into());
-    AppConfig { username, linux_runner: None }
+    AppConfig { username, linux_runner: None, skin_base64: None }
 }
 
 #[tauri::command]
@@ -213,6 +214,16 @@ async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
     let username = config.username;
     
     let _ = fs::write(instance_dir.join("username.txt"), &username);
+
+    if let Some(skin_data) = config.skin_base64 {
+        use base64::{Engine as _, engine::general_purpose};
+        let base64_str = skin_data.split(',').nth(1).unwrap_or(&skin_data);
+        if let Ok(bytes) = general_purpose::STANDARD.decode(base64_str) {
+            let skin_dir = instance_dir.join("Common").join("res").join("mob");
+            let _ = fs::create_dir_all(&skin_dir);
+            let _ = fs::write(skin_dir.join("char.png"), bytes);
+        }
+    }
     
     let game_exe = instance_dir.join("Minecraft.Client.exe");
     if !game_exe.exists() {
