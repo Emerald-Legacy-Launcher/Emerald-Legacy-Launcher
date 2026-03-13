@@ -13,8 +13,8 @@
     "windows": [
       {
         "title": "Emerald Legacy",
-        "width": 1000,
-        "height": 650,
+        "width": 1280,
+        "height": 720,
         "decorations": true,
         "transparent": false,
         "titleBarStyle": "Visible",
