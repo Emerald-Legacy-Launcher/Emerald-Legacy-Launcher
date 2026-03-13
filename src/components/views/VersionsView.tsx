@@ -33,7 +33,7 @@ export const VersionsView: React.FC<VersionsViewProps> = ({
   ];
 
   return (
-    <div className="w-full max-w-3xl bg-black/80 p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
+    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
       <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Instances</h2>
       <div className="flex flex-col gap-6">
         {versions.map(v => (

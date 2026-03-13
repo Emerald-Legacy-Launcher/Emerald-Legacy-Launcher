@@ -62,3 +62,24 @@ jobs:
           releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
+
+  publish-flatpak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: publish-tauri  # Wait for Tauri release to be created
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-23.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+          manifest-path: flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

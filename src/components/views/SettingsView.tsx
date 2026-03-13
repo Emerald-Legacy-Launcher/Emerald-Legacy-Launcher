@@ -18,6 +18,7 @@ interface SettingsViewProps {
   isMuted: boolean;
   setIsMuted: (muted: boolean) => void;
   playSfx: (name: string, multiplier?: number) => void;
+  showTeamModal: () => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -34,9 +35,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   isMuted,
   setIsMuted,
   playSfx,
+  showTeamModal,
 }) => {
   return (
-    <div className="w-full max-w-3xl bg-black/80 p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
+    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
       <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Settings</h2>
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-4">
@@ -143,8 +145,18 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
             About the project
           </h3>
           <p className="text-xl text-white leading-relaxed mb-6 opacity-90">
-            I'm <span className="text-emerald-400">KayJann</span>, and I absolutely love this project! It's my very first one,
-            and my goal is to create a central hub for the LCE community to bring us all together.
+            This project is proudly maintained by the{' '}
+            <span 
+              className="text-emerald-400 cursor-pointer hover:underline"
+              onClick={() => {
+                playSfx('click.wav');
+                showTeamModal();
+              }}
+            >
+              Emerald Team
+            </span>, with{' '}
+            <span className="text-emerald-400">KayJann</span> as the owner.
+            Our goal is to create a central hub for the LCE community to bring us all together.
           </p>
           <h3 className="text-sm text-slate-500 mb-4 uppercase tracking-widest">Social Links</h3>
           <div className="flex gap-6">
@@ -156,7 +168,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <Icons.Discord />
             </button>
             <button
-              onClick={() => openUrl("https://github.com/KayJannOnGit")}
+              onClick={() => openUrl("https://github.com/Emerald-Legacy-Launcher/Emerald-Legacy-Launcher")}
               className="social-btn btn-github"
               title="GitHub"
             >

@@ -1,0 +1,38 @@
+app-id: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher
+runtime: org.gnome.Platform
+runtime-version: '48'
+sdk: org.gnome.Sdk
+sdk-extensions:
+  - org.freedesktop.Sdk.Extension.node20
+  - org.freedesktop.Sdk.Extension.rust-stable
+command: emerald-legacy-launcher
+finish-args:
+  - --share=network
+  - --socket=x11
+  - --socket=wayland
+  - --device=dri
+  - --filesystem=xdg-data
+modules:
+  - name: emerald-legacy-launcher
+    buildsystem: simple
+    build-options:
+      build-args:
+        - --share=network
+      append-path: /usr/lib/sdk/node20/bin
+      prepend-path: /usr/lib/sdk/node20/bin
+      env:
+        PATH: /usr/lib/sdk/node20/bin:/usr/lib/sdk/rust-stable/bin:/usr/bin:/usr/local/bin
+        CARGO_HOME: /run/build/emerald-legacy-launcher/cargo
+        NPM_CONFIG_CACHE: /run/build/emerald-legacy-launcher/npm-cache
+    build-commands:
+      - npm install
+      - npx tauri build --no-bundle
+      - install -Dm755 src-tauri/target/release/emerald-legacy-launcher /app/bin/emerald-legacy-launcher
+      - mkdir -p /app/share/emerald-legacy-launcher/
+      - cp -r dist /app/share/emerald-legacy-launcher/
+      - install -Dm644 flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.desktop /app/share/applications/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.desktop
+      - install -Dm644 flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.metainfo.xml /app/share/metainfo/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.metainfo.xml
+      - install -Dm644 public/images/logo.png /app/share/icons/hicolor/512x512/apps/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.png
+    sources:
+      - type: dir
+        path: ..

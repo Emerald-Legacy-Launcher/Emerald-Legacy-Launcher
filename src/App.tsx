@@ -6,12 +6,14 @@ import { useLauncher } from "./hooks/useLauncher";
 import { TauriService } from "./services/tauri";
 import { AppConfig, Runner, ReinstallModalData, McNotification } from "./types";
 import { Sidebar } from "./components/layout/Sidebar";
-import { LegacyHomeView } from "./components/views/LegacyHomeView"; // <-- INJECTED
+import { HomeView } from "./components/views/HomeView"; // <-- Switched back to HomeView
 import { VersionsView } from "./components/views/VersionsView";
 import { SettingsView } from "./components/views/SettingsView";
 import { FirstRunView } from "./components/views/FirstRunView";
 import { ReinstallModal } from "./components/modals/ReinstallModal";
+import { TeamModal } from "./components/modals/TeamModal";
 import { Notification } from "./components/common/Notification";
+import { PanoramaBackground } from "./components/common/PanoramaBackground"; // <-- Your 3D Background
 import "./index.css";
 
 export default function App() {
@@ -24,6 +26,7 @@ export default function App() {
   const [availableRunners, setAvailableRunners] = useState<Runner[]>([]);
   const [selectedRunner, setSelectedRunner] = useState<string>("");
   const [isLinux, setIsLinux] = useState(false);
+  const [teamModalVisible, setTeamModalVisible] = useState(false);
 
   const { musicVol, setMusicVol, sfxVol, setSfxVol, isMuted, setIsMuted } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
@@ -73,23 +76,25 @@ export default function App() {
     >
       <audio ref={musicRef} onEnded={playRandomMusic} />
 
-      {/* Hide the team's sidebar if we are looking at our fullscreen Legacy UI */}
-      {activeTab !== "home" && (
-        <Sidebar
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          playSfx={playSfx}
-          updateAllStatus={updateAllStatus}
-          installingInstance={installingInstance}
-          downloadProgress={downloadProgress}
-        />
-      )}
+      {/* Team's Sidebar - Always Visible */}
+      <Sidebar
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        playSfx={playSfx}
+        updateAllStatus={updateAllStatus}
+        installingInstance={installingInstance}
+        downloadProgress={downloadProgress}
+        showTeamModal={() => setTeamModalVisible(true)}
+      />
 
-      <main className="flex-1 relative h-full">
-        <div className="h-full flex flex-col items-center justify-center p-12 relative z-10">
-          
+      <main className="flex-1 relative h-full flex items-center justify-center overflow-hidden">
+        
+        {/* Your 3D Panorama is injected behind all the views! */}
+        <PanoramaBackground />
+
+        <div className="h-full flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
           {activeTab === "home" && (
-            <LegacyHomeView
+            <HomeView
               username={username}
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}
@@ -127,6 +132,7 @@ export default function App() {
               isMuted={isMuted}
               setIsMuted={setIsMuted}
               playSfx={playSfx}
+              showTeamModal={() => setTeamModalVisible(true)}
             />
           )}
         </div>
@@ -139,6 +145,13 @@ export default function App() {
               executeInstall(id, url);
               setReinstallModal(null);
             }}
+            playSfx={playSfx}
+          />
+        )}
+
+        {teamModalVisible && (
+          <TeamModal
+            onClose={() => setTeamModalVisible(false)}
             playSfx={playSfx}
           />
         )}
