@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { GAME_VERSIONS } from '../../services/versions';
 
 interface HomeViewProps {
   username: string;
@@ -47,7 +48,8 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
     setSplash(next[Math.floor(Math.random() * next.length)]);
   };
 
-  const hasGame = installedStatus.vanilla_tu19 || installedStatus.vanilla_tu24;
+  const installedVersions = GAME_VERSIONS.filter(v => installedStatus[v.id]);
+  const hasGame = installedVersions.length > 0;
   const isLocked = isRunning || !!installingInstance;
 
   return (
@@ -88,8 +90,9 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
               }}
               className="w-full bg-[#bebebe] border-4 border-black p-3 text-2xl text-[#3e3e3e] shadow-[inset_4px_4px_#fff,inset_-4px_-4px_#555] outline-none cursor-pointer"
             >
-              {installedStatus.vanilla_tu19 && <option value="vanilla_tu19">Vanilla Nightly (TU19)</option>}
-              {installedStatus.vanilla_tu24 && <option value="vanilla_tu24">Vanilla TU24</option>}
+              {installedVersions.map(v => (
+                <option key={v.id} value={v.id}>{v.name}</option>
+              ))}
             </select>
 
             <button
