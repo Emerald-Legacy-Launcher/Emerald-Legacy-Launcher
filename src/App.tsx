@@ -6,7 +6,7 @@ import { useLauncher } from "./hooks/useLauncher";
 import { TauriService } from "./services/tauri";
 import { AppConfig, Runner, ReinstallModalData, McNotification } from "./types";
 import { Sidebar } from "./components/layout/Sidebar";
-import { HomeView } from "./components/views/HomeView";
+import { LegacyHomeView } from "./components/views/LegacyHomeView"; // <-- INJECTED
 import { VersionsView } from "./components/views/VersionsView";
 import { SettingsView } from "./components/views/SettingsView";
 import { FirstRunView } from "./components/views/FirstRunView";
@@ -73,19 +73,23 @@ export default function App() {
     >
       <audio ref={musicRef} onEnded={playRandomMusic} />
 
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        playSfx={playSfx}
-        updateAllStatus={updateAllStatus}
-        installingInstance={installingInstance}
-        downloadProgress={downloadProgress}
-      />
+      {/* Hide the team's sidebar if we are looking at our fullscreen Legacy UI */}
+      {activeTab !== "home" && (
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          playSfx={playSfx}
+          updateAllStatus={updateAllStatus}
+          installingInstance={installingInstance}
+          downloadProgress={downloadProgress}
+        />
+      )}
 
       <main className="flex-1 relative h-full">
         <div className="h-full flex flex-col items-center justify-center p-12 relative z-10">
+          
           {activeTab === "home" && (
-            <HomeView
+            <LegacyHomeView
               username={username}
               selectedInstance={selectedInstance}
               setSelectedInstance={setSelectedInstance}

@@ -13,8 +13,10 @@
     "@tailwindcss/vite": "^4.2.1",
     "@tauri-apps/api": "^2.10.1",
     "@tauri-apps/plugin-opener": "^2.5.3",
+    "@types/three": "^0.183.1",
     "react": "^19.1.0",
-    "react-dom": "^19.1.0"
+    "react-dom": "^19.1.0",
+    "three": "^0.183.2"
   },
   "devDependencies": {
     "@tauri-apps/cli": "^2.10.1",

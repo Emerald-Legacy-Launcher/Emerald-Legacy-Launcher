@@ -2,7 +2,6 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Fonts and Globals */
 @font-face {
   font-family: 'Minecraft';
   src: url('/fonts/Mojangles.ttf') format('truetype');
@@ -17,41 +16,33 @@
 
 body {
   margin: 0;
+  background-color: #0c0a09;
 }
 
-main {
-  background: url('/images/dirt-background.png') repeat !important;
-  background-size: 2000px !important;
-  position: relative;
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+/* --- LEGACY UI --- */
+.minecraft-dirt {
+  background-image: url('/images/dirt-background.png');
+  background-repeat: repeat;
+  background-size: 64px;
+  image-rendering: pixelated;
 }
 
-main::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
+.legacy-panel-shadow {
+  box-shadow: inset -4px -4px 0px rgba(0,0,0,0.5), inset 4px 4px 0px rgba(255,255,255,0.2);
 }
 
-.no-scrollbar::-webkit-scrollbar {
-  display: none;
+.legacy-text-shadow {
+  text-shadow: 2px 2px 0px #3f3f3f;
 }
 
-.no-scrollbar {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-.sidebar-progress {
-  background: #2a2a2a;
-  border-top: 4px solid #000;
-  padding: 20px;
-  position: relative;
-  box-shadow: inset 0 4px #444;
-}
-
-/* Legacy UI Components */
 .legacy-btn {
-  @apply transition-all duration-75 flex items-center justify-center;
+  transition: all 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background: #bebebe;
   border: 4px solid #000 !important;
   box-shadow: inset 4px 4px #ffffff, inset -4px -4px #555555 !important;
@@ -67,29 +58,6 @@ main::before {
 
 .legacy-btn:active:not(:disabled) {
   box-shadow: inset -4px -4px #ffffff, inset 4px 4px #555555 !important;
-}
-
-.legacy-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  filter: grayscale(1);
-}
-
-.legacy-select {
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background: #bebebe url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%233e3e3e' stroke-width='3' stroke-linecap='square' stroke-linejoin='miter'%3E%3Cpath d='M7 10l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center;
-  border: 4px solid #000 !important;
-  box-shadow: inset 4px 4px #ffffff, inset -4px -4px #555555 !important;
-  color: #3e3e3e !important;
-  cursor: pointer;
-  padding-right: 48px;
-}
-
-.legacy-select:focus {
-  outline: 4px solid #fff;
-  outline-offset: -8px;
 }
 
 .mc-progress-container {
@@ -119,87 +87,28 @@ main::before {
   pointer-events: none;
 }
 
-.active-tab {
-  background: #388e3c !important;
-  box-shadow: inset 4px 4px #55ff55, inset -4px -4px #1a4d0a !important;
-  color: #fff !important;
+/* --- LEGACY PANORAMA ANIMATION --- */
+@keyframes spin-panorama {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); } 
 }
 
-.reinstall-btn,
-.confirm-red-btn,
-.cancel-download-btn {
-  background: #ff5555 !important;
-  box-shadow: inset 4px 4px #ffaaaa, inset -4px -4px #aa0000 !important;
-  color: #fff !important;
+.panorama-camera {
+  perspective: 800px;
+  perspective-origin: 50% 50%;
 }
 
-.mc-range {
-  appearance: none;
-  -webkit-appearance: none;
-  background: #000;
-  height: 12px;
-  border: 3px solid #555;
-  width: 100%;
+.panorama-cube {
+  transform-style: preserve-3d;
+  animation: spin-panorama 180s infinite linear;
 }
 
-.mc-range::-webkit-slider-thumb {
-  -webkit-appearance: none;
-  width: 16px;
-  height: 24px;
-  background: #bebebe;
-  border: 3px solid #000;
-  box-shadow: inset 2px 2px #fff, inset -2px -2px #555;
-  cursor: pointer;
-}
-
-.social-btn {
-  background: transparent;
-  border: 4px solid #000;
-  box-shadow: inset 4px 4px #555, inset -4px -4px #111;
-  width: 64px;
-  height: 64px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  transition: transform 0.1s;
-}
-
-.social-btn:hover {
-  transform: scale(1.1);
-}
-
-.btn-discord {
-  background: #5865F2 !important;
-  box-shadow: inset 4px 4px #8ea1e1, inset -4px -4px #313338 !important;
-}
-
-.btn-github {
-  background: #333 !important;
-  box-shadow: inset 4px 4px #666, inset -4px -4px #000 !important;
-}
-
-.btn-reddit {
-  background: #FF4500 !important;
-  box-shadow: inset 4px 4px #ff8b60, inset -4px -4px #942700 !important;
-}
-
-.splash-text {
-  color: #ffff00;
-  text-shadow: 4px 4px #3f3f00;
-  white-space: nowrap;
-  pointer-events: none;
-  z-index: 20;
-  transform: rotate(-20deg);
-  animation: splash-pulse 0.5s infinite alternate;
-  transform-origin: center;
-}
-
-@keyframes splash-pulse {
-  from {
-    transform: rotate(-20deg) scale(1);
-  }
-  to {
-    transform: rotate(-20deg) scale(1.05);
-  }
+.panorama-face {
+  position: absolute;
+  width: 1028px; /* Slightly larger to hide CSS edge seams */
+  height: 1028px;
+  left: -514px;
+  top: -514px;
+  image-rendering: pixelated;
+  backface-visibility: hidden;
 }
