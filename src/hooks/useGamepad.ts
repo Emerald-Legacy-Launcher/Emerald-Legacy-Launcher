@@ -17,7 +17,7 @@ export const useGamepad = (
   const moveFocus = (direction: number) => {
     const focusable = Array.from(document.querySelectorAll(
       'button:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])'
-    )) as HTMLElement[];
+    )).filter(el => !el.closest('aside')) as HTMLElement[];
 
     if (focusable.length === 0) return;
     if (!document.activeElement || document.activeElement === document.body) {
