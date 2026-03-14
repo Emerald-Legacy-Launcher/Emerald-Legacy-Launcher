@@ -10,6 +10,8 @@ import { useGamepad } from "@/hooks/useGamepad";
 
 // Services
 import { TauriService } from "@/services/tauri";
+import { getVersionById } from "@/services/versions";
+import RPC from "@/services/RPC";
 
 // Types
 import { AppConfig, Runner, ReinstallModalData, McNotification } from "@/types/index";
@@ -79,6 +81,33 @@ export default function App() {
 
     initApp();
   }, []);
+
+  useEffect(() => {
+    const updateRPC = async () => {
+      if (isFirstRun || !username) return;
+
+      const version = getVersionById(selectedInstance);
+      const versionName = version ? version.name : "Unknown Version";
+
+      let details = "In Menus";
+      let state = `Playing as ${username}`;
+
+      if (isRunning) {
+        details = `Playing ${versionName}`;
+      } else {
+        const tabNames: Record<string, string> = {
+          home: "Main Menu",
+          versions: "Selecting Version",
+          settings: "In Settings"
+        };
+        details = tabNames[activeTab] || "In Menus";
+      }
+
+      await RPC.updateActivity(details, state, isRunning);
+    };
+
+    updateRPC();
+  }, [username, isRunning, selectedInstance, activeTab, isFirstRun]);
 
   if (isFirstRun) {
     return (

@@ -1,17 +1,61 @@
 import { setActivity, start } from "tauri-plugin-drpc";
-import { Activity, ActivityType, Button, Timestamps } from "tauri-plugin-drpc/activity";
+import { Activity, ActivityType } from "tauri-plugin-drpc/activity";
 
 class RPC {
+  private startTime: number = Date.now();
+  private initializationPromise: Promise<void> | null = null;
+  private initialized: boolean = false;
+
   public async StartRPC() {
-    await start("1482504445152460871");
+    if (this.initialized) return;
+    if (this.initializationPromise) return this.initializationPromise;
 
-    const activity = new Activity();
-    activity.setButton([new Button("Download", "https://github.com/Emerald-Legacy-Launcher/Emerald-Legacy-Launcher")]);
-    activity.setTimestamps(new Timestamps(Date.now()));
-    activity.setActivity(ActivityType.Playing);
-    // activity.setDetails(`Playing as ${useLauncherStore.getState().displayName}`); commented out until i add zustand state management
+    this.initializationPromise = (async () => {
+      try {
+        await start("1482504445152460871");
+        this.initialized = true;
+      } catch (e) {
+        console.error("Failed to start RPC:", e);
+        this.initializationPromise = null;
+      }
+    })();
 
-    await setActivity(activity);
+    return this.initializationPromise;
+  }
+
+  public async updateActivity(details: string, state: string, isPlaying: boolean = false) {
+    if (!this.initialized) {
+      await this.StartRPC();
+      if (!this.initialized) return;
+    }
+
+    const activityPayload = {
+      details,
+      state,
+      type: ActivityType.Playing,
+      activity_type: ActivityType.Playing,
+      assets: {
+        large_image: "logo",
+        large_text: "Emerald Legacy",
+        small_image: "app-icon",
+        small_text: isPlaying ? "Playing" : "In Menus"
+      },
+      timestamps: {
+        start: this.startTime
+      },
+      buttons: [
+        { label: "Discord", url: "https://discord.gg/RHGRUwpmVc" },
+        { label: "GitHub", url: "https://github.com/Emerald-Legacy-Launcher/Emerald-Legacy-Launcher" }
+      ]
+    };
+
+    try {
+      await setActivity({
+        toString: () => JSON.stringify(activityPayload)
+      } as any);
+    } catch (e) {
+      console.error("Failed to set RPC activity:", e);
+    }
   }
 }
 
