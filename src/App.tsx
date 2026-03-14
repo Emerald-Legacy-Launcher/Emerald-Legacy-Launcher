@@ -34,7 +34,8 @@ export default function App() {
     musicVol, setMusicVol,
     sfxVol, setSfxVol,
     isMuted, setIsMuted,
-    showClickParticles, setShowClickParticles
+    showClickParticles, setShowClickParticles,
+    showPanorama, setShowPanorama
   } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
   const { installedStatus, installingInstance, downloadProgress, executeInstall, updateAllStatus } = useGameInstances(playSfx, setMcNotif);
@@ -101,7 +102,7 @@ export default function App() {
       />
 
       <main className="flex-1 relative h-full flex flex-col overflow-hidden">
-        <PanoramaBackground />
+        {showPanorama && <PanoramaBackground />}
 
         <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
           {activeTab === "home" && (
@@ -149,6 +150,8 @@ export default function App() {
               showTeamModal={() => setTeamModalVisible(true)}
               skinBase64={skinBase64}
               setSkinBase64={setSkinBase64}
+              showPanorama={showPanorama}
+              setShowPanorama={setShowPanorama}
             />
           )}
         </div>

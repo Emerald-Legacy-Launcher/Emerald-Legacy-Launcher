@@ -5,13 +5,15 @@ export const useSettings = () => {
   const [sfxVol, setSfxVol] = useState(parseFloat(localStorage.getItem("sfxVol") || "0.7"));
   const [isMuted, setIsMuted] = useState(localStorage.getItem("isMuted") === "true");
   const [showClickParticles, setShowClickParticles] = useState(localStorage.getItem("showClickParticles") !== "false");
+  const [showPanorama, setShowPanorama] = useState(localStorage.getItem("showPanorama") !== "false");
 
   useEffect(() => {
     localStorage.setItem("musicVol", musicVol.toString());
     localStorage.setItem("sfxVol", sfxVol.toString());
     localStorage.setItem("isMuted", isMuted.toString());
     localStorage.setItem("showClickParticles", showClickParticles.toString());
-  }, [musicVol, sfxVol, isMuted, showClickParticles]);
+    localStorage.setItem("showPanorama", showPanorama.toString());
+  }, [musicVol, sfxVol, isMuted, showClickParticles, showPanorama]);
 
   return {
     musicVol,
@@ -22,5 +24,7 @@ export const useSettings = () => {
     setIsMuted,
     showClickParticles,
     setShowClickParticles,
+    showPanorama,
+    setShowPanorama,
   };
 };

@@ -24,6 +24,8 @@ interface SettingsViewProps {
   showTeamModal: () => void;
   skinBase64?: string;
   setSkinBase64: (skin: string) => void;
+  showPanorama: boolean;
+  setShowPanorama: (show: boolean) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -45,6 +47,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   showTeamModal,
   skinBase64,
   setSkinBase64,
+  showPanorama,
+  setShowPanorama,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -249,8 +253,20 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 {showClickParticles ? 'ENABLED' : 'DISABLED'}
               </button>
             </div>
+            <div className="flex items-center justify-between">
+              <span className="text-xl">Panorama Background</span>
+              <button
+                onClick={() => {
+                  setShowPanorama(!showPanorama);
+                  playSfx('wood click.wav');
+                }}
+                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showPanorama ? 'opacity-50' : ''}`}
+              >
+                {showPanorama ? 'ENABLED' : 'DISABLED'}
+              </button>
+            </div>
             <p className="text-sm text-slate-400 italic">
-              Disabling this will remove the floating particles when clicking.
+              Disabling this will replace the animated background with a solid color.
             </p>
           </div>
         </div>
