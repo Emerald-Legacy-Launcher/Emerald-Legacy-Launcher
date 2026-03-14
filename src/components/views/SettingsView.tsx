@@ -113,8 +113,14 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <select
                 value={selectedRunner}
                 onChange={(e) => {
+                  const newRunner = e.target.value;
                   playSfx('click.wav');
-                  setSelectedRunner(e.target.value);
+                  setSelectedRunner(newRunner);
+                  TauriService.saveConfig({
+                    username,
+                    linuxRunner: newRunner || undefined,
+                    skinBase64: skinBase64,
+                  });
                 }}
                 className="w-full legacy-select p-4 text-2xl outline-none focus:border-emerald-500"
               >
@@ -191,12 +197,12 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               <p className="text-sm text-slate-400 italic">
                 Upload a standard 64x64 or 64x32 PNG skin file. This skin will be visible in-game and in the launcher.
               </p>
-              <input 
-                type="file" 
-                ref={fileInputRef} 
-                onChange={handleSkinUpload} 
-                accept="image/png" 
-                className="hidden" 
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleSkinUpload}
+                accept="image/png"
+                className="hidden"
               />
               <div className="flex gap-4">
                 <button
@@ -207,9 +213,9 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 </button>
                 {skinBase64 && (
                   <button
-                    onClick={() => { 
-                      playSfx('pop.wav'); 
-                      setSkinBase64(""); 
+                    onClick={() => {
+                      playSfx('pop.wav');
+                      setSkinBase64("");
                       TauriService.saveConfig({
                         username,
                         linuxRunner: selectedRunner || undefined,

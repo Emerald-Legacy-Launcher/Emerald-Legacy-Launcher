@@ -12,5 +12,5 @@ if (rootElement) {
     </React.StrictMode>
   );
 } else {
-  console.error("ERREUR FATALE : La div avec l'id 'root' est introuvable dans index.html");
+  console.error("Fatal Error: no `root` element found in index.html!");
 }

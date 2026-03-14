@@ -1,8 +1,8 @@
 [package]
 name = "emerald-legacy-launcher"
-version = "0.1.0"
-description = "A Tauri App"
-authors = ["you"]
+version = "0.3.0"
+description = "FOSS cross-platform launcher for Minecraft Legacy Console Edition"
+authors = ["Emerald Team"]
 edition = "2021"
 
 [lib]
