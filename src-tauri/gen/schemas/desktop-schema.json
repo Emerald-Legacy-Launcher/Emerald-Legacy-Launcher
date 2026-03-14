@@ -2313,6 +2313,24 @@
           "markdownDescription": "Denies the unminimize command without any pre-configured scope."
         },
         {
+          "description": "This permission set configures which\ngampead features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all gamepads.\n\n\n#### This default permission set includes:\n\n- `allow-execute`",
+          "type": "string",
+          "const": "gamepad:default",
+          "markdownDescription": "This permission set configures which\ngampead features are by default exposed.\n\n#### Granted Permissions\n\nIt allows acccess to all gamepads.\n\n\n#### This default permission set includes:\n\n- `allow-execute`"
+        },
+        {
+          "description": "Enables the execute command without any pre-configured scope.",
+          "type": "string",
+          "const": "gamepad:allow-execute",
+          "markdownDescription": "Enables the execute command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the execute command without any pre-configured scope.",
+          "type": "string",
+          "const": "gamepad:deny-execute",
+          "markdownDescription": "Denies the execute command without any pre-configured scope."
+        },
+        {
           "description": "This permission set allows opening `mailto:`, `tel:`, `https://` and `http://` urls using their default application\nas well as reveal file in directories using default file explorer\n#### This default permission set includes:\n\n- `allow-open-url`\n- `allow-reveal-item-in-dir`\n- `allow-default-urls`",
           "type": "string",
           "const": "opener:default",

@@ -8,11 +8,11 @@ export interface Runner {
 export interface AppConfig {
   username: string;
   linuxRunner?: string;
+  showClickParticles?: boolean;
+  skinBase64?: string;
 }
 
 export interface InstalledStatus {
-  vanilla_tu19: boolean;
-  vanilla_tu24: boolean;
   [key: string]: boolean;
 }
 

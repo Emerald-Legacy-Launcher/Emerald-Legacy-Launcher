@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { listen } from "@tauri-apps/api/event";
 import { TauriService } from '../services/tauri';
 import { InstalledStatus, McNotification } from '../types';
+import { GAME_VERSIONS } from '../services/versions';
 
 export const useGameInstances = (
   playSfx: (name: string, multiplier?: number) => void,
@@ -9,15 +10,19 @@ export const useGameInstances = (
 ) => {
   const [installingInstance, setInstallingInstance] = useState<string | null>(null);
   const [downloadProgress, setDownloadProgress] = useState<number>(0);
-  const [installedStatus, setInstalledStatus] = useState<InstalledStatus>({
-    vanilla_tu19: false,
-    vanilla_tu24: false,
+  const [installedStatus, setInstalledStatus] = useState<InstalledStatus>(() => {
+    const initial: InstalledStatus = {};
+    GAME_VERSIONS.forEach(v => initial[v.id] = false);
+    return initial;
   });
 
   const updateAllStatus = async () => {
-    const v19 = await TauriService.checkGameInstalled("vanilla_tu19");
-    const v24 = await TauriService.checkGameInstalled("vanilla_tu24");
-    setInstalledStatus({ vanilla_tu19: v19, vanilla_tu24: v24 });
+    const newStatus: InstalledStatus = {};
+    const availableVersions = GAME_VERSIONS.filter(v => !v.isComingSoon);
+    await Promise.all(availableVersions.map(async (v) => {
+      newStatus[v.id] = await TauriService.checkGameInstalled(v.id);
+    }));
+    setInstalledStatus(newStatus);
   };
 
   const executeInstall = async (id: string, url: string) => {

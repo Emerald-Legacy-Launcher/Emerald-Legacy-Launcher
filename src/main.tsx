@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
+import 'tauri-plugin-gamepad-api';
 import App from "./App";
 import './index.css';
 
@@ -12,5 +13,5 @@ if (rootElement) {
     </React.StrictMode>
   );
 } else {
-  console.error("ERREUR FATALE : La div avec l'id 'root' est introuvable dans index.html");
+  console.error("Fatal Error: no `root` element found in index.html!");
 }

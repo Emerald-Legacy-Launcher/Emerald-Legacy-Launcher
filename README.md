@@ -21,7 +21,7 @@
 
 ---
 
-<img width="1355" height="922" alt="image" src="https://github.com/user-attachments/assets/6798dd00-4c7c-4b57-9116-7648ce90ae93" />
+<img width="1355" height="922" alt="image" src="https://github.com/user-attachments/assets/2ccf91a2-e282-4579-a18d-9d51d45c2800" />
 
 
 ### PROJECT OVERVIEW
