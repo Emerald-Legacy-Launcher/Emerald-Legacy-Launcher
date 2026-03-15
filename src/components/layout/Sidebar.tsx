@@ -43,12 +43,14 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
       
       <button 
         onClick={toggleSidebar}
-        className="absolute top-1/2 -translate-y-1/2 w-12 h-12 flex items-center justify-center cursor-pointer transition-all duration-300 z-50 hover:brightness-125 active:scale-90"
-        style={{ left: collapsed ? "8px" : "200px" }}
+        className={`absolute top-10 w-8 h-8 flex items-center justify-center cursor-pointer transition-all duration-300 z-50 bg-[length:100%_100%] bg-no-repeat group hover:scale-110 active:scale-95 bg-[url('/images/Button_Square.png')] hover:bg-[url('/images/Button_Square_Highlighted.png')] drop-shadow-md`}
+        style={{ 
+          left: collapsed ? "0px" : "256px",
+        }}
       >
         <img 
           src={`/images/Settings_Arrow_${collapsed ? "Right" : "Left"}.png`} 
-          className="w-10 h-10 object-contain drop-shadow-lg"
+          className="w-4 h-4 object-contain transition-all duration-300 group-hover:scale-110"
           alt="toggle"
         />
       </button>
