@@ -17,6 +17,7 @@ export interface AppConfig {
   username: string;
   linuxRunner?: string;
   showClickParticles?: boolean;
+  appleSiliconPerformanceBoost?: boolean;
   skinBase64?: string;
   skinLibrary?: SkinLibraryItem[];
   themeStyleId?: string;

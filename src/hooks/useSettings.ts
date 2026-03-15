@@ -8,6 +8,7 @@ export const useSettings = () => {
   const [showPanorama, setShowPanorama] = useState(localStorage.getItem("showPanorama") !== "false");
   const [themeStyleId, setThemeStyleId] = useState(localStorage.getItem("themeStyleId") || "legacy");
   const [themePaletteId, setThemePaletteId] = useState(localStorage.getItem("themePaletteId") || "emerald");
+  const [macosCompatReady, setMacosCompatReady] = useState(localStorage.getItem("macosCompatReady") === "true");
 
   useEffect(() => {
     localStorage.setItem("musicVol", musicVol.toString());
@@ -17,7 +18,8 @@ export const useSettings = () => {
     localStorage.setItem("showPanorama", showPanorama.toString());
     localStorage.setItem("themeStyleId", themeStyleId);
     localStorage.setItem("themePaletteId", themePaletteId);
-  }, [musicVol, sfxVol, isMuted, showClickParticles, showPanorama, themeStyleId, themePaletteId]);
+    localStorage.setItem("macosCompatReady", macosCompatReady.toString());
+  }, [musicVol, sfxVol, isMuted, showClickParticles, showPanorama, themeStyleId, themePaletteId, macosCompatReady]);
 
   return {
     musicVol,
@@ -34,5 +36,7 @@ export const useSettings = () => {
     setThemeStyleId,
     themePaletteId,
     setThemePaletteId,
+    macosCompatReady,
+    setMacosCompatReady,
   };
 };

@@ -41,9 +41,11 @@ export default function App() {
   const [availableRunners, setAvailableRunners] = useState<Runner[]>([]);
   const [selectedRunner, setSelectedRunner] = useState<string>("");
   const [isLinux, setIsLinux] = useState(false);
+  const [isMac, setIsMac] = useState(false);
   const [teamModalVisible, setTeamModalVisible] = useState(false);
   const [skinBase64, setSkinBase64] = useState<string | undefined>(undefined);
   const [skinLibrary, setSkinLibrary] = useState<SkinLibraryItem[]>([]);
+  const [appleSiliconPerformanceBoost, setAppleSiliconPerformanceBoost] = useState(false);
 
   const {
     musicVol, setMusicVol,
@@ -52,7 +54,8 @@ export default function App() {
     showClickParticles, setShowClickParticles,
     showPanorama, setShowPanorama,
     themeStyleId, setThemeStyleId,
-    themePaletteId, setThemePaletteId
+    themePaletteId, setThemePaletteId,
+    macosCompatReady, setMacosCompatReady
   } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
   const { installedStatus, installingInstance, downloadProgress, executeInstall, updateAllStatus } = useGameInstances(playSfx, setMcNotif);
@@ -72,6 +75,10 @@ export default function App() {
         setSelectedRunner(config.linuxRunner);
       }
 
+      if (typeof config.appleSiliconPerformanceBoost === "boolean") {
+        setAppleSiliconPerformanceBoost(config.appleSiliconPerformanceBoost);
+      }
+
       if (config.skinBase64) {
         setSkinBase64(config.skinBase64);
       }
@@ -85,6 +92,9 @@ export default function App() {
         setIsLinux(true);
         const runners = await TauriService.getAvailableRunners();
         setAvailableRunners(runners);
+      }
+      if (platform.includes("mac")) {
+        setIsMac(true);
       }
     };
 
@@ -122,6 +132,7 @@ export default function App() {
     const config: AppConfig = {
       username: overrides.username !== undefined ? overrides.username : username,
       linuxRunner: (overrides.linuxRunner !== undefined ? overrides.linuxRunner : selectedRunner) || undefined,
+      appleSiliconPerformanceBoost: overrides.appleSiliconPerformanceBoost !== undefined ? overrides.appleSiliconPerformanceBoost : appleSiliconPerformanceBoost,
       skinBase64: overrides.skinBase64 !== undefined ? overrides.skinBase64 : skinBase64,
       skinLibrary: overrides.skinLibrary !== undefined ? overrides.skinLibrary : skinLibrary,
       themeStyleId: overrides.themeStyleId !== undefined ? overrides.themeStyleId : themeStyleId,
@@ -259,6 +270,11 @@ export default function App() {
                 setThemeStyleId={setThemeStyleId}
                 themePaletteId={themePaletteId}
                 setThemePaletteId={setThemePaletteId}
+                isMac={isMac}
+                macosCompatReady={macosCompatReady}
+                setMacosCompatReady={setMacosCompatReady}
+                appleSiliconPerformanceBoost={appleSiliconPerformanceBoost}
+                setAppleSiliconPerformanceBoost={setAppleSiliconPerformanceBoost}
                 saveConfig={saveFullConfig}
               />
             )}

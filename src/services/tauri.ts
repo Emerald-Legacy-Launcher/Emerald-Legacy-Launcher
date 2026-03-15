@@ -7,6 +7,7 @@ export const TauriService = {
   loadConfig: () => invoke<AppConfig>("load_config"),
   saveConfig: (config: AppConfig) => invoke("save_config", { config }),
   launchGame: (instanceId: string) => invoke("launch_game", { instanceId }),
+  setupMacosRuntime: () => invoke("setup_macos_runtime"),
   downloadAndInstall: (url: string, instanceId: string) => invoke("download_and_install", { url, instanceId }),
   checkGameInstalled: (instanceId: string) => invoke<boolean>("check_game_installed", { instanceId }),
   getAvailableRunners: () => invoke<Runner[]>("get_available_runners"),
