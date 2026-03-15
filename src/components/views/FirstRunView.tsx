@@ -34,14 +34,17 @@ export const FirstRunView: React.FC<FirstRunViewProps> = ({
       className="h-screen flex flex-col items-center justify-center bg-black text-white p-12 select-none"
       onContextMenu={(e) => e.preventDefault()}
     >
-      <img src="/images/MenuTitle.png" className="w-[500px] mb-12" alt="Menu Title" />
-      <div className="bg-[#2a2a2a] p-10 border-4 border-black w-full max-w-2xl text-center shadow-[inset_4px_4px_#555,inset_-4px_-4px_#111]">
+      <div 
+        className="w-[500px] h-32 bg-contain bg-center bg-no-repeat mb-12"
+        style={{ backgroundImage: "var(--menu-title-url)" }}
+      />
+      <div className="bg-[#2a2a2a]/80 p-10 border-[var(--border-width)] border-[var(--border-primary)] w-full max-w-2xl text-center shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_#555] rounded-[var(--radius-base)] backdrop-blur-[var(--backdrop-blur)]">
         <h2 className="text-4xl text-emerald-400 mb-4">Welcome to Emerald Legacy!</h2>
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="w-full bg-black border-4 border-emerald-900 p-4 text-3xl text-center mb-8 outline-none"
+          className="w-full bg-black border-[var(--border-width)] border-[var(--accent-primary)] p-4 text-3xl text-center mb-8 outline-none rounded-[var(--radius-base)]"
           placeholder="Username..."
         />
         <button

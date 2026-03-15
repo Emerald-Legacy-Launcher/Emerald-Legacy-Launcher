@@ -1,5 +1,8 @@
 import React from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useTheme } from "@/components/theme/ThemeContext";
+import { THEME_STYLES } from "@/types/theme";
+import { AppConfig } from "@/types";
 
 // Icons
 import { Icons } from "@/components/Icons";
@@ -29,6 +32,11 @@ interface SettingsViewProps {
   showTeamModal: () => void;
   showPanorama: boolean;
   setShowPanorama: (show: boolean) => void;
+  themeStyleId: string;
+  setThemeStyleId: (id: string) => void;
+  themePaletteId: string;
+  setThemePaletteId: (id: string) => void;
+  saveConfig: (overrides: Partial<AppConfig>) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -50,11 +58,17 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   showTeamModal,
   showPanorama,
   setShowPanorama,
+  themeStyleId,
+  setThemeStyleId,
+  themePaletteId,
+  setThemePaletteId,
+  saveConfig
 }) => {
+  const { setStyle, setPalette, availablePalettes, refreshPalettes } = useTheme();
 
   return (
-    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
-      <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Settings</h2>
+    <div className="w-full max-w-3xl bg-[var(--bg-primary)] p-8 md:p-12 border-[var(--border-width)] border-[var(--border-primary)] h-full overflow-y-auto no-scrollbar animate-in fade-in rounded-[var(--radius-base)] shadow-2xl">
+      <h2 className="text-5xl mb-8 border-b-[var(--border-width)] border-[var(--border-secondary)] pb-4">Settings</h2>
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-4">
           <label className="text-xl text-slate-400 italic">In-game Username</label>
@@ -63,7 +77,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="flex-1 bg-black border-4 border-slate-700 p-4 text-3xl outline-none focus:border-emerald-500"
+              className="flex-1 bg-black border-[var(--border-width)] border-[var(--border-secondary)] p-4 text-3xl outline-none focus:border-[var(--accent-primary)] rounded-[var(--radius-base)]"
             />
             <button
               onClick={() => {
@@ -115,7 +129,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+        <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
           <label className="text-xl flex items-center gap-4">
             <Icons.Volume level={musicVol} /> Audio Controls
           </label>
@@ -160,11 +174,69 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+        <div className="flex flex-col gap-4 bg-[var(--bg-tertiary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--btn-shadow-light)] rounded-[var(--radius-base)]">
           <label className="text-xl flex items-center gap-4">
-            Visual Effects (Accessibility)
+            Visual Effects
           </label>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-2">
+              <span className="text-xl">UI Style</span>
+              <select
+                value={themeStyleId}
+                onChange={(e) => {
+                  const newStyleId = e.target.value;
+                  playSfx("click.wav");
+                  setThemeStyleId(newStyleId);
+                  setStyle(newStyleId);
+                  saveConfig({ themeStyleId: newStyleId, themePaletteId });
+                }}
+                className="w-full legacy-select p-4 text-2xl outline-none focus:border-[var(--accent-primary)]"
+              >
+                {THEME_STYLES.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xl">Color Palette</span>
+              <select
+                value={themePaletteId}
+                onChange={(e) => {
+                  const newPaletteId = e.target.value;
+                  playSfx("click.wav");
+                  setThemePaletteId(newPaletteId);
+                  setPalette(newPaletteId);
+                  saveConfig({ themeStyleId, themePaletteId: newPaletteId });
+                }}
+                className="w-full legacy-select p-4 text-2xl outline-none focus:border-[var(--accent-primary)]"
+              >
+                {availablePalettes.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={async () => {
+                  try {
+                    const name = await TauriService.importTheme();
+                    if (name !== "CANCELED") {
+                      playSfx("wood click.wav");
+                      await refreshPalettes();
+                    }
+                  } catch (e) {
+                    console.error("Import failed:", e);
+                  }
+                }}
+                className="legacy-btn mt-2 py-2 text-sm uppercase"
+              >
+                Import Theme JSON
+              </button>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="text-xl">Click Visual Effect</span>
               <button
@@ -172,7 +244,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   setShowClickParticles(!showClickParticles);
                   playSfx("wood click.wav");
                 }}
-                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showClickParticles ? "opacity-50" : ""}`}
+                className="legacy-btn px-6 py-2 min-w-[120px] transition-all"
+                style={{ 
+                  backgroundColor: showClickParticles ? "var(--accent-primary)" : "var(--btn-bg)",
+                  color: showClickParticles ? "#ffffff" : "var(--btn-text)"
+                }}
               >
                 {showClickParticles ? "ENABLED" : "DISABLED"}
               </button>
@@ -184,7 +260,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   setShowPanorama(!showPanorama);
                   playSfx("wood click.wav");
                 }}
-                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showPanorama ? "opacity-50" : ""}`}
+                className="legacy-btn px-6 py-2 min-w-[120px] transition-all"
+                style={{ 
+                  backgroundColor: showPanorama ? "var(--accent-primary)" : "var(--btn-bg)",
+                  color: showPanorama ? "#ffffff" : "var(--btn-text)"
+                }}
               >
                 {showPanorama ? "ENABLED" : "DISABLED"}
               </button>
@@ -195,7 +275,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="about-section border-4 border-black bg-[#2a2a2a] p-6 shadow-[inset_4px_4px_#555]">
+        <div className="about-section border-[var(--border-width)] border-[var(--border-primary)] bg-[var(--bg-secondary)] p-6 shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
           <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">
             About the project
           </h3>

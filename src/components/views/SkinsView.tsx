@@ -69,10 +69,10 @@ export const SkinsView: React.FC<SkinsViewProps> = ({
   };
 
   return (
-    <div className="w-full max-w-5xl bg-black/80 border-4 border-black h-full flex flex-col md:flex-row overflow-hidden animate-in fade-in">
-      <div className="w-full md:w-80 bg-black/40 border-b-4 md:border-b-0 md:border-r-4 border-black p-8 flex flex-col items-center gap-6">
+    <div className="w-full max-w-5xl bg-black/80 border-[var(--border-width)] border-[var(--border-primary)] h-full flex flex-col md:flex-row overflow-hidden animate-in fade-in rounded-[var(--radius-base)] backdrop-blur-[var(--backdrop-blur)]">
+      <div className="w-full md:w-80 bg-black/40 border-b-[var(--border-width)] md:border-b-0 md:border-r-[var(--border-width)] border-[var(--border-primary)] p-8 flex flex-col items-center gap-6">
         <h2 className="text-3xl legacy-text-shadow self-start text-[#ffffff]">CURRENT SKIN</h2>
-        <div className="w-48 h-72 bg-black/50 border-4 border-black shadow-[inset_4px_4px_#222] relative group">
+        <div className="w-48 h-72 bg-black/50 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_#222] relative group rounded-[var(--radius-base)]">
           <SkinViewer skinUrl={skinBase64 || null} />
         </div>
 
@@ -94,7 +94,10 @@ export const SkinsView: React.FC<SkinsViewProps> = ({
 
           <button
             onClick={() => { playSfx("pop.wav"); onSelectSkin(""); }}
-            className="legacy-btn px-6 py-2 text-sm !text-white !shadow-[inset_3px_3px_#ff5555,inset_-3px_-3px_#4a0000] hover:!bg-[#aa0000] transition-colors self-center"
+            style={{ 
+              boxShadow: "inset calc(3px * var(--shadow-intensity)) calc(3px * var(--shadow-intensity)) #ff5555, inset calc(-3px * var(--shadow-intensity)) calc(-3px * var(--shadow-intensity)) #4a0000"
+            } as React.CSSProperties}
+            className="legacy-btn px-6 py-2 text-sm transition-colors self-center !text-white hover:!bg-[#aa0000]"
           >
             RESET SKIN
           </button>
@@ -119,9 +122,9 @@ export const SkinsView: React.FC<SkinsViewProps> = ({
               {skinLibrary.map((item) => (
                 <div
                   key={item.id}
-                  className={`relative group bg-[#2a2a2a] border-4 transition-all duration-150 ${skinBase64 === item.skinBase64
-                    ? "border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                    : "border-black hover:border-slate-500 shadow-[inset_4px_4px_#444]"
+                  className={`relative group bg-[#2a2a2a] border-[var(--border-width)] transition-all duration-150 rounded-[var(--radius-base)] overflow-hidden ${skinBase64 === item.skinBase64
+                    ? "border-[var(--accent-primary)] shadow-[0_0_15px_rgba(16,185,129,0.3)]"
+                    : "border-[var(--border-primary)] hover:border-[var(--border-secondary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_#444]"
                     }`}
                 >
                   <div
@@ -145,7 +148,7 @@ export const SkinsView: React.FC<SkinsViewProps> = ({
                     )}
                   </div>
 
-                  <div className="p-3 bg-black/60 border-t-4 border-black flex items-center justify-between gap-2">
+                  <div className="p-3 bg-black/60 border-t-[var(--border-width)] border-[var(--border-primary)] flex items-center justify-between gap-2">
                     {editingId === item.id ? (
                       <div className="flex-1 flex gap-2">
                         <input

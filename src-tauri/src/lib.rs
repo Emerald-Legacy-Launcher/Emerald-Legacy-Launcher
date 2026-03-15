@@ -25,6 +25,15 @@ pub struct AppConfig {
     pub linux_runner: Option<String>,
     pub skin_base64: Option<String>,
     pub skin_library: Option<Vec<SkinLibraryItem>>,
+    pub theme_style_id: Option<String>,
+    pub theme_palette_id: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct ThemePalette {
+    pub id: String,
+    pub name: String,
+    pub colors: serde_json::Value,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -67,7 +76,59 @@ fn load_config(app: AppHandle) -> AppConfig {
     
     let old_path = get_app_dir(&app).join("emerald_legacy_config.txt");
     let username = fs::read_to_string(old_path).unwrap_or_else(|_| "Player".into());
-    AppConfig { username, linux_runner: None, skin_base64: None, skin_library: None }
+    AppConfig { 
+        username, 
+        linux_runner: None, 
+        skin_base64: None, 
+        skin_library: None,
+        theme_style_id: None,
+        theme_palette_id: None,
+    }
+}
+
+#[tauri::command]
+fn get_external_palettes(app: AppHandle) -> Vec<ThemePalette> {
+    let themes_dir = get_app_dir(&app).join("themes");
+    let _ = fs::create_dir_all(&themes_dir);
+    let mut palettes = Vec::new();
+    
+    if let Ok(entries) = fs::read_dir(themes_dir) {
+        for entry in entries.flatten() {
+            let path = entry.path();
+            if path.extension().and_then(|s| s.to_str()) == Some("json") {
+                if let Ok(content) = fs::read_to_string(&path) {
+                    if let Ok(palette) = serde_json::from_str::<ThemePalette>(&content) {
+                        palettes.push(palette);
+                    }
+                }
+            }
+        }
+    }
+    palettes
+}
+
+#[tauri::command]
+fn import_theme(app: AppHandle) -> Result<String, String> {
+    let file = rfd::FileDialog::new()
+        .add_filter("JSON Theme", &["json"])
+        .set_title("Import Theme Palette")
+        .pick_file();
+
+    if let Some(src_path) = file {
+        let content = fs::read_to_string(&src_path).map_err(|e| e.to_string())?;
+        // Basic validation
+        let palette: ThemePalette = serde_json::from_str(&content).map_err(|_| "Invalid theme JSON format".to_string())?;
+        
+        let themes_dir = get_app_dir(&app).join("themes");
+        let _ = fs::create_dir_all(&themes_dir);
+        
+        let dest_path = themes_dir.join(format!("{}.json", palette.id));
+        fs::write(dest_path, content).map_err(|e| e.to_string())?;
+        
+        Ok(palette.name)
+    } else {
+        Err("CANCELED".into())
+    }
 }
 
 #[tauri::command]
@@ -280,7 +341,7 @@ pub fn run() {
         .plugin(tauri_plugin_gamepad::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
-        .invoke_handler(tauri::generate_handler![launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners])
+        .invoke_handler(tauri::generate_handler![launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme])
         .run(tauri::generate_context!())
         .expect("error");
 }
