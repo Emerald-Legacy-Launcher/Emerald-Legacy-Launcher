@@ -29,3 +29,5 @@ Thumbs.db
 
 /build-flatpak
 /.flatpak-builder
+/*.flatpak
+/emerald-repo
