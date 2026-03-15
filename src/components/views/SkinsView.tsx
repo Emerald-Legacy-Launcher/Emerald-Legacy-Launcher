@@ -84,19 +84,21 @@ export const SkinsView: React.FC<SkinsViewProps> = ({
           className="hidden"
         />
 
-        <button
-          onClick={() => { playSfx("wood click.wav"); fileInputRef.current?.click(); }}
-          className="legacy-btn w-full py-3 text-xl"
-        >
-          UPLOAD NEW SKIN
-        </button>
+        <div className="w-full flex flex-col gap-2 mt-4">
+          <button
+            onClick={() => { playSfx("wood click.wav"); fileInputRef.current?.click(); }}
+            className="legacy-btn w-full py-3 text-xl"
+          >
+            UPLOAD NEW SKIN
+          </button>
 
-        <button
-          onClick={() => { playSfx("pop.wav"); onSelectSkin(""); }}
-          className="legacy-btn w-full py-3 text-xl bg-red-900/20 hover:bg-red-900/40"
-        >
-          RESET SKIN
-        </button>
+          <button
+            onClick={() => { playSfx("pop.wav"); onSelectSkin(""); }}
+            className="legacy-btn px-6 py-2 text-sm !text-white !shadow-[inset_3px_3px_#ff5555,inset_-3px_-3px_#4a0000] hover:!bg-[#aa0000] transition-colors self-center"
+          >
+            RESET SKIN
+          </button>
+        </div>
 
         <p className="text-sm text-slate-400 italic text-center">
           Upload a 64x64 or 64x32 PNG file. It will be added to your library.
