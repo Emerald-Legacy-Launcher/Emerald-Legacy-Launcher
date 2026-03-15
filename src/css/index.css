@@ -33,7 +33,7 @@ body {
 }
 
 .legacy-text-shadow {
-  text-shadow: calc(2px * var(--shadow-intensity)) calc(2px * var(--shadow-intensity)) 0px rgba(0,0,0,calc(0.7 * var(--shadow-intensity)));
+  text-shadow: calc(2px * var(--shadow-intensity)) calc(2px * var(--shadow-intensity)) 0px rgba(0, 0, 0, calc(0.7 * var(--shadow-intensity)));
 }
 
 .legacy-toggle {
@@ -108,16 +108,23 @@ body {
   border-radius: var(--radius-base);
   backdrop-filter: blur(var(--backdrop-blur));
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 1.5em;
   padding-right: 2.5rem;
+  font-size: 1.25rem;
+}
+
+.legacy-select:focus {
+  outline: 4px solid var(--accent-primary);
+  outline-offset: 2px;
 }
 
 .legacy-select option {
-  background-color: #2a2a2a;
+  background-color: #1c1c1c;
   color: #ffffff;
+  padding: 1rem;
 }
 
 .mc-range {

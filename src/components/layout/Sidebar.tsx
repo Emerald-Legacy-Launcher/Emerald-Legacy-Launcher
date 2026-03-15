@@ -43,17 +43,17 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
 
       <button
         onClick={toggleSidebar}
-        className="absolute top-10 w-8 h-8 flex items-center justify-center cursor-pointer z-50 legacy-toggle rounded-full"
+        className={`absolute top-10 w-8 h-8 flex items-center justify-center cursor-pointer z-50 legacy-btn transition-all duration-300 drop-shadow-md`}
         style={{
-          left: collapsed ? "0px" : "256px",
+          left: collapsed ? "0px" : "240px",
+          borderRadius: "var(--radius-base)",
         }}
       >
         <svg
-          width="16" height="16" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"
+          width="12" height="12" viewBox="0 0 24 24" fill="currentColor"
           className={`transition-transform duration-300 ${collapsed ? "rotate-180" : ""}`}
         >
-          <polyline points="15 18 9 12 15 6"></polyline>
+          <path d="M18 2L6 12L18 22V2Z" />
         </svg>
       </button>
 
@@ -94,11 +94,11 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                 if (item.id !== "settings") updateAllStatus();
               }}
               className={`h-14 flex items-center justify-center transition-all duration-150 legacy-btn ${activeTab === item.id
-                  ? "scale-[1.02] brightness-110"
-                  : "opacity-90 hover:opacity-100 hover:scale-[1.02] active:scale-95"
+                ? "scale-[1.02] brightness-110"
+                : "opacity-90 hover:opacity-100 hover:scale-[1.02] active:scale-95"
                 }`}
             >
-              <span className={`text-xl tracking-wider legacy-text-shadow mt-1 transition-opacity ${activeTab === item.id ? "text-[var(--btn-text)] opacity-100" : "text-[var(--btn-text)] opacity-60"}`}>
+              <span className={`text-xl tracking-wider legacy-text-shadow mt-1 transition-all ${activeTab === item.id ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] opacity-80"}`}>
                 {item.label}
               </span>
             </button>
