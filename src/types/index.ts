@@ -11,14 +11,19 @@ export interface SkinLibraryItem {
   skinBase64: string;
 }
 
+import { ThemePalette } from "./theme";
+
 export interface AppConfig {
   username: string;
   linuxRunner?: string;
   showClickParticles?: boolean;
   skinBase64?: string;
   skinLibrary?: SkinLibraryItem[];
-  themeId?: string;
+  themeStyleId?: string;
+  themePaletteId?: string;
 }
+
+export type { ThemePalette };
 
 export interface InstalledStatus {
   [key: string]: boolean;

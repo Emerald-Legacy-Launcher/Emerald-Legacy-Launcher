@@ -1,7 +1,7 @@
 import React from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useTheme } from "@/components/theme/ThemeContext";
-import { THEMES } from "@/types/theme";
+import { THEME_STYLES } from "@/types/theme";
 import { AppConfig } from "@/types";
 
 // Icons
@@ -32,8 +32,10 @@ interface SettingsViewProps {
   showTeamModal: () => void;
   showPanorama: boolean;
   setShowPanorama: (show: boolean) => void;
-  themeId: string;
-  setThemeId: (id: string) => void;
+  themeStyleId: string;
+  setThemeStyleId: (id: string) => void;
+  themePaletteId: string;
+  setThemePaletteId: (id: string) => void;
   saveConfig: (overrides: Partial<AppConfig>) => void;
 }
 
@@ -56,11 +58,13 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   showTeamModal,
   showPanorama,
   setShowPanorama,
-  themeId,
-  setThemeId,
+  themeStyleId,
+  setThemeStyleId,
+  themePaletteId,
+  setThemePaletteId,
   saveConfig
 }) => {
-  const { setTheme } = useTheme();
+  const { setStyle, setPalette, availablePalettes, refreshPalettes } = useTheme();
 
   return (
     <div className="w-full max-w-3xl bg-[var(--bg-primary)] p-8 md:p-12 border-[var(--border-width)] border-[var(--border-primary)] h-full overflow-y-auto no-scrollbar animate-in fade-in rounded-[var(--radius-base)] shadow-2xl">
@@ -174,27 +178,65 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           <label className="text-xl flex items-center gap-4">
             Visual Effects
           </label>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-2">
-              <span className="text-xl">Interface Theme</span>
+              <span className="text-xl">UI Style</span>
               <select
-                value={themeId}
+                value={themeStyleId}
                 onChange={(e) => {
-                  const newThemeId = e.target.value;
+                  const newStyleId = e.target.value;
                   playSfx("click.wav");
-                  setThemeId(newThemeId);
-                  setTheme(newThemeId);
-                  saveConfig({ themeId: newThemeId });
+                  setThemeStyleId(newStyleId);
+                  setStyle(newStyleId);
+                  saveConfig({ themeStyleId: newStyleId, themePaletteId });
                 }}
                 className="w-full legacy-select p-4 text-2xl outline-none focus:border-[var(--accent-primary)]"
               >
-                {THEMES.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.name}
+                {THEME_STYLES.map((s) => (
+                  <option key={s.id} value={s.id}>
+                    {s.name}
                   </option>
                 ))}
               </select>
             </div>
+
+            <div className="flex flex-col gap-2">
+              <span className="text-xl">Color Palette</span>
+              <select
+                value={themePaletteId}
+                onChange={(e) => {
+                  const newPaletteId = e.target.value;
+                  playSfx("click.wav");
+                  setThemePaletteId(newPaletteId);
+                  setPalette(newPaletteId);
+                  saveConfig({ themeStyleId, themePaletteId: newPaletteId });
+                }}
+                className="w-full legacy-select p-4 text-2xl outline-none focus:border-[var(--accent-primary)]"
+              >
+                {availablePalettes.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.name}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={async () => {
+                  try {
+                    const name = await TauriService.importTheme();
+                    if (name !== "CANCELED") {
+                      playSfx("wood click.wav");
+                      await refreshPalettes();
+                    }
+                  } catch (e) {
+                    console.error("Import failed:", e);
+                  }
+                }}
+                className="legacy-btn mt-2 py-2 text-sm uppercase"
+              >
+                Import Theme JSON
+              </button>
+            </div>
+
             <div className="flex items-center justify-between">
               <span className="text-xl">Click Visual Effect</span>
               <button

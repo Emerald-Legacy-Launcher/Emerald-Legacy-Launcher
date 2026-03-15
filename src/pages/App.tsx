@@ -51,7 +51,8 @@ export default function App() {
     isMuted, setIsMuted,
     showClickParticles, setShowClickParticles,
     showPanorama, setShowPanorama,
-    themeId, setThemeId
+    themeStyleId, setThemeStyleId,
+    themePaletteId, setThemePaletteId
   } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
   const { installedStatus, installingInstance, downloadProgress, executeInstall, updateAllStatus } = useGameInstances(playSfx, setMcNotif);
@@ -123,7 +124,8 @@ export default function App() {
       linuxRunner: (overrides.linuxRunner !== undefined ? overrides.linuxRunner : selectedRunner) || undefined,
       skinBase64: overrides.skinBase64 !== undefined ? overrides.skinBase64 : skinBase64,
       skinLibrary: overrides.skinLibrary !== undefined ? overrides.skinLibrary : skinLibrary,
-      themeId: overrides.themeId !== undefined ? overrides.themeId : themeId,
+      themeStyleId: overrides.themeStyleId !== undefined ? overrides.themeStyleId : themeStyleId,
+      themePaletteId: overrides.themePaletteId !== undefined ? overrides.themePaletteId : themePaletteId,
     };
     TauriService.saveConfig(config);
   };
@@ -175,103 +177,105 @@ export default function App() {
   return (
     <ThemeProvider>
       <div className="h-screen flex select-none overflow-hidden bg-black text-white" onContextMenu={(e) => e.preventDefault()}>
-      {showClickParticles && <ClickParticles />}
-      <audio ref={musicRef} onEnded={playRandomMusic} />
+        {showClickParticles && <ClickParticles />}
+        <audio ref={musicRef} onEnded={playRandomMusic} />
 
-      <Sidebar
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        playSfx={playSfx}
-        updateAllStatus={updateAllStatus}
-        installingInstance={installingInstance}
-        downloadProgress={downloadProgress}
-        showTeamModal={() => setTeamModalVisible(true)}
-        gamepadConnected={gamepadConnected}
-      />
+        <Sidebar
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          playSfx={playSfx}
+          updateAllStatus={updateAllStatus}
+          installingInstance={installingInstance}
+          downloadProgress={downloadProgress}
+          showTeamModal={() => setTeamModalVisible(true)}
+          gamepadConnected={gamepadConnected}
+        />
 
-      <main className="flex-1 relative h-full flex flex-col overflow-hidden">
-        {showPanorama && <PanoramaBackground />}
+        <main className="flex-1 relative h-full flex flex-col overflow-hidden">
+          {showPanorama && <PanoramaBackground />}
 
-        <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
-          {activeTab === "home" && (
-            <HomeView
-              username={username}
-              selectedInstance={selectedInstance}
-              setSelectedInstance={setSelectedInstance}
-              installedStatus={installedStatus}
-              isRunning={isRunning}
-              installingInstance={installingInstance}
-              fadeAndLaunch={fadeAndLaunch}
+          <div className="flex-1 flex flex-col items-center justify-center p-6 md:p-12 relative z-10 overflow-hidden w-full">
+            {activeTab === "home" && (
+              <HomeView
+                username={username}
+                selectedInstance={selectedInstance}
+                setSelectedInstance={setSelectedInstance}
+                installedStatus={installedStatus}
+                isRunning={isRunning}
+                installingInstance={installingInstance}
+                fadeAndLaunch={fadeAndLaunch}
+                playSfx={playSfx}
+                setActiveTab={setActiveTab}
+                skinBase64={skinBase64}
+                gamepadConnected={gamepadConnected}
+              />
+            )}
+
+            {activeTab === "versions" && (
+              <VersionsView
+                installedStatus={installedStatus}
+                installingInstance={installingInstance}
+                executeInstall={executeInstall}
+                setReinstallModal={setReinstallModal}
+                playSfx={playSfx}
+              />
+            )}
+
+            {activeTab === "skins" && (
+              <SkinsView
+                skinBase64={skinBase64}
+                skinLibrary={skinLibrary}
+                playSfx={playSfx}
+                onSelectSkin={selectSkin}
+                onAddSkin={addSkinToLibrary}
+                onRenameSkin={renameSkinInLibrary}
+                onDeleteSkin={deleteSkinFromLibrary}
+                gamepadConnected={gamepadConnected}
+              />
+            )}
+
+            {activeTab === "settings" && (
+              <SettingsView
+                username={username}
+                setUsername={setUsername}
+                isLinux={isLinux}
+                selectedRunner={selectedRunner}
+                setSelectedRunner={setSelectedRunner}
+                availableRunners={availableRunners}
+                musicVol={musicVol}
+                setMusicVol={setMusicVol}
+                sfxVol={sfxVol}
+                setSfxVol={setSfxVol}
+                isMuted={isMuted}
+                setIsMuted={setIsMuted}
+                showClickParticles={showClickParticles}
+                setShowClickParticles={setShowClickParticles}
+                playSfx={playSfx}
+                showTeamModal={() => setTeamModalVisible(true)}
+                showPanorama={showPanorama}
+                setShowPanorama={setShowPanorama}
+                themeStyleId={themeStyleId}
+                setThemeStyleId={setThemeStyleId}
+                themePaletteId={themePaletteId}
+                setThemePaletteId={setThemePaletteId}
+                saveConfig={saveFullConfig}
+              />
+            )}
+          </div>
+
+          {reinstallModal && (
+            <ReinstallModal
+              data={reinstallModal}
+              onCancel={() => setReinstallModal(null)}
+              onConfirm={(id, url) => { executeInstall(id, url); setReinstallModal(null); }}
               playSfx={playSfx}
-              setActiveTab={setActiveTab}
-              skinBase64={skinBase64}
-              gamepadConnected={gamepadConnected}
             />
           )}
 
-          {activeTab === "versions" && (
-            <VersionsView
-              installedStatus={installedStatus}
-              installingInstance={installingInstance}
-              executeInstall={executeInstall}
-              setReinstallModal={setReinstallModal}
-              playSfx={playSfx}
-            />
-          )}
-
-          {activeTab === "skins" && (
-            <SkinsView
-              skinBase64={skinBase64}
-              skinLibrary={skinLibrary}
-              playSfx={playSfx}
-              onSelectSkin={selectSkin}
-              onAddSkin={addSkinToLibrary}
-              onRenameSkin={renameSkinInLibrary}
-              onDeleteSkin={deleteSkinFromLibrary}
-              gamepadConnected={gamepadConnected}
-            />
-          )}
-
-          {activeTab === "settings" && (
-            <SettingsView
-              username={username}
-              setUsername={setUsername}
-              isLinux={isLinux}
-              selectedRunner={selectedRunner}
-              setSelectedRunner={setSelectedRunner}
-              availableRunners={availableRunners}
-              musicVol={musicVol}
-              setMusicVol={setMusicVol}
-              sfxVol={sfxVol}
-              setSfxVol={setSfxVol}
-              isMuted={isMuted}
-              setIsMuted={setIsMuted}
-              showClickParticles={showClickParticles}
-              setShowClickParticles={setShowClickParticles}
-              playSfx={playSfx}
-              showTeamModal={() => setTeamModalVisible(true)}
-              showPanorama={showPanorama}
-              setShowPanorama={setShowPanorama}
-              themeId={themeId}
-              setThemeId={setThemeId}
-              saveConfig={saveFullConfig}
-            />
-          )}
-        </div>
-
-        {reinstallModal && (
-          <ReinstallModal
-            data={reinstallModal}
-            onCancel={() => setReinstallModal(null)}
-            onConfirm={(id, url) => { executeInstall(id, url); setReinstallModal(null); }}
-            playSfx={playSfx}
-          />
-        )}
-
-        {teamModalVisible && <TeamModal onClose={() => setTeamModalVisible(false)} playSfx={playSfx} />}
-        {mcNotif && <Notification title={mcNotif.t} message={mcNotif.m} />}
-      </main>
-    </div>
+          {teamModalVisible && <TeamModal onClose={() => setTeamModalVisible(false)} playSfx={playSfx} />}
+          {mcNotif && <Notification title={mcNotif.t} message={mcNotif.m} />}
+        </main>
+      </div>
     </ThemeProvider>
   );
 }

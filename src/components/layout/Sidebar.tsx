@@ -125,8 +125,8 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
           onClick={() => { playSfx("click.wav"); showTeamModal(); }}
           className={`${installingInstance ? "pt-6" : "mt-auto pt-6"} flex flex-col items-center border-t-[var(--border-width)] border-[var(--border-primary)] cursor-pointer group`}
         >
-          <span className="text-stone-400 text-[10px] uppercase tracking-widest">Developed by</span>
-          <span className="text-white text-sm font-bold group-hover:text-[#55FF55] transition-colors legacy-text-shadow mt-1">
+          <span className="text-stone-400 text-[10px] uppercase tracking-widest attribution-font">Developed by</span>
+          <span className="text-white text-sm font-bold group-hover:text-[#55FF55] transition-colors legacy-text-shadow mt-1 attribution-font">
             Emerald Team
           </span>
         </div>

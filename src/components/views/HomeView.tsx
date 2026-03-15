@@ -66,7 +66,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
 
       <div className="absolute top-2 flex flex-col items-center">
         <div className="relative">
-          <div 
+          <div
             className="w-[540px] h-32 bg-contain bg-center bg-no-repeat drop-shadow-2xl select-none"
             style={{ backgroundImage: "var(--menu-title-url)" }}
           />
@@ -91,7 +91,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
         <div className="hidden lg:flex flex-col items-center animate-in slide-in-from-left duration-700 relative">
           <div className="relative w-[300px] h-[550px] flex flex-col items-center">
             <div className="absolute top-[60px] z-20 bg-black/40 px-6 py-2 border-2 border-white/10 backdrop-blur-sm">
-              <span className="text-2xl legacy-text-shadow opacity-80">{name}</span>
+              <span className="text-2xl legacy-text-shadow opacity-80 nametag-font">{name}</span>
             </div>
 
             <div className="w-[300px] h-[450px] mt-auto">

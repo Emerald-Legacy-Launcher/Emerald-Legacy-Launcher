@@ -186,6 +186,12 @@ body {
   box-shadow: inset 2px 2px rgba(255, 255, 255, 0.2), inset -2px -2px rgba(0, 0, 0, 0.2);
 }
 
+.splash-text,
+.attribution-font,
+.nametag-font {
+  font-family: 'Minecraft' !important;
+}
+
 .splash-text {
   color: #ffff00 !important;
   text-shadow: 3px 3px 0px #3f3f00;

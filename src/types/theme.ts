@@ -1,37 +1,77 @@
-export interface ThemeColors {
-  "--bg-primary": string;
-  "--bg-secondary": string;
-  "--bg-tertiary": string;
-  "--accent-primary": string;
-  "--accent-secondary": string;
-  "--text-primary": string;
-  "--text-secondary": string;
-  "--border-primary": string;
-  "--border-secondary": string;
-  "--btn-bg": string;
-  "--btn-shadow-light": string;
-  "--btn-shadow-dark": string;
-  "--btn-text": string;
-  "--focus-outline": string;
-  "--font-primary": string;
-  "--radius-base": string;
-  "--border-width": string;
-  "--backdrop-blur": string;
-  "--shadow-intensity": string;
-  "--pixel-rendering": string;
-  "--logo-url": string;
-  "--menu-title-url": string;
-  "--btn-bg-image": string;
-  "--btn-hover-bg-image": string;
-}
-
-export interface Theme {
+export interface ThemePalette {
   id: string;
   name: string;
-  colors: ThemeColors;
+  colors: {
+    "--bg-primary": string;
+    "--bg-secondary": string;
+    "--bg-tertiary": string;
+    "--accent-primary": string;
+    "--accent-secondary": string;
+    "--text-primary": string;
+    "--text-secondary": string;
+    "--border-primary": string;
+    "--border-secondary": string;
+    "--btn-bg": string;
+    "--btn-shadow-light": string;
+    "--btn-shadow-dark": string;
+    "--btn-text": string;
+    "--focus-outline": string;
+  };
 }
 
-export const THEMES: Theme[] = [
+export interface ThemeStyle {
+  id: string;
+  name: string;
+  properties: {
+    "--font-primary": string;
+    "--radius-base": string;
+    "--border-width": string;
+    "--backdrop-blur": string;
+    "--shadow-intensity": string;
+    "--pixel-rendering": string;
+    "--logo-url": string;
+    "--menu-title-url": string;
+    "--btn-bg-image": string;
+    "--btn-hover-bg-image": string;
+  };
+}
+
+export const THEME_STYLES: ThemeStyle[] = [
+  {
+    id: "legacy",
+    name: "Legacy Console",
+    properties: {
+      "--font-primary": "'Minecraft', sans-serif",
+      "--radius-base": "0px",
+      "--border-width": "4px",
+      "--backdrop-blur": "0px",
+      "--shadow-intensity": "1",
+      "--pixel-rendering": "pixelated",
+      "--logo-url": "url('/images/logo.png')",
+      "--menu-title-url": "url('/images/MenuTitle.png')",
+      "--btn-bg-image": "url('/images/button.png')",
+      "--btn-hover-bg-image": "url('/images/button_highlighted.png')",
+    },
+  },
+  {
+    id: "modern",
+    name: "Modern UI",
+    properties: {
+      "--font-primary": "'Inter', 'Outfit', sans-serif",
+      "--radius-base": "0px",
+      "--border-width": "2px",
+      "--backdrop-blur": "10px",
+      "--shadow-intensity": "0",
+      "--pixel-rendering": "auto",
+      "--logo-url": "url('/images/logo.png')",
+      "--menu-title-url": "url('/images/MenuTitle.png')",
+      "--btn-bg-image": "none",
+      "--btn-hover-bg-image": "none",
+    },
+  },
+];
+
+export const THEME_PALETTES: ThemePalette[] = [
   {
     id: "emerald",
     name: "Emerald (Default)",
@@ -50,80 +90,10 @@ export const THEMES: Theme[] = [
       "--btn-shadow-dark": "#555555",
       "--btn-text": "#3e3e3e",
       "--focus-outline": "#55FF55",
-      "--font-primary": "'Minecraft', sans-serif",
-      "--radius-base": "0px",
-      "--border-width": "4px",
-      "--backdrop-blur": "0px",
-      "--shadow-intensity": "1",
-      "--pixel-rendering": "pixelated",
-      "--logo-url": "url('/images/logo.png')",
-      "--menu-title-url": "url('/images/MenuTitle.png')",
-      "--btn-bg-image": "url('/images/button.png')",
-      "--btn-hover-bg-image": "url('/images/button_highlighted.png')",
     },
   },
   {
-    id: "modern",
-    name: "Modern Emerald",
-    colors: {
-      "--bg-primary": "#121212",
-      "--bg-secondary": "#1c1c1c",
-      "--bg-tertiary": "#2e2e2e",
-      "--accent-primary": "#47a036",
-      "--accent-secondary": "#2c6322",
-      "--text-primary": "#ffffff",
-      "--text-secondary": "#bebebe",
-      "--border-primary": "#000000",
-      "--border-secondary": "#484848",
-      "--btn-bg": "#bebebe",
-      "--btn-shadow-light": "rgba(255, 255, 255, 0.4)",
-      "--btn-shadow-dark": "rgba(0, 0, 0, 0.4)",
-      "--btn-text": "#313131",
-      "--focus-outline": "#ffffff",
-      "--font-primary": "'Inter', 'Outfit', sans-serif",
-      "--radius-base": "0px",
-      "--border-width": "2px",
-      "--backdrop-blur": "0px",
-      "--shadow-intensity": "0",
-      "--pixel-rendering": "auto",
-      "--logo-url": "url('/images/logo.png')",
-      "--menu-title-url": "url('/images/MenuTitle.png')",
-      "--btn-bg-image": "none",
-      "--btn-hover-bg-image": "none",
-    },
-  },
-  {
-    id: "classic",
-    name: "Classic Legacy",
-    colors: {
-      "--bg-primary": "#4e4e4e",
-      "--bg-secondary": "#2a2a2a",
-      "--bg-tertiary": "#3a3a3a",
-      "--accent-primary": "#ffffff",
-      "--accent-secondary": "#bebebe",
-      "--text-primary": "#ffffff",
-      "--text-secondary": "#aaaaaa",
-      "--border-primary": "#000000",
-      "--border-secondary": "#555555",
-      "--btn-bg": "#bebebe",
-      "--btn-shadow-light": "#ffffff",
-      "--btn-shadow-dark": "#555555",
-      "--btn-text": "#3e3e3e",
-      "--focus-outline": "#ffffff",
-      "--font-primary": "'Minecraft', sans-serif",
-      "--radius-base": "0px",
-      "--border-width": "4px",
-      "--backdrop-blur": "0px",
-      "--shadow-intensity": "1",
-      "--pixel-rendering": "pixelated",
-      "--logo-url": "url('/images/logo.png')",
-      "--menu-title-url": "url('/images/MenuTitle.png')",
-      "--btn-bg-image": "url('/images/button.png')",
-      "--btn-hover-bg-image": "url('/images/button_highlighted.png')",
-    },
-  },
-  {
-    id: "dark",
+    id: "midnight",
     name: "Midnight",
     colors: {
       "--bg-primary": "#000000",
@@ -140,16 +110,26 @@ export const THEMES: Theme[] = [
       "--btn-shadow-dark": "#000000",
       "--btn-text": "#ffffff",
       "--focus-outline": "#777777",
-      "--font-primary": "'Minecraft', sans-serif",
-      "--radius-base": "0px",
-      "--border-width": "4px",
-      "--backdrop-blur": "0px",
-      "--shadow-intensity": "1",
-      "--pixel-rendering": "pixelated",
-      "--logo-url": "url('/images/logo.png')",
-      "--menu-title-url": "url('/images/MenuTitle.png')",
-      "--btn-bg-image": "url('/images/button.png')",
-      "--btn-hover-bg-image": "url('/images/button_highlighted.png')",
+    },
+  },
+  {
+    id: "classic_legacy",
+    name: "Classic Slate",
+    colors: {
+      "--bg-primary": "#4e4e4e",
+      "--bg-secondary": "#2a2a2a",
+      "--bg-tertiary": "#3a3a3a",
+      "--accent-primary": "#ffffff",
+      "--accent-secondary": "#bebebe",
+      "--text-primary": "#ffffff",
+      "--text-secondary": "#aaaaaa",
+      "--border-primary": "#000000",
+      "--border-secondary": "#555555",
+      "--btn-bg": "#bebebe",
+      "--btn-shadow-light": "#ffffff",
+      "--btn-shadow-dark": "#555555",
+      "--btn-text": "#3e3e3e",
+      "--focus-outline": "#ffffff",
     },
   },
   {
@@ -170,16 +150,6 @@ export const THEMES: Theme[] = [
       "--btn-shadow-dark": "#ffffff",
       "--btn-text": "#ffffff",
       "--focus-outline": "#ffffff",
-      "--font-primary": "'Minecraft', sans-serif",
-      "--radius-base": "0px",
-      "--border-width": "4px",
-      "--backdrop-blur": "0px",
-      "--shadow-intensity": "1",
-      "--pixel-rendering": "pixelated",
-      "--logo-url": "url('/images/logo.png')",
-      "--menu-title-url": "url('/images/MenuTitle.png')",
-      "--btn-bg-image": "url('/images/button.png')",
-      "--btn-hover-bg-image": "url('/images/button_highlighted.png')",
     },
   },
 ];
