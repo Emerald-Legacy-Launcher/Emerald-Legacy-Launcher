@@ -24,6 +24,7 @@ interface SettingsViewProps {
   username: string;
   setUsername: (name: string) => void;
   isLinux: boolean;
+  isMac: boolean;
   selectedRunner: string;
   setSelectedRunner: (runner: string) => void;
   availableRunners: Runner[];
@@ -44,6 +45,10 @@ interface SettingsViewProps {
   setThemeStyleId: (id: string) => void;
   themePaletteId: string;
   setThemePaletteId: (id: string) => void;
+  macosCompatReady: boolean;
+  setMacosCompatReady: (ready: boolean) => void;
+  appleSiliconPerformanceBoost: boolean;
+  setAppleSiliconPerformanceBoost: (enabled: boolean) => void;
   saveConfig: (overrides: Partial<AppConfig>) => void;
 }
 
@@ -51,6 +56,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   username,
   setUsername,
   isLinux,
+  isMac,
   selectedRunner,
   setSelectedRunner,
   availableRunners,
@@ -71,6 +77,10 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   setThemeStyleId,
   themePaletteId,
   setThemePaletteId,
+  macosCompatReady,
+  setMacosCompatReady,
+  appleSiliconPerformanceBoost,
+  setAppleSiliconPerformanceBoost,
   saveConfig
 }) => {
   const { setStyle, setPalette, availablePalettes, refreshPalettes } = useTheme();
@@ -79,10 +89,33 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const [runnerProgress, setRunnerProgress] = useState(0);
   const [runnerError, setRunnerError] = useState<string | null>(null);
 
+  interface MacosSetupProgressPayload {
+    stage: string;
+    message: string;
+    percent?: number | null;
+  }
+
+  const [macSetupInProgress, setMacSetupInProgress] = useState(false);
+  const [macSetupStage, setMacSetupStage] = useState<string>("idle");
+  const [macSetupMessage, setMacSetupMessage] = useState<string>("");
+  const [macSetupProgress, setMacSetupProgress] = useState<number>(0);
+  const [macSetupError, setMacSetupError] = useState<string | null>(null);
+
   useEffect(() => {
     const unlisten = listen<number>("runner-download-progress", (e) =>
       setRunnerProgress(Math.round(e.payload))
     );
+    return () => { unlisten.then((f) => f()); };
+  }, []);
+
+  useEffect(() => {
+    const unlisten = listen<MacosSetupProgressPayload>("macos-setup-progress", (e) => {
+      setMacSetupStage(e.payload.stage);
+      setMacSetupMessage(e.payload.message);
+      if (typeof e.payload.percent === "number") {
+        setMacSetupProgress(Math.round(e.payload.percent));
+      }
+    });
     return () => { unlisten.then((f) => f()); };
   }, []);
 
@@ -107,6 +140,27 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
     }
     setDownloadingRunner(null);
     setShowRunnerPanel(false);
+  };
+
+  const handleSetupMacosCompatibility = async () => {
+    setMacSetupInProgress(true);
+    setMacSetupError(null);
+    setMacSetupProgress(0);
+    setMacSetupStage("starting");
+    setMacSetupMessage("Démarrage du setup…");
+    try {
+      await TauriService.setupMacosRuntime();
+      setMacosCompatReady(true);
+      setMacSetupProgress(100);
+      setMacSetupStage("done");
+      setMacSetupMessage("Setup terminé.");
+      playSfx("orb.ogg");
+    } catch (e: any) {
+      setMacSetupError(String(e));
+      setMacSetupStage("error");
+    } finally {
+      setMacSetupInProgress(false);
+    }
   };
 
   return (
@@ -217,6 +271,74 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {isMac && (
+          <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
+            <label className="text-xl text-slate-400 italic">macOS Compatibility</label>
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-4">
+                <span className="text-lg">
+                  Status: {macosCompatReady ? "Installed" : "Not installed"}
+                </span>
+                <button
+                  onClick={() => {
+                    playSfx("wood click.wav");
+                    handleSetupMacosCompatibility();
+                  }}
+                  className="legacy-btn px-5 py-2 text-base"
+                  disabled={macSetupInProgress}
+                >
+                  {macosCompatReady ? "Re-run Setup" : "Setup macOS Compatibility"}
+                </button>
+              </div>
+
+              {(macSetupInProgress || macSetupStage !== "idle") && (
+                <div className="mt-2">
+                  <div className="mc-progress-container">
+                    <div className="mc-progress-bar" style={{ width: `${macSetupProgress}%` }} />
+                  </div>
+                  <div className="flex items-center justify-between mt-1">
+                    <span className="text-xs text-slate-400">{macSetupMessage}</span>
+                    <span className="text-xs text-slate-400">{macSetupProgress}%</span>
+                  </div>
+                </div>
+              )}
+
+              {macSetupError && (
+                <p className="text-red-500 text-sm mt-2">{macSetupError}</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {isMac && (
+          <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
+            <label className="text-xl text-slate-400 italic">macOS Optimization</label>
+            <div className="flex items-center justify-between gap-6">
+              <div className="flex flex-col">
+                <span className="text-lg">Apple Silicon Performance Boost (Experimental)</span>
+                <span className="text-xs text-slate-400">
+                  Active des variables Wine/Metal agressives (Apple Silicon uniquement).
+                </span>
+              </div>
+              <button
+                onClick={() => {
+                  const next = !appleSiliconPerformanceBoost;
+                  setAppleSiliconPerformanceBoost(next);
+                  playSfx("wood click.wav");
+                  saveConfig({ appleSiliconPerformanceBoost: next });
+                }}
+                className="legacy-btn px-6 py-2 min-w-[140px] transition-all"
+                style={{
+                  backgroundColor: appleSiliconPerformanceBoost ? "var(--accent-primary)" : "var(--btn-bg)",
+                  color: appleSiliconPerformanceBoost ? "#ffffff" : "var(--btn-text)"
+                }}
+              >
+                {appleSiliconPerformanceBoost ? "ENABLED" : "DISABLED"}
+              </button>
+            </div>
           </div>
         )}
 

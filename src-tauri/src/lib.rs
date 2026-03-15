@@ -1,7 +1,7 @@
 use std::fs;
 use std::io::Write;
 use std::path::PathBuf;
-use std::process::Command;
+use std::process::{Command, Stdio};
 use tauri::{AppHandle, Emitter, State, Manager};
 use futures_util::StreamExt;
 use std::sync::Arc;
@@ -27,6 +27,7 @@ pub struct AppConfig {
     pub skin_library: Option<Vec<SkinLibraryItem>>,
     pub theme_style_id: Option<String>,
     pub theme_palette_id: Option<String>,
+    pub apple_silicon_performance_boost: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -46,10 +47,76 @@ pub struct Runner {
 
 pub struct DownloadState { pub token: Arc<Mutex<Option<CancellationToken>>> }
 
+#[derive(Serialize, Clone, Debug)]
+#[serde(rename_all = "camelCase")]
+struct MacosSetupProgressPayload {
+    stage: String,
+    message: String,
+    percent: Option<f64>,
+}
+
 fn get_app_dir(app: &AppHandle) -> PathBuf {
     app.path().app_local_data_dir().unwrap_or_else(|_| {
         std::env::current_dir().unwrap_or_default()
     })
+}
+
+#[cfg(target_os = "macos")]
+fn get_macos_runtime_dir(app: &AppHandle) -> PathBuf {
+    let home = app
+        .path()
+        .home_dir()
+        .ok()
+        .or_else(|| std::env::var("HOME").ok().map(PathBuf::from))
+        .unwrap_or_else(|| PathBuf::from("/"));
+    home.join("Library")
+        .join("Application Support")
+        .join("Emerald")
+        .join("runtime")
+}
+
+fn emit_macos_setup_progress(window: &tauri::Window, stage: &str, message: String, percent: Option<f64>) {
+    let _ = window.emit(
+        "macos-setup-progress",
+        MacosSetupProgressPayload {
+            stage: stage.to_string(),
+            message,
+            percent,
+        },
+    );
+}
+
+fn find_executable_recursive(root: &PathBuf, file_name: &str) -> Option<PathBuf> {
+    let entries = fs::read_dir(root).ok()?;
+    for entry in entries.flatten() {
+        let path = entry.path();
+        if path.is_dir() {
+            if let Some(found) = find_executable_recursive(&path, file_name) {
+                return Some(found);
+            }
+            continue;
+        }
+
+        if path.file_name().and_then(|n| n.to_str()) == Some(file_name) {
+            return Some(path);
+        }
+    }
+    None
+}
+
+#[cfg(target_os = "macos")]
+fn unix_path_to_wine_z_path(unix_path: &PathBuf) -> String {
+    let p = unix_path.to_string_lossy();
+    let mut out = String::with_capacity(p.len() + 3);
+    out.push_str("Z:");
+    for ch in p.chars() {
+        if ch == '/' {
+            out.push('\\');
+        } else {
+            out.push(ch);
+        }
+    }
+    out
 }
 
 fn get_config_path(app: &AppHandle) -> PathBuf {
@@ -83,6 +150,7 @@ fn load_config(app: AppHandle) -> AppConfig {
         skin_library: None,
         theme_style_id: None,
         theme_palette_id: None,
+        apple_silicon_performance_boost: None,
     }
 }
 
@@ -301,6 +369,167 @@ async fn cancel_download(state: State<'_, DownloadState>) -> Result<(), String> 
 }
 
 #[tauri::command]
+async fn setup_macos_runtime(window: tauri::Window, app: AppHandle) -> Result<(), String> {
+    #[cfg(not(target_os = "macos"))]
+    {
+        let _ = window;
+        let _ = app;
+        return Err("macOS runtime setup is only supported on macOS.".into());
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        #[derive(Deserialize)]
+        struct GithubAsset {
+            name: String,
+            browser_download_url: String,
+        }
+
+        #[derive(Deserialize)]
+        struct GithubRelease {
+            tag_name: String,
+            assets: Vec<GithubAsset>,
+        }
+
+        emit_macos_setup_progress(&window, "resolving", "Resolving macOS compatibility runtime…".into(), None);
+
+        let client = reqwest::Client::new();
+        let release_text = client
+            .get("https://api.github.com/repos/Gcenx/game-porting-toolkit/releases/latest")
+            .header("User-Agent", "Emerald-Legacy-Launcher")
+            .send()
+            .await
+            .map_err(|e| e.to_string())?
+            .error_for_status()
+            .map_err(|e| e.to_string())?
+            .text()
+            .await
+            .map_err(|e| e.to_string())?;
+
+        let release: GithubRelease = serde_json::from_str(&release_text).map_err(|e| e.to_string())?;
+        let asset = release
+            .assets
+            .iter()
+            .find(|a| a.name.ends_with(".tar.xz") || a.name.ends_with(".tar.gz"))
+            .ok_or_else(|| "No compatible runtime asset found in latest release.".to_string())?;
+
+        let runtime_dir = get_macos_runtime_dir(&app);
+        let toolkit_dir = runtime_dir.join("toolkit");
+        let prefix_dir = runtime_dir.join("prefix");
+        fs::create_dir_all(&runtime_dir).map_err(|e| e.to_string())?;
+
+        if toolkit_dir.exists() {
+            let _ = fs::remove_dir_all(&toolkit_dir);
+        }
+        fs::create_dir_all(&toolkit_dir).map_err(|e| e.to_string())?;
+
+        emit_macos_setup_progress(
+            &window,
+            "downloading",
+            format!("Downloading runtime ({})…", release.tag_name),
+            Some(0.0),
+        );
+
+        let archive_path = runtime_dir.join(format!("gptk_{}", asset.name));
+        let response = client
+            .get(&asset.browser_download_url)
+            .header("User-Agent", "Emerald-Legacy-Launcher")
+            .send()
+            .await
+            .map_err(|e| e.to_string())?
+            .error_for_status()
+            .map_err(|e| e.to_string())?;
+
+        let total_size = response.content_length().unwrap_or(0) as f64;
+        let mut file = fs::File::create(&archive_path).map_err(|e| e.to_string())?;
+        let mut downloaded = 0.0;
+        let mut last_percent_sent: i64 = -1;
+        let mut stream = response.bytes_stream();
+
+        while let Some(chunk) = stream.next().await {
+            let chunk = chunk.map_err(|e| e.to_string())?;
+            file.write_all(&chunk).map_err(|e| e.to_string())?;
+            downloaded += chunk.len() as f64;
+
+            if total_size > 0.0 {
+                let percent = (downloaded / total_size * 100.0).clamp(0.0, 100.0);
+                let rounded = percent.floor() as i64;
+                if rounded != last_percent_sent {
+                    last_percent_sent = rounded;
+                    emit_macos_setup_progress(
+                        &window,
+                        "downloading",
+                        format!("Downloading runtime… {}%", rounded),
+                        Some(percent),
+                    );
+                }
+            }
+        }
+        drop(file);
+
+        emit_macos_setup_progress(&window, "extracting", "Extracting runtime…".into(), None);
+        let status = Command::new("tar")
+            .args([
+                "-xf",
+                archive_path.to_str().ok_or_else(|| "Invalid archive path".to_string())?,
+                "-C",
+                toolkit_dir.to_str().ok_or_else(|| "Invalid toolkit path".to_string())?,
+            ])
+            .stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .status()
+            .map_err(|e| e.to_string())?;
+        let _ = fs::remove_file(&archive_path);
+        if !status.success() {
+            return Err("Extraction failed".into());
+        }
+
+        fs::create_dir_all(&prefix_dir).map_err(|e| e.to_string())?;
+
+        let wine_binary = find_executable_recursive(&toolkit_dir, "wine64")
+            .or_else(|| find_executable_recursive(&toolkit_dir, "wine"))
+            .ok_or_else(|| "Unable to locate wine binary inside runtime.".to_string())?;
+
+        let wine_bin_dir = wine_binary
+            .parent()
+            .map(|pp| pp.to_path_buf())
+            .ok_or_else(|| "Unable to locate wine bin directory inside runtime.".to_string())?;
+
+        emit_macos_setup_progress(&window, "initializing", "Initializing Wine prefix…".into(), None);
+
+        let mut cmd = Command::new(&wine_binary);
+        cmd.arg("wineboot");
+        cmd.arg("-u");
+        cmd.env("WINEPREFIX", &prefix_dir);
+        cmd.env("WINEARCH", "win64");
+        cmd.env("WINEDEBUG", "-all");
+        cmd.env("WINEESYNC", "1");
+        cmd.env("WINEDLLOVERRIDES", "winemenubuilder.exe=d;mscoree,mshtml=");
+        cmd.env("MTL_HUD_ENABLED", "0");
+        cmd.env(
+            "PATH",
+            format!(
+                "{}:{}",
+                wine_bin_dir.to_string_lossy(),
+                std::env::var("PATH").unwrap_or_default()
+            ),
+        );
+        cmd.stdin(Stdio::null())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null());
+
+        let status = cmd.status().map_err(|e| e.to_string())?;
+        if !status.success() {
+            return Err("Wine prefix initialization failed".into());
+        }
+
+        emit_macos_setup_progress(&window, "done", "Setup complete.".into(), Some(100.0));
+        Ok(())
+    }
+}
+
+#[tauri::command]
 #[allow(non_snake_case)]
 async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, url: String, instanceId: String) -> Result<String, String> {
     let root = get_app_dir(&app);
@@ -431,8 +660,82 @@ async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
 
     #[cfg(not(target_os = "linux"))]
     {
-        let _ = Command::new(&game_exe).spawn().map_err(|e| e.to_string())?;
-        Ok(())
+        #[cfg(target_os = "macos")]
+        {
+            let runtime_dir = get_macos_runtime_dir(&app);
+            let toolkit_dir = runtime_dir.join("toolkit");
+            let prefix_dir = runtime_dir.join("prefix");
+
+            if !toolkit_dir.exists() || !prefix_dir.exists() {
+                return Err("macOS Compatibility is not set up. Open Settings and run Setup macOS Compatibility.".into());
+            }
+
+            let gptk_no_hud = find_executable_recursive(&toolkit_dir, "gameportingtoolkit-no-hud")
+                .or_else(|| find_executable_recursive(&toolkit_dir, "gameportingtoolkit"));
+
+            let wine_binary = find_executable_recursive(&toolkit_dir, "wine64")
+                .or_else(|| find_executable_recursive(&toolkit_dir, "wine"))
+                .ok_or_else(|| "Unable to locate wine binary inside runtime.".to_string())?;
+
+            let wine_bin_dir = wine_binary
+                .parent()
+                .map(|pp| pp.to_path_buf())
+                .ok_or_else(|| "Unable to locate wine bin directory inside runtime.".to_string())?;
+
+            let mut cmd = if let Some(wrapper) = gptk_no_hud {
+                let win_path = unix_path_to_wine_z_path(&game_exe);
+                let mut c = Command::new(wrapper);
+                c.arg(&prefix_dir);
+                c.arg(win_path);
+                c
+            } else {
+                let mut c = Command::new(&wine_binary);
+                c.env("WINEPREFIX", &prefix_dir);
+                c.arg(&game_exe);
+                c
+            };
+
+            cmd.current_dir(&instance_dir);
+            cmd.env("WINEPREFIX", &prefix_dir);
+            cmd.env("WINEDEBUG", "-all");
+            let perf_boost = config.apple_silicon_performance_boost.unwrap_or(false);
+            if perf_boost {
+                #[cfg(target_arch = "aarch64")]
+                {
+                    cmd.env("WINE_MSYNC", "1");
+                    cmd.env("MVK_ALLOW_METAL_FENCES", "1");
+                }
+                #[cfg(not(target_arch = "aarch64"))]
+                {
+                    cmd.env("WINEESYNC", "1");
+                }
+            } else {
+                cmd.env("WINEESYNC", "1");
+            }
+            cmd.env("WINEDLLOVERRIDES", "winemenubuilder.exe=d;mscoree,mshtml=");
+            cmd.env("MTL_HUD_ENABLED", "0");
+            cmd.env("MVK_CONFIG_RESUME_LOST_DEVICE", "1");
+            cmd.env(
+                "PATH",
+                format!(
+                    "{}:{}",
+                    wine_bin_dir.to_string_lossy(),
+                    std::env::var("PATH").unwrap_or_default()
+                ),
+            );
+            cmd.stdin(Stdio::null())
+                .stdout(Stdio::null())
+                .stderr(Stdio::null());
+
+            cmd.spawn().map_err(|e| e.to_string())?;
+            Ok(())
+        }
+
+        #[cfg(all(not(target_os = "macos"), not(target_os = "linux")))]
+        {
+            let _ = Command::new(&game_exe).spawn().map_err(|e| e.to_string())?;
+            Ok(())
+        }
     }
 }
 
@@ -442,7 +745,7 @@ pub fn run() {
         .plugin(tauri_plugin_gamepad::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
-        .invoke_handler(tauri::generate_handler![launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner])
+        .invoke_handler(tauri::generate_handler![setup_macos_runtime, launch_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner])
         .run(tauri::generate_context!())
         .expect("error");
 }
