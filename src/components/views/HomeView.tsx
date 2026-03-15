@@ -66,10 +66,9 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
 
       <div className="absolute top-2 flex flex-col items-center">
         <div className="relative">
-          <img
-            src="/images/MenuTitle.png"
-            className="w-[540px] drop-shadow-2xl select-none"
-            alt="Minecraft"
+          <div 
+            className="w-[540px] h-32 bg-contain bg-center bg-no-repeat drop-shadow-2xl select-none"
+            style={{ backgroundImage: "var(--menu-title-url)" }}
           />
 
           <div className="absolute bottom-8 right-6 w-0 h-0 flex items-center justify-center z-20">
@@ -102,7 +101,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
             <button
               onClick={() => { playSfx("click.wav"); setActiveTab("skins"); }}
               onMouseEnter={() => playSfx("hover")}
-              className="mt-6 group relative flex items-center justify-center w-[200px] h-[42px] transition-transform duration-100 bg-[url('/images/button.png')] hover:bg-[url('/images/button_highlighted.png')] hover:scale-105 shadow-2xl bg-[length:100%_100%] bg-center bg-no-repeat z-30"
+              className="mt-6 group relative flex items-center justify-center w-[200px] h-[48px] transition-transform duration-100 legacy-btn hover:scale-105 shadow-2xl z-30 font-bold"
             >
               <span className="text-[18px] tracking-wider text-[#d0d0d0] group-hover:text-white legacy-text-shadow" style={{ fontFamily: "Minecraft, sans-serif" }}>
                 Change Skin
@@ -111,7 +110,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
           </div>
         </div>
 
-        <div className="w-[600px] p-10 bg-black/60 backdrop-blur-md border-4 border-stone-800 shadow-2xl">
+        <div className="w-[600px] p-10 bg-black/60 backdrop-blur-[var(--backdrop-blur)] border-[var(--border-width)] border-[var(--border-secondary)] shadow-2xl rounded-[var(--radius-base)]">
           {hasGame ? (
             <div className="flex flex-col gap-8">
               <select
@@ -120,7 +119,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
                   playSfx("click.wav");
                   setSelectedInstance(e.target.value);
                 }}
-                className="w-full bg-[#bebebe] border-4 border-black p-3 text-2xl text-[#3e3e3e] shadow-[inset_4px_4px_#fff,inset_-4px_-4px_#555] outline-none cursor-pointer"
+                className="w-full legacy-select p-3 text-2xl outline-none cursor-pointer"
               >
                 {installedVersions.map(v => (
                   <option key={v.id} value={v.id}>{v.name}</option>
@@ -131,9 +130,9 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
                 onClick={fadeAndLaunch}
                 disabled={isLocked}
                 onMouseEnter={() => playSfx("hover")}
-                className={`h-20 text-4xl text-[#3e3e3e] hover:text-white legacy-text-shadow transition-all bg-[length:100%_100%] bg-no-repeat flex items-center justify-center gap-4 ${isLocked
-                  ? "bg-[url('/images/button.png')] opacity-50 grayscale cursor-default"
-                  : "bg-[url('/images/button.png')] hover:bg-[url('/images/button_highlighted.png')] hover:scale-[1.02] active:scale-95 cursor-pointer"
+                className={`h-20 text-4xl text-[var(--btn-text)] hover:text-white legacy-text-shadow transition-all legacy-btn flex items-center justify-center gap-4 ${isLocked
+                  ? "opacity-50 grayscale cursor-default"
+                  : "hover:scale-[1.02] active:scale-95 cursor-pointer"
                   }`}
               >
                 {gamepadConnected && !isLocked && (
@@ -147,7 +146,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
               <h2 className="text-3xl text-red-500 legacy-text-shadow uppercase">Missing Game Files</h2>
               <button
                 onClick={() => { playSfx("click.wav"); setActiveTab("versions"); }}
-                className="w-3/4 h-16 text-2xl bg-[url('/images/button.png')] bg-[length:100%_100%] hover:bg-[url('/images/button_highlighted.png')] active:scale-95 transition-all text-[#3e3e3e] hover:text-white legacy-text-shadow"
+                className="w-3/4 h-16 text-2xl legacy-btn active:scale-95 transition-all text-[var(--btn-text)] hover:text-white legacy-text-shadow"
               >
                 Check Versions
               </button>

@@ -63,8 +63,8 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const { setTheme } = useTheme();
 
   return (
-    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
-      <h2 className="text-5xl mb-8 border-b-4 border-white/20 pb-4">Settings</h2>
+    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-[var(--border-width)] border-[var(--border-primary)] h-full overflow-y-auto no-scrollbar animate-in fade-in backdrop-blur-[var(--backdrop-blur)] rounded-[var(--radius-base)]">
+      <h2 className="text-5xl mb-8 border-b-[var(--border-width)] border-[var(--border-secondary)] pb-4">Settings</h2>
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-4">
           <label className="text-xl text-slate-400 italic">In-game Username</label>
@@ -73,7 +73,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
               type="text"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              className="flex-1 bg-black border-4 border-slate-700 p-4 text-3xl outline-none focus:border-emerald-500"
+              className="flex-1 bg-black border-[var(--border-width)] border-[var(--border-secondary)] p-4 text-3xl outline-none focus:border-[var(--accent-primary)] rounded-[var(--radius-base)]"
             />
             <button
               onClick={() => {
@@ -125,7 +125,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-4 border-black shadow-[inset_4px_4px_var(--border-secondary)]">
+        <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
           <label className="text-xl flex items-center gap-4">
             <Icons.Volume level={musicVol} /> Audio Controls
           </label>
@@ -170,7 +170,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </button>
         </div>
 
-        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+        <div className="flex flex-col gap-4 bg-[var(--bg-tertiary)] p-6 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--btn-shadow-light)] rounded-[var(--radius-base)]">
           <label className="text-xl flex items-center gap-4">
             Visual Effects
           </label>
@@ -186,7 +186,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   setTheme(newThemeId);
                   saveConfig({ themeId: newThemeId });
                 }}
-                className="w-full legacy-select p-4 text-2xl outline-none focus:border-emerald-500"
+                className="w-full legacy-select p-4 text-2xl outline-none focus:border-[var(--accent-primary)]"
               >
                 {THEMES.map((t) => (
                   <option key={t.id} value={t.id}>
@@ -225,7 +225,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="about-section border-4 border-black bg-[var(--bg-secondary)] p-6 shadow-[inset_4px_4px_var(--border-secondary)]">
+        <div className="about-section border-[var(--border-width)] border-[var(--border-primary)] bg-[var(--bg-secondary)] p-6 shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_var(--border-secondary)] rounded-[var(--radius-base)]">
           <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">
             About the project
           </h3>

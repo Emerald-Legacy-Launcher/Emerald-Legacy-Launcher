@@ -2,21 +2,25 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Outfit:wght@400;700&display=swap');
+
 @font-face {
   font-family: 'Minecraft';
   src: url('/fonts/Mojangles.ttf') format('truetype');
 }
 
 * {
-  border-radius: 0 !important;
-  font-family: 'Minecraft', sans-serif !important;
-  image-rendering: pixelated;
+  border-radius: var(--radius-base);
+  font-family: var(--font-primary) !important;
+  image-rendering: var(--pixel-rendering, pixelated);
   font-weight: normal !important;
+  transition: backdrop-filter 0.3s ease, border-radius 0.3s ease, background 0.3s ease;
 }
 
 body {
   margin: 0;
   background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -29,26 +33,46 @@ body {
 }
 
 .legacy-text-shadow {
-  text-shadow: 2px 2px 0px #3f3f3f;
+  text-shadow: calc(2px * var(--shadow-intensity)) calc(2px * var(--shadow-intensity)) 0px rgba(0,0,0,calc(0.7 * var(--shadow-intensity)));
+}
+
+.legacy-toggle {
+  background-color: var(--bg-tertiary);
+  border: var(--border-width) solid var(--border-secondary);
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+}
+
+.legacy-toggle:hover {
+  background-color: var(--accent-primary);
+  color: var(--bg-primary);
+  transform: scale(1.1);
 }
 
 .legacy-btn {
-  transition: all 0.1s;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--btn-bg);
-  border: 4px solid var(--border-primary) !important;
-  box-shadow: inset 4px 4px var(--btn-shadow-light), inset -4px -4px var(--btn-shadow-dark) !important;
+  background-color: var(--btn-bg);
+  background-image: var(--btn-bg-image);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border: var(--border-width) solid var(--border-primary) !important;
+  box-shadow: inset calc(4px * var(--shadow-intensity)) calc(4px * var(--shadow-intensity)) var(--btn-shadow-light), inset calc(-4px * var(--shadow-intensity)) calc(-4px * var(--shadow-intensity)) var(--btn-shadow-dark) !important;
   color: var(--btn-text) !important;
   cursor: pointer;
+  border-radius: var(--radius-base);
+  backdrop-filter: blur(var(--backdrop-blur));
 }
 
 .legacy-btn:hover:not(:disabled) {
-  background: var(--btn-bg);
-  filter: brightness(1.1);
-  outline: 4px solid #fff;
-  outline-offset: -8px;
+  background-color: var(--btn-bg);
+  background-image: var(--btn-hover-bg-image);
+  filter: brightness(1.2);
+  outline: calc(4px * var(--shadow-intensity)) solid #fff;
+  outline-offset: calc(-8px * var(--shadow-intensity));
+  transform: translateY(calc(-2px * (1 - var(--shadow-intensity))));
 }
 
 .legacy-btn:active:not(:disabled) {
@@ -76,11 +100,24 @@ body {
 }
 
 .legacy-select {
-  background: var(--btn-bg);
-  border: 4px solid var(--border-primary);
-  color: var(--btn-text);
-  box-shadow: inset 4px 4px var(--btn-shadow-light), inset -4px -4px var(--btn-shadow-dark);
+  background-color: var(--btn-bg) !important;
+  border: var(--border-width) solid var(--border-primary);
+  color: var(--btn-text) !important;
+  box-shadow: inset calc(4px * var(--shadow-intensity)) calc(4px * var(--shadow-intensity)) var(--btn-shadow-light), inset calc(-4px * var(--shadow-intensity)) calc(-4px * var(--shadow-intensity)) var(--btn-shadow-dark);
   cursor: pointer;
+  border-radius: var(--radius-base);
+  backdrop-filter: blur(var(--backdrop-blur));
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1.5em;
+  padding-right: 2.5rem;
+}
+
+.legacy-select option {
+  background-color: #2a2a2a;
+  color: #ffffff;
 }
 
 .mc-range {
@@ -89,8 +126,9 @@ body {
   width: 100%;
   height: 8px;
   background: var(--border-primary);
-  border: 2px solid var(--border-secondary);
+  border: calc(max(1px, var(--border-width) / 2)) solid var(--border-secondary);
   outline: none;
+  border-radius: var(--radius-base);
 }
 
 .mc-range::-webkit-slider-thumb {
@@ -99,18 +137,21 @@ body {
   width: 16px;
   height: 32px;
   background: var(--btn-bg);
-  border: 2px solid var(--border-primary);
-  box-shadow: inset 2px 2px var(--btn-shadow-light), inset -2px -2px var(--btn-shadow-dark);
+  border: calc(max(1px, var(--border-width) / 2)) solid var(--border-primary);
+  box-shadow: inset calc(2px * var(--shadow-intensity)) calc(2px * var(--shadow-intensity)) var(--btn-shadow-light), inset calc(-2px * var(--shadow-intensity)) calc(-2px * var(--shadow-intensity)) var(--btn-shadow-dark);
   cursor: pointer;
+  border-radius: calc(var(--radius-base) / 2);
 }
 
 .mc-progress-container {
   background: var(--bg-tertiary);
-  border: 4px solid var(--border-primary);
+  border: var(--border-width) solid var(--border-primary);
   height: 32px;
   display: flex;
   align-items: center;
   padding: 0 4px;
+  border-radius: var(--radius-base);
+  backdrop-filter: blur(var(--backdrop-blur));
 }
 
 .mc-progress-bar {
