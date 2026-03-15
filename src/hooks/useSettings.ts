@@ -6,6 +6,7 @@ export const useSettings = () => {
   const [isMuted, setIsMuted] = useState(localStorage.getItem("isMuted") === "true");
   const [showClickParticles, setShowClickParticles] = useState(localStorage.getItem("showClickParticles") !== "false");
   const [showPanorama, setShowPanorama] = useState(localStorage.getItem("showPanorama") !== "false");
+  const [themeId, setThemeId] = useState(localStorage.getItem("themeId") || "emerald");
 
   useEffect(() => {
     localStorage.setItem("musicVol", musicVol.toString());
@@ -13,7 +14,8 @@ export const useSettings = () => {
     localStorage.setItem("isMuted", isMuted.toString());
     localStorage.setItem("showClickParticles", showClickParticles.toString());
     localStorage.setItem("showPanorama", showPanorama.toString());
-  }, [musicVol, sfxVol, isMuted, showClickParticles, showPanorama]);
+    localStorage.setItem("themeId", themeId);
+  }, [musicVol, sfxVol, isMuted, showClickParticles, showPanorama, themeId]);
 
   return {
     musicVol,
@@ -26,5 +28,7 @@ export const useSettings = () => {
     setShowClickParticles,
     showPanorama,
     setShowPanorama,
+    themeId,
+    setThemeId,
   };
 };

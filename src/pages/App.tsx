@@ -17,6 +17,7 @@ import RPC from "@/services/RPC";
 import { AppConfig, Runner, ReinstallModalData, McNotification, SkinLibraryItem } from "@/types/index";
 
 // Components
+import { ThemeProvider } from "@/components/theme/ThemeContext";
 import { Sidebar } from "@/components/layout/Sidebar";
 import { HomeView } from "@/components/views/HomeView";
 import { VersionsView } from "@/components/views/VersionsView";
@@ -49,7 +50,8 @@ export default function App() {
     sfxVol, setSfxVol,
     isMuted, setIsMuted,
     showClickParticles, setShowClickParticles,
-    showPanorama, setShowPanorama
+    showPanorama, setShowPanorama,
+    themeId, setThemeId
   } = useSettings();
   const { musicRef, playRandomMusic, playSfx, ensureAudio } = useAudio(musicVol, sfxVol, isMuted);
   const { installedStatus, installingInstance, downloadProgress, executeInstall, updateAllStatus } = useGameInstances(playSfx, setMcNotif);
@@ -121,6 +123,7 @@ export default function App() {
       linuxRunner: (overrides.linuxRunner !== undefined ? overrides.linuxRunner : selectedRunner) || undefined,
       skinBase64: overrides.skinBase64 !== undefined ? overrides.skinBase64 : skinBase64,
       skinLibrary: overrides.skinLibrary !== undefined ? overrides.skinLibrary : skinLibrary,
+      themeId: overrides.themeId !== undefined ? overrides.themeId : themeId,
     };
     TauriService.saveConfig(config);
   };
@@ -170,7 +173,8 @@ export default function App() {
   }
 
   return (
-    <div className="h-screen flex select-none overflow-hidden bg-black text-white" onContextMenu={(e) => e.preventDefault()}>
+    <ThemeProvider>
+      <div className="h-screen flex select-none overflow-hidden bg-black text-white" onContextMenu={(e) => e.preventDefault()}>
       {showClickParticles && <ClickParticles />}
       <audio ref={musicRef} onEnded={playRandomMusic} />
 
@@ -248,6 +252,9 @@ export default function App() {
               showTeamModal={() => setTeamModalVisible(true)}
               showPanorama={showPanorama}
               setShowPanorama={setShowPanorama}
+              themeId={themeId}
+              setThemeId={setThemeId}
+              saveConfig={saveFullConfig}
             />
           )}
         </div>
@@ -265,5 +272,6 @@ export default function App() {
         {mcNotif && <Notification title={mcNotif.t} message={mcNotif.m} />}
       </main>
     </div>
+    </ThemeProvider>
   );
 }

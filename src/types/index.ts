@@ -17,6 +17,7 @@ export interface AppConfig {
   showClickParticles?: boolean;
   skinBase64?: string;
   skinLibrary?: SkinLibraryItem[];
+  themeId?: string;
 }
 
 export interface InstalledStatus {

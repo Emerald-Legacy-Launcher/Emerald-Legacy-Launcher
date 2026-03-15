@@ -1,5 +1,8 @@
 import React from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useTheme } from "@/components/theme/ThemeContext";
+import { THEMES } from "@/types/theme";
+import { AppConfig } from "@/types";
 
 // Icons
 import { Icons } from "@/components/Icons";
@@ -29,6 +32,9 @@ interface SettingsViewProps {
   showTeamModal: () => void;
   showPanorama: boolean;
   setShowPanorama: (show: boolean) => void;
+  themeId: string;
+  setThemeId: (id: string) => void;
+  saveConfig: (overrides: Partial<AppConfig>) => void;
 }
 
 export const SettingsView: React.FC<SettingsViewProps> = ({
@@ -50,7 +56,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   showTeamModal,
   showPanorama,
   setShowPanorama,
+  themeId,
+  setThemeId,
+  saveConfig
 }) => {
+  const { setTheme } = useTheme();
 
   return (
     <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-4 border-black h-full overflow-y-auto no-scrollbar animate-in fade-in">
@@ -115,7 +125,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         )}
 
-        <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
+        <div className="flex flex-col gap-4 bg-[var(--bg-secondary)] p-6 border-4 border-black shadow-[inset_4px_4px_var(--border-secondary)]">
           <label className="text-xl flex items-center gap-4">
             <Icons.Volume level={musicVol} /> Audio Controls
           </label>
@@ -162,9 +172,29 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
 
         <div className="flex flex-col gap-4 bg-[#2a2a2a] p-6 border-4 border-black shadow-[inset_4px_4px_#555]">
           <label className="text-xl flex items-center gap-4">
-            Visual Effects (Accessibility)
+            Visual Effects
           </label>
           <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <span className="text-xl">Interface Theme</span>
+              <select
+                value={themeId}
+                onChange={(e) => {
+                  const newThemeId = e.target.value;
+                  playSfx("click.wav");
+                  setThemeId(newThemeId);
+                  setTheme(newThemeId);
+                  saveConfig({ themeId: newThemeId });
+                }}
+                className="w-full legacy-select p-4 text-2xl outline-none focus:border-emerald-500"
+              >
+                {THEMES.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.name}
+                  </option>
+                ))}
+              </select>
+            </div>
             <div className="flex items-center justify-between">
               <span className="text-xl">Click Visual Effect</span>
               <button
@@ -195,7 +225,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
           </div>
         </div>
 
-        <div className="about-section border-4 border-black bg-[#2a2a2a] p-6 shadow-[inset_4px_4px_#555]">
+        <div className="about-section border-4 border-black bg-[var(--bg-secondary)] p-6 shadow-[inset_4px_4px_var(--border-secondary)]">
           <h3 className="text-2xl text-[#ffff55] mb-2 uppercase tracking-wide">
             About the project
           </h3>

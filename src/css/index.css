@@ -16,7 +16,7 @@
 
 body {
   margin: 0;
-  background: #0c0a09;
+  background: var(--bg-primary);
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -37,25 +37,26 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #bebebe;
-  border: 4px solid #000 !important;
-  box-shadow: inset 4px 4px #ffffff, inset -4px -4px #555555 !important;
-  color: #3e3e3e !important;
+  background: var(--btn-bg);
+  border: 4px solid var(--border-primary) !important;
+  box-shadow: inset 4px 4px var(--btn-shadow-light), inset -4px -4px var(--btn-shadow-dark) !important;
+  color: var(--btn-text) !important;
   cursor: pointer;
 }
 
 .legacy-btn:hover:not(:disabled) {
-  background: #d0d0d0;
+  background: var(--btn-bg);
+  filter: brightness(1.1);
   outline: 4px solid #fff;
   outline-offset: -8px;
 }
 
 .legacy-btn:active:not(:disabled) {
-  box-shadow: inset -4px -4px #ffffff, inset 4px 4px #555555 !important;
+  box-shadow: inset -4px -4px var(--btn-shadow-light), inset 4px 4px var(--btn-shadow-dark) !important;
 }
 
 :focus-visible {
-  outline: 6px solid #55FF55 !important;
+  outline: 6px solid var(--focus-outline) !important;
   outline-offset: 4px !important;
   box-shadow: 0 0 20px rgba(85, 255, 85, 0.4) !important;
   z-index: 50;
@@ -75,10 +76,10 @@ body {
 }
 
 .legacy-select {
-  background: #bebebe;
-  border: 4px solid #000;
-  color: #3e3e3e;
-  box-shadow: inset 4px 4px #ffffff, inset -4px -4px #555555;
+  background: var(--btn-bg);
+  border: 4px solid var(--border-primary);
+  color: var(--btn-text);
+  box-shadow: inset 4px 4px var(--btn-shadow-light), inset -4px -4px var(--btn-shadow-dark);
   cursor: pointer;
 }
 
@@ -87,8 +88,8 @@ body {
   appearance: none;
   width: 100%;
   height: 8px;
-  background: #000;
-  border: 2px solid #555;
+  background: var(--border-primary);
+  border: 2px solid var(--border-secondary);
   outline: none;
 }
 
@@ -97,15 +98,15 @@ body {
   appearance: none;
   width: 16px;
   height: 32px;
-  background: #bebebe;
-  border: 2px solid #000;
-  box-shadow: inset 2px 2px #fff, inset -2px -2px #555;
+  background: var(--btn-bg);
+  border: 2px solid var(--border-primary);
+  box-shadow: inset 2px 2px var(--btn-shadow-light), inset -2px -2px var(--btn-shadow-dark);
   cursor: pointer;
 }
 
 .mc-progress-container {
-  background: #313131;
-  border: 4px solid #000;
+  background: var(--bg-tertiary);
+  border: 4px solid var(--border-primary);
   height: 32px;
   display: flex;
   align-items: center;
@@ -113,9 +114,9 @@ body {
 }
 
 .mc-progress-bar {
-  background: #55FF55;
+  background: var(--accent-primary);
   height: 16px;
-  box-shadow: inset -2px -2px #00AA00, inset 2px 2px #AAFFAA;
+  box-shadow: inset -2px -2px var(--accent-secondary), inset 2px 2px var(--accent-primary);
 }
 
 .splash-text {

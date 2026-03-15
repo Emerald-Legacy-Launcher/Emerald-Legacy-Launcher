@@ -39,7 +39,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
   ];
 
   return (
-    <aside className={`flex-shrink-0 bg-[#2a2a2a] flex flex-col relative z-50 transition-all duration-300 border-black shadow-[inset_-4px_0_#555] ${collapsed ? "w-0 border-r-0" : "w-64 border-r-4"}`}>
+    <aside className={`flex-shrink-0 bg-[var(--bg-secondary)] flex flex-col relative z-50 transition-all duration-300 border-black shadow-[inset_-4px_0_var(--border-secondary)] ${collapsed ? "w-0 border-r-0" : "w-64 border-r-4"}`}>
       
       <button 
         onClick={toggleSidebar}
@@ -94,7 +94,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                   : "bg-[url('/images/button.png')] opacity-90 hover:opacity-100 hover:scale-[1.02] active:scale-95"
               }`}
             >
-              <span className={`text-xl tracking-wider legacy-text-shadow mt-1 ${activeTab === item.id ? "text-white" : "text-[#d0d0d0]"}`}>
+              <span className={`text-xl tracking-wider legacy-text-shadow mt-1 ${activeTab === item.id ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)]"}`}>
                 {item.label}
               </span>
             </button>
