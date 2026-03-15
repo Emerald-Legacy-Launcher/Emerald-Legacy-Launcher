@@ -57,7 +57,7 @@ export const THEME_STYLES: ThemeStyle[] = [
     id: "modern",
     name: "Modern UI",
     properties: {
-      "--font-primary": "'Inter', 'Outfit', sans-serif",
+      "--font-primary": "'Noto Sans', sans-serif",
       "--radius-base": "0px",
       "--border-width": "2px",
       "--backdrop-blur": "10px",
