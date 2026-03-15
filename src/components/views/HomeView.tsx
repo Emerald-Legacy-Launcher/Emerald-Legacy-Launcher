@@ -103,7 +103,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
               onMouseEnter={() => playSfx("hover")}
               className="mt-6 group relative flex items-center justify-center w-[200px] h-[48px] transition-transform duration-100 legacy-btn hover:scale-105 shadow-2xl z-30 font-bold"
             >
-              <span className="text-[18px] tracking-wider text-[#d0d0d0] group-hover:text-white legacy-text-shadow" style={{ fontFamily: "Minecraft, sans-serif" }}>
+              <span className="text-[18px] tracking-wider transition-all" style={{ fontFamily: "Minecraft, sans-serif" }}>
                 Change Skin
               </span>
             </button>
@@ -130,7 +130,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
                 onClick={fadeAndLaunch}
                 disabled={isLocked}
                 onMouseEnter={() => playSfx("hover")}
-                className={`h-20 text-4xl text-[var(--btn-text)] hover:text-white legacy-text-shadow transition-all legacy-btn flex items-center justify-center gap-4 ${isLocked
+                className={`h-20 text-4xl transition-all legacy-btn flex items-center justify-center gap-4 ${isLocked
                   ? "opacity-50 grayscale cursor-default"
                   : "hover:scale-[1.02] active:scale-95 cursor-pointer"
                   }`}
@@ -146,7 +146,7 @@ export const HomeView: React.FC<HomeViewProps> = (props) => {
               <h2 className="text-3xl text-red-500 legacy-text-shadow uppercase">Missing Game Files</h2>
               <button
                 onClick={() => { playSfx("click.wav"); setActiveTab("versions"); }}
-                className="w-3/4 h-16 text-2xl legacy-btn active:scale-95 transition-all text-[var(--btn-text)] hover:text-white legacy-text-shadow"
+                className="w-3/4 h-16 text-2xl legacy-btn active:scale-95 transition-all"
               >
                 Check Versions
               </button>

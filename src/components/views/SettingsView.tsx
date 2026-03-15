@@ -63,7 +63,7 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
   const { setTheme } = useTheme();
 
   return (
-    <div className="w-full max-w-3xl bg-black/80 p-8 md:p-12 border-[var(--border-width)] border-[var(--border-primary)] h-full overflow-y-auto no-scrollbar animate-in fade-in backdrop-blur-[var(--backdrop-blur)] rounded-[var(--radius-base)]">
+    <div className="w-full max-w-3xl bg-[var(--bg-primary)] p-8 md:p-12 border-[var(--border-width)] border-[var(--border-primary)] h-full overflow-y-auto no-scrollbar animate-in fade-in rounded-[var(--radius-base)] shadow-2xl">
       <h2 className="text-5xl mb-8 border-b-[var(--border-width)] border-[var(--border-secondary)] pb-4">Settings</h2>
       <div className="flex flex-col gap-10">
         <div className="flex flex-col gap-4">
@@ -202,7 +202,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   setShowClickParticles(!showClickParticles);
                   playSfx("wood click.wav");
                 }}
-                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showClickParticles ? "opacity-50" : ""}`}
+                className="legacy-btn px-6 py-2 min-w-[120px] transition-all"
+                style={{ 
+                  backgroundColor: showClickParticles ? "var(--accent-primary)" : "var(--btn-bg)",
+                  color: showClickParticles ? "#ffffff" : "var(--btn-text)"
+                }}
               >
                 {showClickParticles ? "ENABLED" : "DISABLED"}
               </button>
@@ -214,7 +218,11 @@ export const SettingsView: React.FC<SettingsViewProps> = ({
                   setShowPanorama(!showPanorama);
                   playSfx("wood click.wav");
                 }}
-                className={`legacy-btn px-6 py-2 min-w-[120px] ${!showPanorama ? "opacity-50" : ""}`}
+                className="legacy-btn px-6 py-2 min-w-[120px] transition-all"
+                style={{ 
+                  backgroundColor: showPanorama ? "var(--accent-primary)" : "var(--btn-bg)",
+                  color: showPanorama ? "#ffffff" : "var(--btn-text)"
+                }}
               >
                 {showPanorama ? "ENABLED" : "DISABLED"}
               </button>

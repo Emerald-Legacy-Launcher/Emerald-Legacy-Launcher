@@ -10,11 +10,11 @@
 }
 
 * {
-  border-radius: var(--radius-base);
+  border-radius: var(--radius-base) !important;
   font-family: var(--font-primary) !important;
   image-rendering: var(--pixel-rendering, pixelated);
   font-weight: normal !important;
-  transition: backdrop-filter 0.3s ease, border-radius 0.3s ease, background 0.3s ease;
+  transition: background 0.1s ease, transform 0.1s ease;
 }
 
 body {
@@ -37,16 +37,35 @@ body {
 }
 
 .legacy-toggle {
-  background-color: var(--bg-tertiary);
-  border: var(--border-width) solid var(--border-secondary);
+  background-color: #111111;
+  border: 2px solid #000000;
   color: var(--text-primary);
-  transition: all 0.2s ease;
+  width: 48px;
+  height: 24px;
+  position: relative;
+  cursor: pointer;
 }
 
-.legacy-toggle:hover {
+.legacy-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  background-color: #bebebe;
+  border: 2px solid #000000;
+  box-shadow: inset 2px 2px #fdfdfd, inset -2px -2px #515151;
+  transition: transform 0.1s steps(1);
+}
+
+.legacy-toggle.on {
   background-color: var(--accent-primary);
-  color: var(--bg-primary);
-  transform: scale(1.1);
+}
+
+.legacy-toggle.on::after {
+  transform: translateX(24px);
+  background-color: #ffffff;
 }
 
 .legacy-btn {
@@ -59,7 +78,7 @@ body {
   background-size: 100% 100%;
   background-repeat: no-repeat;
   border: var(--border-width) solid var(--border-primary) !important;
-  box-shadow: inset calc(4px * var(--shadow-intensity)) calc(4px * var(--shadow-intensity)) var(--btn-shadow-light), inset calc(-4px * var(--shadow-intensity)) calc(-4px * var(--shadow-intensity)) var(--btn-shadow-dark) !important;
+  box-shadow: inset 2px 2px #fdfdfd, inset -2px -2px #515151 !important;
   color: var(--btn-text) !important;
   cursor: pointer;
   border-radius: var(--radius-base);
@@ -69,10 +88,10 @@ body {
 .legacy-btn:hover:not(:disabled) {
   background-color: var(--btn-bg);
   background-image: var(--btn-hover-bg-image);
-  filter: brightness(1.2);
-  outline: calc(4px * var(--shadow-intensity)) solid #fff;
-  outline-offset: calc(-8px * var(--shadow-intensity));
-  transform: translateY(calc(-2px * (1 - var(--shadow-intensity))));
+  filter: brightness(1.1);
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+  transform: none;
 }
 
 .legacy-btn:active:not(:disabled) {
@@ -131,40 +150,40 @@ body {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 8px;
-  background: var(--border-primary);
-  border: calc(max(1px, var(--border-width) / 2)) solid var(--border-secondary);
+  height: 12px;
+  background: #111111;
+  border: none;
   outline: none;
-  border-radius: var(--radius-base);
+  border-radius: 0;
 }
 
 .mc-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 16px;
-  height: 32px;
-  background: var(--btn-bg);
-  border: calc(max(1px, var(--border-width) / 2)) solid var(--border-primary);
-  box-shadow: inset calc(2px * var(--shadow-intensity)) calc(2px * var(--shadow-intensity)) var(--btn-shadow-light), inset calc(-2px * var(--shadow-intensity)) calc(-2px * var(--shadow-intensity)) var(--btn-shadow-dark);
+  width: 12px;
+  height: 24px;
+  background: #bebebe;
+  border: 2px solid #000000;
+  box-shadow: inset 2px 2px rgba(255, 255, 255, 0.4), inset -2px -2px rgba(0, 0, 0, 0.4);
   cursor: pointer;
-  border-radius: calc(var(--radius-base) / 2);
+  border-radius: 0;
 }
 
 .mc-progress-container {
-  background: var(--bg-tertiary);
-  border: var(--border-width) solid var(--border-primary);
-  height: 32px;
+  background: #111111;
+  border: 2px solid #000000;
+  height: 24px;
   display: flex;
   align-items: center;
   padding: 0 4px;
-  border-radius: var(--radius-base);
-  backdrop-filter: blur(var(--backdrop-blur));
+  border-radius: 0;
+  backdrop-filter: none;
 }
 
 .mc-progress-bar {
   background: var(--accent-primary);
   height: 16px;
-  box-shadow: inset -2px -2px var(--accent-secondary), inset 2px 2px var(--accent-primary);
+  box-shadow: inset 2px 2px rgba(255, 255, 255, 0.2), inset -2px -2px rgba(0, 0, 0, 0.2);
 }
 
 .splash-text {

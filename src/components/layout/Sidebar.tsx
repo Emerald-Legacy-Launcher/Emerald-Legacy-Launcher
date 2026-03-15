@@ -98,7 +98,7 @@ export const Sidebar: React.FC<SidebarProps> = (props) => {
                 : "opacity-90 hover:opacity-100 hover:scale-[1.02] active:scale-95"
                 }`}
             >
-              <span className={`text-xl tracking-wider legacy-text-shadow mt-1 transition-all ${activeTab === item.id ? "text-[var(--text-primary)]" : "text-[var(--text-secondary)] opacity-80"}`}>
+              <span className="text-xl tracking-wider mt-1 transition-all">
                 {item.label}
               </span>
             </button>
