@@ -2,6 +2,7 @@ import { useState } from "react";
 
 // Services
 import { TauriService } from "@/services/tauri";
+import { PARTNER_SERVERS } from "@/services/versions";
 
 export const useLauncher = (
   selectedInstance: string,
@@ -33,7 +34,7 @@ export const useLauncher = (
     }
     setTimeout(async () => {
       try {
-        await TauriService.launchGame(selectedInstance);
+        await TauriService.launchGame(selectedInstance, PARTNER_SERVERS);
       } catch (e) {
         alert(`Failed to launch game: ${e}`);
       } finally {

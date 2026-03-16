@@ -1,12 +1,12 @@
 import { invoke } from "@tauri-apps/api/core";
 
 // Types
-import { AppConfig, Runner, ThemePalette } from "@/types/index";
+import { AppConfig, Runner, ThemePalette, McServer } from "@/types/index";
 
 export const TauriService = {
   loadConfig: () => invoke<AppConfig>("load_config"),
   saveConfig: (config: AppConfig) => invoke("save_config", { config }),
-  launchGame: (instanceId: string) => invoke("launch_game", { instanceId }),
+  launchGame: (instanceId: string, servers: McServer[]) => invoke("launch_game", { instanceId, servers }),
   setupMacosRuntime: () => invoke("setup_macos_runtime"),
   downloadAndInstall: (url: string, instanceId: string) => invoke("download_and_install", { url, instanceId }),
   checkGameInstalled: (instanceId: string) => invoke<boolean>("check_game_installed", { instanceId }),

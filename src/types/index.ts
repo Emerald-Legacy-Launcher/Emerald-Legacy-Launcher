@@ -1,3 +1,9 @@
+export interface McServer {
+  name: string;
+  ip: string;
+  port: number;
+}
+
 export interface Runner {
   id: string;
   name: string;

@@ -1,3 +1,13 @@
+import { McServer } from "@/types/index";
+
+export const PARTNER_SERVERS: McServer[] = [
+  {
+    name: "Kowhaifans Clubhouse",
+    ip: "kowhaifan.ddns.net",
+    port: 25565
+  }
+];
+
 export interface GameVersion {
   id: string;
   name: string;

@@ -10,9 +10,12 @@ use tokio_util::sync::CancellationToken;
 use tauri_plugin_opener::OpenerExt;
 use serde::{Deserialize, Serialize};
 
-const KOWHAIFAN_SERVER_NAME: &str = "Kowhaifans Clubhouse";
-const KOWHAIFAN_SERVER_IP: &str = "kowhaifan.ddns.net";
-const KOWHAIFAN_SERVER_PORT: u16 = 25565;
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct McServer {
+    pub name: String,
+    pub ip: String,
+    pub port: u16,
+}
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -564,7 +567,7 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
                 let file_name = entry.file_name();
                 let name_str = file_name.to_string_lossy();
                 
-                let keep_list = ["Windows64", "uid.dat", "username.txt", "settings.dat", "servers.dat", "servers.txt", "server.properties", "Common", "options.txt"];
+                let keep_list = ["Windows64", "uid.dat", "username.txt", "settings.dat", "servers.dat", "servers.txt", "server.properties", "Common", "options.txt", "servers.db"];
                 if !keep_list.contains(&name_str.as_ref()) {
                     let path = entry.path();
                     if path.is_dir() {
@@ -686,41 +689,48 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
     Ok("Success".into())
 }
 
-fn ensure_server_list(instance_dir: &PathBuf) {
+fn ensure_server_list(instance_dir: &PathBuf, servers: Vec<McServer>) {
     let servers_db = instance_dir.join("servers.db");
-    
-    let ip_bytes = KOWHAIFAN_SERVER_IP.as_bytes();
-    let name_bytes = KOWHAIFAN_SERVER_NAME.as_bytes();
-    
-    let mut record = Vec::new();
-    record.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
-    record.extend_from_slice(ip_bytes);
-    record.extend_from_slice(&KOWHAIFAN_SERVER_PORT.to_le_bytes());
-    record.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
-    record.extend_from_slice(name_bytes);
+    if servers.is_empty() { return; }
+    let mut records = Vec::new();
+    for server in &servers {
+        let ip_bytes = server.ip.as_bytes();
+        let name_bytes = server.name.as_bytes();
+        records.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
+        records.extend_from_slice(ip_bytes);
+        records.extend_from_slice(&server.port.to_le_bytes());
+        records.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
+        records.extend_from_slice(name_bytes);
+    }
 
     if !servers_db.exists() {
         let mut file_content = Vec::new();
         file_content.extend_from_slice(b"MCSV");
         file_content.extend_from_slice(&1u32.to_le_bytes()); // Version
-        file_content.extend_from_slice(&1u32.to_le_bytes()); // Count
-        file_content.append(&mut record);
+        file_content.extend_from_slice(&(servers.len() as u32).to_le_bytes()); // Count
+        file_content.append(&mut records);
         let _ = fs::write(&servers_db, file_content);
     } else {
         if let Ok(mut content) = fs::read(&servers_db) {
             if content.len() < 12 || &content[0..4] != b"MCSV" { return; }
-            
-            let mut already_added = false;
-            let count = u32::from_le_bytes(content[8..12].try_into().unwrap_or([0; 4]));
-            
-            if content.windows(ip_bytes.len()).any(|w| w == ip_bytes) {
-                already_added = true;
+            let mut count = u32::from_le_bytes(content[8..12].try_into().unwrap_or([0; 4]));
+            let mut modified = false;
+            for server in servers {
+                let ip_bytes = server.ip.as_bytes();
+                if !content.windows(ip_bytes.len()).any(|w| w == ip_bytes) {
+                    let name_bytes = server.name.as_bytes();
+                    content.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
+                    content.extend_from_slice(ip_bytes);
+                    content.extend_from_slice(&server.port.to_le_bytes());
+                    content.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
+                    content.extend_from_slice(name_bytes);
+                    count += 1;
+                    modified = true;
+                }
             }
             
-            if !already_added {
-                let new_count = (count + 1).to_le_bytes();
-                content[8..12].copy_from_slice(&new_count);
-                content.append(&mut record);
+            if modified {
+                content[8..12].copy_from_slice(&count.to_le_bytes());
                 let _ = fs::write(&servers_db, content);
             }
         }
@@ -729,15 +739,13 @@ fn ensure_server_list(instance_dir: &PathBuf) {
 
 #[tauri::command]
 #[allow(non_snake_case)]
-async fn launch_game(app: AppHandle, instanceId: String) -> Result<(), String> {
+async fn launch_game(app: AppHandle, instanceId: String, servers: Vec<McServer>) -> Result<(), String> {
     let root = get_app_dir(&app);
     let instance_dir = root.join("instances").join(&instanceId);
     let config = load_config(app.clone());
     let username = config.username;
-
     let _ = fs::write(instance_dir.join("username.txt"), &username);
-    ensure_server_list(&instance_dir);
-
+    ensure_server_list(&instance_dir, servers);
     if let Some(skin_data) = config.skin_base64 {
         use base64::{Engine as _, engine::general_purpose};
         let base64_str = skin_data.split(',').nth(1).unwrap_or(&skin_data);
