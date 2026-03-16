@@ -25,3 +25,4 @@ futures-util = "0.3"
 tokio-util = { version = "0.7.18", features = ["rt"] }
 base64 = "0.21"
 rfd = "0.15"
+libc = "0.2"

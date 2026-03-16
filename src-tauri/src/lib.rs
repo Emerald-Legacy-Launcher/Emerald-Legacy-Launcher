@@ -787,6 +787,9 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instanceId: St
                     tokio::process::Command::new(runner.path)
                 };
 
+                #[cfg(unix)]
+                cmd.process_group(0);
+
                 cmd.arg(&game_exe)
                    .current_dir(&instance_dir);
                 
@@ -858,6 +861,9 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instanceId: St
                 c
             };
 
+            #[cfg(unix)]
+            cmd.process_group(0);
+
             cmd.current_dir(&instance_dir);
             cmd.env("WINEPREFIX", &prefix_dir);
             cmd.env("WINEDEBUG", "-all");
@@ -921,6 +927,8 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instanceId: St
         #[cfg(all(not(target_os = "macos"), not(target_os = "linux")))]
         {
             let mut cmd = tokio::process::Command::new(&game_exe);
+            #[cfg(unix)]
+            cmd.process_group(0);
             cmd.current_dir(&instance_dir);
             let mut child = cmd.spawn().map_err(|e| e.to_string())?;
             {
@@ -953,6 +961,14 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instanceId: St
 async fn stop_game(state: State<'_, GameState>) -> Result<(), String> {
     let mut lock = state.child.lock().await;
     if let Some(mut child) = lock.take() {
+        #[cfg(unix)]
+        {
+            if let Some(pid) = child.id() {
+                unsafe {
+                    libc::kill(-(pid as i32), libc::SIGKILL);
+                }
+            }
+        }
         let _ = child.kill().await;
     }
     Ok(())
