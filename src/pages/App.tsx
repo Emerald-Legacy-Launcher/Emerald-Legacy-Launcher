@@ -12,16 +12,28 @@ import MarketplaceView from '../components/views/MarketplaceView';
 import SkinViewer from '../components/common/SkinViewer';
 import TeamModal from '../components/modals/TeamModal';
 import PanoramaBackground from '../components/common/PanoramaBackground';
+import { GamepadProvider } from '../components/common/GamepadContext';
+import { useGamepad } from '../hooks/useGamepad';
 
 const appWindow = getCurrentWindow();
 
 export default function App() {
+  return (
+    <GamepadProvider>
+      <AppContent />
+    </GamepadProvider>
+  );
+}
+
+const TABS = ['main', 'versions', 'skins', 'marketplace', 'themes', 'settings'];
+
+function AppContent() {
   const [showIntro, setShowIntro] = useState(true);
   const [logoAnimDone, setLogoAnimDone] = useState(false);
-  const [activeView, setActiveView] = useState('main'); 
+  const [activeView, setActiveView] = useState('main');
   const [isUiHidden, setIsUiHidden] = useState(false);
   const [showCredits, setShowCredits] = useState(false);
-  
+
   const [profile, setProfile] = useLocalStorage('lce-profile', 'TU75');
   const [installs, setInstalls] = useLocalStorage<string[]>('lce-installs', []);
   const [isDayTime, setIsDayTime] = useLocalStorage('lce-daytime', true);
@@ -40,7 +52,7 @@ export default function App() {
     "Legacy is back!", "Pixelated goodness!", "Console Edition vibe!", "100% Not Microsoft!",
     "Symmetry is key!", "Does anyone even read these?", "Task failed successfully.",
     "Hardware accelerated!", "It's a feature, not a bug.", "Look behind you.",
-    "Works on my machine.", "Now gluten-free!", "Mom, get the camera!", "Batteries not included.", 
+    "Works on my machine.", "Now gluten-free!", "Mom, get the camera!", "Batteries not included.",
     "May contain nuts.", "Press Alt+F4 for diamonds!", "Downloading more RAM...", "Reinventing the wheel!",
     "The cake is a lie.", "Powered by copious amounts of coffee.", "I'm running out of ideas.",
     "That's no moon...", "Now with 100% more nostalgia!", "Legacy is the new modern.",
@@ -54,18 +66,19 @@ export default function App() {
     { id: 'TU24', name: 'PLACEHOLDER_TITLE UPDATE', desc: 'TITLE_UPDATE_DESCRIPTION' },
     { id: 'TU19', name: 'PLACEHOLDER_TITLE UPDATE', desc: 'TITLE_UPDATE_DESCRIPTION' }
   ];
-  
-  const tracks = [ 
-      '/music/Blind Spots.ogg', 
-      '/music/Key.ogg', 
-      '/music/Living Mice.ogg', 
-      '/music/Oxygene.ogg', 
-      '/music/Subwoofer Lullaby.ogg' 
+
+  const tracks = [
+    '/music/Blind Spots.ogg',
+    '/music/Key.ogg',
+    '/music/Living Mice.ogg',
+    '/music/Oxygene.ogg',
+    '/music/Subwoofer Lullaby.ogg'
   ];
 
-  const playClickSound = () => { const a = new Audio('/sounds/click.wav'); a.volume = sfxVol/100; a.play().catch(()=>{}); };
-  const playBackSound = () => { const a = new Audio('/sounds/back_click.ogg'); a.volume = sfxVol/100; a.play().catch(()=>{}); };
-  const playSplashSound = () => { const a = new Audio('/sounds/splash_text_click.ogg'); a.volume = sfxVol/100; a.play().catch(()=>{}); };
+  const playClickSound = () => { const a = new Audio('/sounds/click.wav'); a.volume = sfxVol / 100; a.play().catch(() => { }); };
+  const playBackSound = () => { const a = new Audio('/sounds/back_click.ogg'); a.volume = sfxVol / 100; a.play().catch(() => { }); };
+  const playSfx = (file: string) => { const a = new Audio(`/sounds/${file}`); a.volume = sfxVol / 100; a.play().catch(() => { }); };
+  const playSplashSound = () => { const a = new Audio('/sounds/splash_text_click.ogg'); a.volume = sfxVol / 100; a.play().catch(() => { }); };
 
   const cycleSplash = () => {
     playSplashSound();
@@ -78,7 +91,12 @@ export default function App() {
     if (!installs.includes(id)) setInstalls([...installs, id]);
   };
 
-  const handleLaunch = () => console.log(`Preparing to launch profile: ${profile}`);
+  const { connected } = useGamepad({
+    activeTab: activeView,
+    tabs: TABS,
+    setActiveTab: setActiveView,
+    playSfx
+  });
 
   useEffect(() => {
     appWindow.show();
@@ -99,15 +117,15 @@ export default function App() {
     const handleEnded = () => setCurrentTrack((prev) => (prev + 1) % tracks.length);
     audio.addEventListener('ended', handleEnded);
     const playPromise = audio.play();
-    if (playPromise !== undefined) playPromise.catch(() => { document.addEventListener('click', () => audio.play(), {once:true}); });
+    if (playPromise !== undefined) playPromise.catch(() => { document.addEventListener('click', () => audio.play(), { once: true }); });
     setAudioElement(audio);
     return () => { audio.removeEventListener('ended', handleEnded); audio.pause(); };
-  }, [currentTrack, showIntro]); 
+  }, [currentTrack, showIntro]);
 
   useEffect(() => { if (audioElement) audioElement.volume = musicVol / 100; }, [musicVol, audioElement]);
 
   useEffect(() => {
-    invoke('save_config', { config: { username, skinBase64: skinUrl, themeStyleId: theme } }).catch(() => {});
+    invoke('save_config', { config: { username, skinBase64: skinUrl, themeStyleId: theme } }).catch(() => { });
   }, [username, skinUrl, theme, musicVol, sfxVol, vfxEnabled]);
 
   useEffect(() => {
@@ -117,6 +135,8 @@ export default function App() {
   }, []);
 
   const uiFade = { initial: { opacity: 0 }, animate: { opacity: 1 }, exit: { opacity: 0 }, transition: { duration: 0.3 } };
+
+  const handleLaunch = () => console.log(`Preparing to launch profile: ${profile}`);
 
   return (
     <div data-tauri-drag-region className="w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none">
@@ -137,14 +157,14 @@ export default function App() {
         {showCredits && <TeamModal isOpen={showCredits} onClose={() => setShowCredits(false)} playClickSound={playClickSound} playBackSound={playBackSound} />}
       </AnimatePresence>
 
-      <AnimatePresence mode="wait">
+      <AnimatePresence>
         {showIntro ? (
           <motion.div key="intro" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0, filter: "blur(12px)" }} className="flex flex-1 items-center justify-center z-10 pointer-events-none">
             <motion.img layoutId="mainLogo" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} src="/images/MenuTitle.png" className="w-3/4 max-w-3xl" style={{ imageRendering: 'pixelated' }} />
           </motion.div>
         ) : (
           <motion.div key="dashboard" initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col h-full z-10 w-full relative">
-            
+
             <AnimatePresence>
               {logoAnimDone && (
                 <motion.div key="header" {...uiFade} data-tauri-drag-region className="h-10 w-full flex justify-between items-center px-2 absolute top-0 left-0 z-50 bg-gradient-to-b from-black/80 to-transparent">
@@ -194,11 +214,11 @@ export default function App() {
 
             <main className="flex-1 w-full relative">
               <div className={`w-full h-full flex flex-col items-center justify-center transition-opacity duration-300 ${(!logoAnimDone || isUiHidden) ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-                
+
                 {activeView === 'main' && <SkinViewer username={username} setUsername={setUsername} playClickSound={playClickSound} skinUrl={skinUrl} setSkinUrl={setSkinUrl} setActiveView={setActiveView} />}
 
                 <div className="w-full max-w-4xl relative flex justify-center items-center">
-                  <AnimatePresence mode="wait">
+                  <AnimatePresence>
                     {activeView === 'main' && <HomeView handleLaunch={handleLaunch} setActiveView={setActiveView} playClickSound={playClickSound} setShowCredits={setShowCredits} />}
                     {activeView === 'settings' && <SettingsView vfxEnabled={vfxEnabled} setVfxEnabled={setVfxEnabled} music={musicVol} setMusic={setMusicVol} sfx={sfxVol} setSfx={setSfxVol} layout={layout} setLayout={setLayout} currentTrack={currentTrack} setCurrentTrack={setCurrentTrack} tracks={tracks} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} />}
                     {activeView === 'versions' && <VersionsView selectedProfile={profile} setSelectedProfile={setProfile} installedVersions={installs} toggleInstall={toggleInstall} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} editions={editions} />}
@@ -213,9 +233,9 @@ export default function App() {
             <AnimatePresence>
               {logoAnimDone && (
                 <motion.footer key="footer" {...uiFade} className="shrink-0 p-4 flex justify-between items-end text-[10px] text-[#A0A0A0] mc-text-shadow bg-gradient-to-t from-black/80 to-transparent uppercase tracking-widest opacity-60 font-['Mojangles']" style={{ fontWeight: 'normal' }}>
-                  <div className="flex-1 text-left whitespace-nowrap">Version: EmeraldLauncher-1.0.0</div>
+                  <div className="flex-1 text-left whitespace-nowrap">Version: 1.0.0</div>
                   <div className="flex-[2] text-center whitespace-nowrap">Not affiliated with Mojang AB or Microsoft. "Minecraft" is a trademark of Mojang Synergies AB.</div>
-                  <div className="flex-1 text-right whitespace-nowrap"></div>
+                  <div className="flex-1 text-right whitespace-nowrap">{connected && "CONTROLLER CONNECTED"}</div>
                 </motion.footer>
               )}
             </AnimatePresence>

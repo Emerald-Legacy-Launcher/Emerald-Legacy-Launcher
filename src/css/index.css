@@ -7,6 +7,24 @@
   font-style: normal;
 }
 
+button:focus-visible, 
+input:focus-visible, 
+[tabindex="0"]:focus-visible {
+  outline: 3px solid #FFFF55 !important;
+  outline-offset: 2px;
+  z-index: 100;
+}
+
+.gamepad-connected-indicator {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: #FFFF55;
+  font-size: 10px;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
 body {
   margin: 0;
   background-color: #000;

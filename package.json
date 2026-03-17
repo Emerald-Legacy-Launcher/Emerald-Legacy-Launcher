@@ -28,6 +28,8 @@
     "postcss": "^8.5.8",
     "tailwindcss": "^4.2.1",
     "typescript": "~5.8.3",
-    "vite": "^7.0.4"
+    "vite": "^7.0.4",
+    "tauri-plugin-drpc": "^1.0.3",
+    "tauri-plugin-gamepad-api": "^0.0.5"
   }
 }

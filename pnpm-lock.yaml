@@ -54,6 +54,12 @@ importers:
       tailwindcss:
         specifier: ^4.2.1
         version: 4.2.1
+      tauri-plugin-drpc:
+        specifier: ^1.0.3
+        version: 1.0.3(typescript@5.8.3)
+      tauri-plugin-gamepad-api:
+        specifier: ^0.0.5
+        version: 0.0.5
       typescript:
         specifier: ~5.8.3
         version: 5.8.3
@@ -543,6 +549,9 @@ packages:
     peerDependencies:
       vite: ^5.2.0 || ^6 || ^7
 
+  '@tauri-apps/api@2.1.1':
+    resolution: {integrity: sha512-fzUfFFKo4lknXGJq8qrCidkUcKcH2UHhfaaCNt4GzgzGaW2iS26uFOg4tS3H4P8D6ZEeUxtiD5z0nwFF0UN30A==}
+
   '@tauri-apps/api@2.10.1':
     resolution: {integrity: sha512-hKL/jWf293UDSUN09rR69hrToyIXBb8CjGaWC7gfinvnQrBVvnLr08FeFi38gxtugAVyVcTa5/FD/Xnkb1siBw==}
 
@@ -922,6 +931,14 @@ packages:
   tapable@2.3.0:
     resolution: {integrity: sha512-g9ljZiwki/LfxmQADO3dEY1CbpmXT5Hm2fJ+QaGKwSXUylMybePR7/67YW7jOrrvjEgL1Fmz5kzyAjWVWLlucg==}
     engines: {node: '>=6'}
+
+  tauri-plugin-drpc@1.0.3:
+    resolution: {integrity: sha512-vl5dXhjKbl7+Nf9veW12usdmIUtZXwEf91SzxQPZlbRRJ/sjizbbQlnkUTtx6baJuGzz0KXXgP9xUhF39BdiXQ==}
+    peerDependencies:
+      typescript: ^5.0.0
+
+  tauri-plugin-gamepad-api@0.0.5:
+    resolution: {integrity: sha512-WO0xwXmPr4PMe9HzljKUbTkGv7J6ur2Df/OuEPsxBeSA5QPffAJR3N32M4pM4yW72D9Vt19XplPnHHDVATVMSw==}
 
   three@0.156.1:
     resolution: {integrity: sha512-kP7H0FK9d/k6t/XvQ9FO6i+QrePoDcNhwl0I02+wmUJRNSLCUIDMcfObnzQvxb37/0Uc9TDT0T1HgsRRrO6SYQ==}
@@ -1353,6 +1370,8 @@ snapshots:
       tailwindcss: 4.2.1
       vite: 7.3.1(jiti@2.6.1)(lightningcss@1.31.1)
 
+  '@tauri-apps/api@2.1.1': {}
+
   '@tauri-apps/api@2.10.1': {}
 
   '@tauri-apps/cli-darwin-arm64@2.10.1':
@@ -1701,6 +1720,15 @@ snapshots:
   tailwindcss@4.2.1: {}
 
   tapable@2.3.0: {}
+
+  tauri-plugin-drpc@1.0.3(typescript@5.8.3):
+    dependencies:
+      typescript: 5.8.3
+
+  tauri-plugin-gamepad-api@0.0.5:
+    dependencies:
+      '@tauri-apps/api': 2.1.1
+      tslib: 2.8.1
 
   three@0.156.1: {}
 

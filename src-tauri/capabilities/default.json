@@ -1,7 +1,9 @@
 {
   "identifier": "default",
   "description": "Default permissions",
-  "windows": ["main"],
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
     "core:window:allow-minimize",
@@ -11,6 +13,11 @@
     "core:window:allow-set-title",
     "core:window:allow-start-dragging",
     "core:window:allow-show",
-    "opener:default"
+    "opener:default",
+    "gamepad:default",
+    "drpc:allow-is-running",
+    "drpc:default",
+    "core:event:allow-listen",
+    "core:app:default"
   ]
 }

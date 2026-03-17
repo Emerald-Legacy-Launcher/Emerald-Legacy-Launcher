@@ -23,7 +23,7 @@ export default function HomeView({ handleLaunch, setActiveView, playClickSound, 
   }, [menuFocus, buttons, playClickSound]);
 
   return (
-    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[540px] flex flex-col space-y-3">
+    <motion.div tabIndex={0} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="w-full max-w-[540px] flex flex-col space-y-3">
       {buttons.map((btn, i) => (
         <button 
           key={i} onMouseEnter={() => setMenuFocus(i)} onMouseLeave={() => setMenuFocus(null)}
