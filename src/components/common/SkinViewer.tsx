@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { SkinViewer as Skinview3D, IdleAnimation } from 'skinview3d';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 
