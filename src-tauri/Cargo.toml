@@ -1,12 +1,17 @@
 [package]
-name = "emerald-legacy-launcher"
-version = "0.3.0"
-description = "FOSS cross-platform launcher for Minecraft Legacy Console Edition"
-authors = ["Emerald Team"]
+name = "tauri-app"
+version = "0.1.0"
+description = "A Tauri App"
+authors = ["you"]
 edition = "2021"
 
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
 [lib]
-name = "emerald_legacy_launcher_lib"
+# The `_lib` suffix may seem redundant but it is necessary
+# to make the lib name unique and wouldn't conflict with the bin name.
+# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+name = "tauri_app_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
@@ -15,14 +20,6 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri = { version = "2", features = [] }
 tauri-plugin-opener = "2"
-tauri-plugin-drpc = "0.1.6"
-tauri-plugin-gamepad = "0.0.5"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-reqwest = { version = "0.11", features = ["stream"] }
-tokio = { version = "1", features = ["full"] }
-futures-util = "0.3"
-tokio-util = { version = "0.7.18", features = ["rt"] }
-base64 = "0.21"
-rfd = "0.15"
-libc = "0.2"
+

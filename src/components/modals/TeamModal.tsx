@@ -1,57 +1,47 @@
-import React from "react";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { motion } from 'framer-motion';
+import { useState } from 'react';
 
-interface TeamModalProps {
-  onClose: () => void;
-  playSfx: (name: string, multiplier?: number) => void;
-}
+export default function TeamModal({ isOpen, onClose, playClickSound, playBackSound }: any) {
+  if (!isOpen) return null;
 
-const devs = [
-  { name: "Criador_Mods", url: "https://github.com/CriadorMods" },
-  { name: "Leon", url: "https://github.com/hornyalcoholic" },
-  { name: "journ3ym3m", url: "https://github.com/journ3ym3n" },
-  { name: "KayJann", url: "https://github.com/KayJannOnGit" },
-  { name: "neoapps", url: "https://github.com/neoapps-dev" },
-  { name: "Santiago Fisela", url: "https://github.com/PinkLittleKitty" },
-];
+  const [closeHover, setCloseHover] = useState(false);
 
-export const TeamModal: React.FC<TeamModalProps> = ({
-  onClose,
-  playSfx,
-}) => {
+  const team = [
+    { name: "Leon", url: "https://github.com/hornyalcoholic" },
+    { name: "Criador_Mods", url: "https://github.com/CriadorMods" },
+    { name: "journ3ym3m", url: "https://github.com/journ3ym3n" },
+    { name: "KayJann", url: "https://github.com/KayJannOnGit" },
+    { name: "neoapps", url: "https://github.com/neoapps-dev" },
+    { name: "Santiago Fisela", url: "https://github.com/PinkLittleKitty" },
+  ];
+
   return (
-    <div className="absolute inset-0 bg-black/80 z-[200] flex items-center justify-center animate-in fade-in">
-      <div className="bg-[#2a2a2a] border-4 border-black p-8 w-[500px] shadow-[inset_4px_4px_#555,inset_-4px_-4px_#111]">
-        <h3 className="text-4xl text-emerald-400 mb-6 font-bold uppercase tracking-widest text-center">
-          Emerald Team
-        </h3>
-
-        <div className="flex flex-col gap-2 mb-8 max-h-[400px] overflow-y-auto pr-2 no-scrollbar">
-          {devs.map((dev) => (
-            <div
-              key={dev.name}
-              onClick={() => {
-                playSfx("click.wav");
-                openUrl(dev.url);
-              }}
-              className="flex items-center justify-between p-3 bg-black/40 border-2 border-slate-700 hover:border-emerald-500 cursor-pointer transition-colors group"
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm outline-none border-none">
+      <div className="relative w-[360px] p-6 flex flex-col items-center shadow-2xl" style={{ backgroundImage: "url('/images/frame_background.png')", backgroundSize: "100% 100%", imageRendering: "pixelated" }}>
+        <h2 className="text-[#FFFF55] text-2xl mc-text-shadow mb-4 border-b-2 border-[#373737] pb-2 w-full text-center uppercase">Emerald Team</h2>
+        <div className="flex flex-col gap-3 w-full items-center">
+          {team.map(dev => (
+            <a 
+               key={dev.name} href={dev.url} target="_blank" rel="noopener noreferrer" onClick={() => playClickSound()} 
+               className="w-56 h-10 flex items-center justify-center text-white hover:text-[#FFFF55] mc-text-shadow text-xl transition-all outline-none border-none bg-transparent"
+               style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated', color: 'white' }}
+               onMouseEnter={(e) => e.currentTarget.style.backgroundImage = "url('/images/button_highlighted.png')"}
+               onMouseLeave={(e) => e.currentTarget.style.backgroundImage = "url('/images/Button_Background.png')"}
             >
-              <span className="text-xl text-white group-hover:text-emerald-400">{dev.name}</span>
-              <span className="text-xs text-slate-500 uppercase">GitHub</span>
-            </div>
+              {dev.name}
+            </a>
           ))}
         </div>
-
-        <button
-          onClick={() => {
-            playSfx("back.ogg");
-            onClose();
-          }}
-          className="legacy-btn px-8 py-3 text-2xl w-full"
+        <button 
+          onMouseEnter={() => setCloseHover(true)} 
+          onMouseLeave={() => setCloseHover(false)} 
+          onClick={() => { playBackSound(); onClose(); }} 
+          className={`mt-6 w-56 h-12 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none hover:text-[#FFFF55] ${closeHover ? 'text-[#FFFF55]' : 'text-white'}`}
+          style={{ backgroundImage: closeHover ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
         >
           Close
         </button>
       </div>
-    </div>
+    </motion.div>
   );
-};
+}

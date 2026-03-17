@@ -1,197 +1,186 @@
-import React, { useRef, useState } from "react";
-import { SkinViewer } from "@/components/common/SkinViewer";
-import { SkinLibraryItem } from "@/types";
-import { Icons } from "@/components/Icons";
+import { useState, useEffect, useRef } from 'react';
+import { motion } from 'framer-motion';
+import { useLocalStorage } from '../../hooks/useLocalStorage';
+import { invoke } from '@tauri-apps/api/core';
 
-interface SkinsViewProps {
-  skinBase64?: string;
-  skinLibrary: SkinLibraryItem[];
-  playSfx: (name: string, multiplier?: number) => void;
-  onSelectSkin: (base64: string) => void;
-  onAddSkin: (name: string, base64: string) => void;
-  onRenameSkin: (id: string, newName: string) => void;
-  onDeleteSkin: (id: string) => void;
-  gamepadConnected: boolean;
+interface SavedSkin {
+  id: string;
+  name: string;
+  url: string;
 }
 
-export const SkinsView: React.FC<SkinsViewProps> = ({
-  skinBase64,
-  skinLibrary,
-  playSfx,
-  onSelectSkin,
-  onAddSkin,
-  onRenameSkin,
-  onDeleteSkin,
-  gamepadConnected,
-}) => {
+export default function SkinsView({ skinUrl, setSkinUrl, playClickSound, playBackSound, setActiveView }: any) {
+  const [backHover, setBackHover] = useState(false);
+  const [importHover, setImportHover] = useState(false);
+  const [deleteHover, setDeleteHover] = useState(false);
+  const [folderHover, setFolderHover] = useState(false);
+  
+  const [savedSkins, setSavedSkins] = useLocalStorage<SavedSkin[]>('lce-custom-skins', [
+    { id: 'default', name: 'Default Steve', url: '/images/Default.png' }
+  ]);
+  
+  const [activeSkinId, setActiveSkinId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editName, setEditName] = useState("");
 
-  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  useEffect(() => {
+    if (!activeSkinId) {
+      const match = savedSkins.find(s => s.url === skinUrl);
+      if (match) setActiveSkinId(match.id);
+    }
+  }, []);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (document.activeElement?.tagName === 'INPUT') return;
+      if (e.key === 'Escape') {
+        playBackSound();
+        setActiveView('main');
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [playBackSound, setActiveView]);
+
+  const handleImportClick = () => {
+    playClickSound();
+    fileInputRef.current?.click();
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    const fileName = file.name.replace(/\.[^/.]+$/, "");
+    if (file.type !== 'image/png') {
+        alert("Please upload a valid .png Minecraft skin file.");
+        return;
+    }
+
+    const defaultName = file.name.replace('.png', '').substring(0, 16);
+
     const reader = new FileReader();
     reader.onload = (event) => {
-      const url = event.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        const cvs = document.createElement("canvas");
-        cvs.width = 64;
-        cvs.height = 32;
-        const ctx = cvs.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, 64, 32, 0, 0, 64, 32);
-          const base64 = cvs.toDataURL("image/png");
-          onAddSkin(fileName, base64);
-          playSfx("wood click.wav");
-        }
+      const base64String = event.target?.result as string;
+      const newId = Date.now().toString();
+      const newSkin = {
+        id: newId,
+        name: defaultName,
+        url: base64String
       };
-      img.src = url;
+      setSavedSkins([...savedSkins, newSkin]);
+      setSkinUrl(base64String);
+      setActiveSkinId(newId);
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
-  const startRename = (item: SkinLibraryItem) => {
-    setEditingId(item.id);
-    setEditName(item.name);
-    playSfx("click.wav");
+  const handleSkinSelect = (skin: SavedSkin) => {
+    playClickSound();
+    setActiveSkinId(skin.id);
+    setSkinUrl(skin.url);
   };
 
-  const saveRename = () => {
-    if (editingId && editName.trim()) {
-      onRenameSkin(editingId, editName.trim());
-      setEditingId(null);
-      playSfx("pop.wav");
-    }
+  const handleDeleteActive = () => {
+    if (activeSkinId === 'default' || !activeSkinId) return;
+    playClickSound();
+
+    const updatedSkins = savedSkins.filter(s => s.id !== activeSkinId);
+    setSavedSkins(updatedSkins);
+    setSkinUrl('/images/Default.png');
+    setActiveSkinId('default'); 
   };
+
+  const handleNameChange = (id: string, newName: string) => {
+    const updatedSkins = savedSkins.map(s => s.id === id ? { ...s, name: newName } : s);
+    setSavedSkins(updatedSkins);
+  };
+
+  const isActiveDefault = activeSkinId === 'default' || (!activeSkinId && skinUrl === '/images/Default.png');
 
   return (
-    <div className="w-full max-w-5xl bg-black/80 border-[var(--border-width)] border-[var(--border-primary)] h-full flex flex-col md:flex-row overflow-hidden animate-in fade-in rounded-[var(--radius-base)] backdrop-blur-[var(--backdrop-blur)]">
-      <div className="w-full md:w-80 bg-black/40 border-b-[var(--border-width)] md:border-b-0 md:border-r-[var(--border-width)] border-[var(--border-primary)] p-8 flex flex-col items-center gap-6">
-        <h2 className="text-3xl legacy-text-shadow self-start text-[#ffffff]">CURRENT SKIN</h2>
-        <div className="w-48 h-72 bg-black/50 border-[var(--border-width)] border-[var(--border-primary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_#222] relative group rounded-[var(--radius-base)]">
-          <SkinViewer skinUrl={skinBase64 || null} />
-        </div>
-
-        <input
-          type="file"
-          ref={fileInputRef}
-          onChange={handleUpload}
-          accept="image/png"
-          className="hidden"
-        />
-
-        <div className="w-full flex flex-col gap-2 mt-4">
-          <button
-            onClick={() => { playSfx("wood click.wav"); fileInputRef.current?.click(); }}
-            className="legacy-btn w-full py-3 text-xl"
-          >
-            UPLOAD NEW SKIN
-          </button>
-
-          <button
-            onClick={() => { playSfx("pop.wav"); onSelectSkin(""); }}
-            style={{ 
-              boxShadow: "inset calc(3px * var(--shadow-intensity)) calc(3px * var(--shadow-intensity)) #ff5555, inset calc(-3px * var(--shadow-intensity)) calc(-3px * var(--shadow-intensity)) #4a0000"
-            } as React.CSSProperties}
-            className="legacy-btn px-6 py-2 text-sm transition-colors self-center !text-white hover:!bg-[#aa0000]"
-          >
-            RESET SKIN
-          </button>
-        </div>
-
-        <p className="text-sm text-slate-400 italic text-center">
-          Upload a 64x64 or 64x32 PNG file. It will be added to your library.
-        </p>
-      </div>
-
-      <div className="flex-1 p-8 flex flex-col gap-6 overflow-hidden">
-        <h2 className="text-3xl legacy-text-shadow text-[#ffffff]">SKIN LIBRARY</h2>
-
-        <div className="flex-1 overflow-y-auto no-scrollbar pr-2">
-          {skinLibrary.length === 0 ? (
-            <div className="h-full flex flex-col items-center justify-center text-slate-500 italic gap-4">
-              <p className="text-2xl">Your library is empty</p>
-              <p>Upload a skin to get started!</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-2">
-              {skinLibrary.map((item) => (
-                <div
-                  key={item.id}
-                  className={`relative group bg-[#2a2a2a] border-[var(--border-width)] transition-all duration-150 rounded-[var(--radius-base)] ${
-                    skinBase64 === item.skinBase64
-                      ? "border-[var(--accent-primary)] shadow-[0_0_15px_rgba(16,185,129,0.3)]"
-                      : "border-[var(--border-primary)] hover:border-[var(--border-secondary)] shadow-[inset_calc(4px*var(--shadow-intensity))_calc(4px*var(--shadow-intensity))_#444]"
-                  } focus-within:!border-white focus-within:scale-[1.03] focus-within:z-50 focus-within:shadow-[0_0_25px_rgba(255,255,255,0.2)]`}
-                >
-                  <button
-                    className="h-48 w-full cursor-pointer relative block outline-none"
-                    onClick={() => {
-                      playSfx("wood click.wav");
-                      onSelectSkin(item.skinBase64);
+    <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex flex-col items-center w-full max-w-3xl -mt-16">
+      <h2 className="text-2xl text-white mc-text-shadow mb-4 border-b-2 border-[#373737] pb-2 w-[60%] max-w-[300px] text-center tracking-widest uppercase opacity-80">Skin Library</h2>
+      
+      <div className="w-full max-w-[640px] h-[340px] mb-4 p-5 shadow-2xl flex flex-col relative" style={{ backgroundImage: "url('/images/frame_background.png')", backgroundSize: "100% 100%", imageRendering: "pixelated" }}>
+          
+          <div className="w-full flex items-center border-b-2 border-[#373737] pb-4 mb-4 relative min-h-[40px]">
+              <div className="absolute left-0 right-0 flex justify-center gap-4 items-center">
+                  <button 
+                    onMouseEnter={() => setImportHover(true)} 
+                    onMouseLeave={() => setImportHover(false)} 
+                    onClick={handleImportClick}
+                    className={`w-40 h-10 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none hover:text-[#FFFF55] ${importHover ? 'text-[#FFFF55]' : 'text-white'}`}
+                    style={{ backgroundImage: importHover ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                  >
+                    Import Skin
+                  </button>
+                  
+                  <button 
+                    onMouseEnter={() => !isActiveDefault && setDeleteHover(true)} 
+                    onMouseLeave={() => setDeleteHover(false)} 
+                    onClick={handleDeleteActive}
+                    className={`w-40 h-10 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${isActiveDefault ? 'text-gray-400 opacity-80 cursor-not-allowed' : (deleteHover ? 'text-[#FFFF55]' : 'text-white')}`}
+                    style={{ 
+                        backgroundImage: isActiveDefault ? "url('/images/Button_Background2.png')" : (deleteHover ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')"), 
+                        backgroundSize: '100% 100%', 
+                        imageRendering: 'pixelated' 
                     }}
                   >
-                    <SkinViewer skinUrl={item.skinBase64} />
-                    {skinBase64 === item.skinBase64 && (
-                      <div className="absolute top-2 right-2 bg-emerald-500 text-black text-[10px] font-bold px-2 py-0.5 legacy-text-shadow-none">
-                        SELECTED
-                      </div>
-                    )}
-                    {gamepadConnected && (
-                      <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-black/50 px-2 py-1 rounded scale-75 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity">
-                        <img src="/images/ButtonA.png" className="w-4 h-4" alt="A" />
-                        <span className="text-[10px] font-bold">SELECT</span>
-                      </div>
-                    )}
+                    Delete Skin
                   </button>
+              </div>
 
-                  <div className="p-3 bg-black/60 border-t-[var(--border-width)] border-[var(--border-primary)] flex items-center justify-between gap-2">
-                    {editingId === item.id ? (
-                      <div className="flex-1 flex gap-2">
-                        <input
-                          autoFocus
-                          type="text"
-                          value={editName}
-                          onChange={(e) => setEditName(e.target.value)}
-                          onKeyDown={(e) => e.key === "Enter" && saveRename()}
-                          onBlur={saveRename}
-                          className="flex-1 bg-black border-2 border-[var(--accent-primary)] text-sm px-2 py-1 outline-none"
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <span className="text-sm truncate legacy-text-shadow flex-1">
-                          {item.name}
-                        </span>
-                        <div className={`flex gap-1 transition-opacity ${gamepadConnected ? "opacity-100" : "opacity-0 group-hover:opacity-100 group-focus-within:opacity-100"}`}>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); startRename(item); }}
-                            className="p-1 hover:text-emerald-400 focus:text-emerald-400 focus:outline-[var(--accent-primary)] focus:outline-2 focus:scale-110 outline-none"
-                            title="Rename"
-                          >
-                            <Icons.Edit />
-                          </button>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); playSfx("pop.wav"); onDeleteSkin(item.id); }}
-                            className="p-1 hover:text-red-500 focus:text-red-500 focus:outline-red-500 focus:outline-2 focus:scale-110 outline-none"
-                            title="Delete"
-                          >
-                            <Icons.Trash />
-                          </button>
+              <div className="flex-1"></div>
+              <div className="flex justify-end z-10">
+                  <button 
+                    onMouseEnter={() => setFolderHover(true)} 
+                    onMouseLeave={() => setFolderHover(false)} 
+                    onClick={() => { playClickSound(); invoke('open_instance_folder', { instanceId: 'Skins' }).catch(() => {}); }}
+                    className={`mc-sq-btn w-10 h-10 flex items-center justify-center outline-none border-none transition-all`}
+                    style={{ backgroundImage: folderHover ? "url('/images/Button_Square_Highlighted.png')" : "url('/images/Button_Square.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                  >
+                    <img src="/images/Folder_Icon.png" className="w-8 h-8 object-contain pointer-events-none drop-shadow-md" style={{ imageRendering: 'pixelated' }} />
+                  </button>
+              </div>
+              
+              <input type="file" ref={fileInputRef} onChange={handleFileChange} accept=".png" className="hidden" />
+          </div>
+
+          <div className="flex-1 overflow-y-auto pr-2 flex flex-wrap gap-x-8 gap-y-6 items-start content-start justify-center">
+             {savedSkins.map((skin) => {
+                 const isActive = activeSkinId ? activeSkinId === skin.id : skinUrl === skin.url;
+                 return (
+                     <div key={skin.id} className="flex flex-col items-center gap-1 w-32">
+                        <div className="h-4">
+                           {isActive && <span className="text-[#FFFF55] text-xs mc-text-shadow uppercase tracking-widest">Active</span>}
                         </div>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                        <div 
+                           onClick={() => handleSkinSelect(skin)}
+                           className={`w-16 h-16 bg-black/40 border-2 shadow-inner relative cursor-pointer overflow-hidden transition-colors outline-none ${isActive ? 'border-[#FFFF55]' : 'border-[#373737] hover:border-[#A0A0A0]'}`}
+                        >
+                           <img src={skin.url} alt={skin.name} className="absolute max-w-none" style={{ width: '800%', height: 'auto', left: '-100%', top: '-100%', imageRendering: 'pixelated' }} />
+                        </div>
+                        <input 
+                           type="text" value={skin.name} maxLength={16}
+                           onChange={(e) => handleNameChange(skin.id, e.target.value)}
+                           className={`bg-transparent text-center outline-none border-none text-base mc-text-shadow w-full truncate transition-colors ${isActive ? 'text-[#FFFF55]' : 'text-white'}`}
+                           onClick={(e) => e.stopPropagation()} spellCheck={false}
+                        />
+                     </div>
+                 );
+             })}
+          </div>
       </div>
-    </div>
+      
+      <button 
+        onMouseEnter={() => setBackHover(true)} 
+        onMouseLeave={() => setBackHover(false)} 
+        onClick={() => { playBackSound(); setActiveView('main'); }} 
+        className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow mt-2 outline-none border-none hover:text-[#FFFF55] ${backHover ? 'text-[#FFFF55]' : 'text-white'}`}
+        style={{ backgroundImage: backHover ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+      >
+        Back
+      </button>
+    </motion.div>
   );
-};
+}
