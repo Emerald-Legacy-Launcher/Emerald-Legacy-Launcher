@@ -16,8 +16,8 @@
 ---
 
 > [!IMPORTANT]
-> **Emerald Legacy Launcher is currently in Alpha.**
-> Expect bugs, frequent updates, and features that are still being polished as we work toward a stable release.
+> **Emerald Legacy Launcher is currently in Beta.**
+> Expect minor bugs, frequent updates, and features that are still being polished as we work toward a stable release.
 
 ---
 
@@ -68,6 +68,7 @@ Click the heading above to track progress, view active tasks, and see upcoming l
 > * <sub style="color: grey;">**The Emerald Team:** Technical development and maintenance.</sub>
 > * <sub style="color: grey;">**4J Studios & Mojang:** Original creators of Legacy Console Edition.</sub>
 > * <sub style="color: grey;">**smartcmd & The LCE Community:** Research and foundations for Legacy Console Edition on PC.</sub>
+> * <sub style="color: grey;">**LegacyEvolved:** Backporting TUs into smartcmd</sub>
 > * <sub style="color: grey;">**Tauri & Rust:** Core technologies.</sub>
 
 ---
