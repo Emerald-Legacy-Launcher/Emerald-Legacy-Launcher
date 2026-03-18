@@ -272,7 +272,7 @@ function AppContent() {
             style={{ backgroundImage: "url('/images/Download_Background.png')", backgroundSize: "100% 100%", imageRendering: "pixelated" }}
           >
             <div className="flex flex-col gap-1 w-full">
-              <span className="text-xs text-[#FFFF55] mc-text-shadow uppercase tracking-widest font-bold text-center w-full">Downloading</span>
+              <span className="text-[15px] text-[#FFFF55] mc-text-shadow uppercase tracking-widest text-center w-full">Downloading</span>
               <div className="text-[10px] text-gray-300 mc-text-shadow truncate uppercase opacity-80 pb-1 text-center w-full">
                 {editions.find(e => e.id === downloadingId)?.name || 'Game Files'}
               </div>
