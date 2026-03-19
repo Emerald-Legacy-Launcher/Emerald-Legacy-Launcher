@@ -13,6 +13,13 @@ export interface SkinLibraryItem {
   skinBase64: string;
 }
 
+export interface CustomEdition {
+  id: string;
+  name: string;
+  desc: string;
+  url: string;
+}
+
 export interface AppConfig {
   username: string;
   linuxRunner?: string;
@@ -21,6 +28,7 @@ export interface AppConfig {
   themeStyleId?: string;
   themePaletteId?: string;
   appleSiliconPerformanceBoost?: boolean;
+  customEditions?: CustomEdition[];
 }
 
 export interface ThemePalette {
@@ -73,6 +81,10 @@ export class TauriService {
 
   static async openInstanceFolder(instanceId: string): Promise<void> {
     return invoke('open_instance_folder', { instanceId });
+  }
+
+  static async deleteInstance(instanceId: string): Promise<void> {
+    return invoke('delete_instance', { instanceId });
   }
 
   static async cancelDownload(): Promise<void> {

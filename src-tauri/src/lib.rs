@@ -30,6 +30,14 @@ pub struct SkinLibraryItem {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct CustomEdition {
+    pub id: String,
+    pub name: String,
+    pub desc: String,
+    pub url: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct AppConfig {
     pub username: String,
@@ -39,6 +47,7 @@ pub struct AppConfig {
     pub theme_style_id: Option<String>,
     pub theme_palette_id: Option<String>,
     pub apple_silicon_performance_boost: Option<bool>,
+    pub custom_editions: Option<Vec<CustomEdition>>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -167,6 +176,7 @@ fn load_config(app: AppHandle) -> AppConfig {
         theme_style_id: None,
         theme_palette_id: None,
         apple_silicon_performance_boost: None,
+        custom_editions: None,
     }
 }
 
@@ -375,6 +385,16 @@ fn open_instance_folder(app: AppHandle, instanceId: String) {
     if dir.exists() {
         let _ = app.opener().open_path(dir.to_str().unwrap(), None::<&str>);
     }
+}
+
+#[tauri::command]
+#[allow(non_snake_case)]
+fn delete_instance(app: AppHandle, instanceId: String) -> Result<(), String> {
+    let dir = get_app_dir(&app).join("instances").join(&instanceId);
+    if dir.exists() {
+        let _ = fs::remove_dir_all(dir);
+    }
+    Ok(())
 }
 
 #[tauri::command]
@@ -982,7 +1002,7 @@ pub fn run() {
         .plugin(tauri_plugin_gamepad::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
-        .invoke_handler(tauri::generate_handler![setup_macos_runtime, launch_game, stop_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner])
+        .invoke_handler(tauri::generate_handler![setup_macos_runtime, launch_game, stop_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner, delete_instance])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

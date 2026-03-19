@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { TauriService } from '../../services/TauriService';
+import CustomTUModal from '../modals/CustomTUModal';
 
 export default function VersionsView({
   selectedProfile, setSelectedProfile,
   installedVersions, toggleInstall,
   playClickSound, playBackSound,
-  setActiveView, editions
+  setActiveView, editions,
+  onAddEdition, onDeleteEdition
 }: any) {
   const [focusRow, setFocusRow] = useState<number>(0);
   const [focusCol, setFocusCol] = useState<number>(0);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const ITEM_COUNT = editions.length + 1;
+  const ITEM_COUNT = editions.length + 2;
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -56,6 +59,9 @@ export default function VersionsView({
             playClickSound();
             TauriService.openInstanceFolder(edition.id);
           }
+        } else if (focusRow === editions.length) {
+          playClickSound();
+          setIsImportModalOpen(true);
         } else {
           playBackSound();
           setActiveView('main');
@@ -81,6 +87,7 @@ export default function VersionsView({
             const isInstalled = installedVersions.includes(edition.id);
             const isSelected = selectedProfile === edition.id;
             const isRowFocused = focusRow === i;
+            const isCustom = edition.id.startsWith('custom_');
 
             return (
               <div
@@ -101,6 +108,7 @@ export default function VersionsView({
                   <div className="flex flex-col">
                     <div className="flex items-center gap-3">
                       <span className={`text-2xl mc-text-shadow ${(isSelected || (isRowFocused && focusCol === 0)) ? 'text-[#FFFF55]' : 'text-white'}`}>{edition.name}</span>
+                      {isCustom && <span className="text-[10px] bg-[#FFFF55] text-black px-1 font-bold uppercase mc-text-shadow-none">Custom</span>}
                     </div>
                     <span className="text-base text-[#E0E0E0] mc-text-shadow truncate w-full">{edition.desc}</span>
                   </div>
@@ -139,6 +147,17 @@ export default function VersionsView({
                       </button>
                     </>
                   )}
+                  {isCustom && (
+                    <button
+                      data-row={i} data-col={3}
+                      onMouseEnter={() => { setFocusRow(i); setFocusCol(3); }}
+                      onClick={(e) => { e.stopPropagation(); playBackSound(); onDeleteEdition(edition.id); }}
+                      className="mc-sq-btn w-10 h-10 flex items-center justify-center outline-none border-none transition-all"
+                      style={{ backgroundImage: (isRowFocused && focusCol === 3) ? "url('/images/Button_Square_Highlighted.png')" : "url('/images/Button_Square.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="square" className="text-red-500 drop-shadow-md"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                  )}
                 </div>
               </div>
             );
@@ -146,19 +165,46 @@ export default function VersionsView({
         </div>
       </div>
 
-      <button
-        data-row={editions.length} data-col={0}
-        onMouseEnter={() => { setFocusRow(editions.length); setFocusCol(0); }}
-        onClick={() => { playBackSound(); setActiveView('main'); }}
-        className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length ? 'text-[#FFFF55]' : 'text-white'}`}
-        style={{
-          backgroundImage: focusRow === editions.length ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')",
-          backgroundSize: '100% 100%',
-          imageRendering: 'pixelated'
+      <div className="flex gap-4 mb-6">
+        <button
+          data-row={editions.length} data-col={0}
+          onMouseEnter={() => { setFocusRow(editions.length); setFocusCol(0); }}
+          onClick={() => { playClickSound(); setIsImportModalOpen(true); }}
+          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length ? 'text-[#FFFF55]' : 'text-white'}`}
+          style={{
+            backgroundImage: focusRow === editions.length ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')",
+            backgroundSize: '100% 100%',
+            imageRendering: 'pixelated'
+          }}
+        >
+          Import Custom TU
+        </button>
+
+        <button
+          data-row={editions.length + 1} data-col={0}
+          onMouseEnter={() => { setFocusRow(editions.length + 1); setFocusCol(0); }}
+          onClick={() => { playBackSound(); setActiveView('main'); }}
+          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length + 1 ? 'text-[#FFFF55]' : 'text-white'}`}
+          style={{
+            backgroundImage: focusRow === editions.length + 1 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')",
+            backgroundSize: '100% 100%',
+            imageRendering: 'pixelated'
+          }}
+        >
+          Back
+        </button>
+      </div>
+
+      <CustomTUModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
+        onImport={(ed: any) => {
+          const id = onAddEdition(ed);
+          setSelectedProfile(id);
         }}
-      >
-        Back
-      </button>
+        playClickSound={playClickSound}
+        playBackSound={playBackSound}
+      />
     </motion.div>
   );
 }

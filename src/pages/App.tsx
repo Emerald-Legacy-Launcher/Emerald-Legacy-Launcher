@@ -46,6 +46,7 @@ function AppContent() {
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
   const [linuxRunner, setLinuxRunner] = useState<string | undefined>();
   const [perfBoost, setPerfBoost] = useState(false);
+  const [customEditions, setCustomEditions] = useState<any[]>([]);
   const [currentTrack, setCurrentTrack] = useState(0);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const splashes = [
@@ -60,11 +61,25 @@ function AppContent() {
     "Technoblade never dies!"
   ];
   const [splashIndex, setSplashIndex] = useState(-1);
-  const editions = [
+  const baseEditions = [
     { id: 'legacy_evolved', name: 'Legacy Evolved', desc: 'Backporting the newer title updates back to the LCE', url: 'https://github.com/piebotc/LegacyEvolved/releases/download/nightly/LCEWindows64.zip' },
     { id: 'vanilla_tu24', name: 'Title Update 24', desc: 'Based on TU19, but with the features of TU24.', url: 'https://huggingface.co/datasets/KayJann/emerald-legacy-assets/resolve/main/emerald_tu24_vanilla.zip' },
     { id: 'vanilla_tu19', name: 'Title Update 19', desc: 'Leaked 4J Studios build. (smartcmd)', url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip" }
   ];
+
+  const editions = [...baseEditions, ...customEditions];
+
+  const addCustomEdition = (edition: { name: string, desc: string, url: string }) => {
+    const id = `custom_${Date.now()}`;
+    const newEdition = { ...edition, id };
+    setCustomEditions(prev => [...prev, newEdition]);
+    return id;
+  };
+
+  const deleteCustomEdition = (id: string) => {
+    setCustomEditions(prev => prev.filter(e => e.id !== id));
+    TauriService.deleteInstance(id).catch(console.error);
+  };
 
   const tracks = [
     '/music/Blind Spots.ogg',
@@ -124,6 +139,7 @@ function AppContent() {
       if (config.themeStyleId) setTheme(config.themeStyleId);
       if (config.linuxRunner) setLinuxRunner(config.linuxRunner);
       if (config.appleSiliconPerformanceBoost !== undefined) setPerfBoost(config.appleSiliconPerformanceBoost);
+      if (config.customEditions) setCustomEditions(config.customEditions);
     });
 
     checkInstalls();
@@ -183,9 +199,10 @@ function AppContent() {
       skinBase64: skinBase64 || skinUrl,
       themeStyleId: theme,
       linuxRunner,
-      appleSiliconPerformanceBoost: perfBoost
+      appleSiliconPerformanceBoost: perfBoost,
+      customEditions
     }).catch(() => { });
-  }, [username, skinBase64, theme, linuxRunner, perfBoost]);
+  }, [username, skinBase64, theme, linuxRunner, perfBoost, customEditions]);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
@@ -378,7 +395,7 @@ function AppContent() {
                       />
                     )}
                     {activeView === 'settings' && <SettingsView vfxEnabled={vfxEnabled} setVfxEnabled={setVfxEnabled} music={musicVol} setMusic={setMusicVol} sfx={sfxVol} setSfx={setSfxVol} layout={layout} setLayout={setLayout} currentTrack={currentTrack} setCurrentTrack={setCurrentTrack} tracks={tracks} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} linuxRunner={linuxRunner} setLinuxRunner={setLinuxRunner} perfBoost={perfBoost} setPerfBoost={setPerfBoost} />}
-                    {activeView === 'versions' && <VersionsView selectedProfile={profile} setSelectedProfile={setProfile} installedVersions={installs} toggleInstall={toggleInstall} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} editions={editions} />}
+                    {activeView === 'versions' && <VersionsView selectedProfile={profile} setSelectedProfile={setProfile} installedVersions={installs} toggleInstall={toggleInstall} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} editions={editions} onAddEdition={addCustomEdition} onDeleteEdition={deleteCustomEdition} />}
                     {activeView === 'marketplace' && <MarketplaceView playBackSound={playBackSound} setActiveView={setActiveView} />}
                     {activeView === 'themes' && <ThemesView theme={theme} setTheme={setTheme} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} />}
                     {activeView === 'skins' && <SkinsView skinUrl={skinUrl} setSkinUrl={setSkinUrl} playClickSound={playClickSound} playBackSound={playBackSound} setActiveView={setActiveView} />}
