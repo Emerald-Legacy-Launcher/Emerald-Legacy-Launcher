@@ -360,7 +360,7 @@ function AppContent() {
       const version = editions.find((e) => e.id === profile);
       const versionName = version ? version.name : "Unknown Version";
       let details = "In Menus";
-      let state = `Playing as ${username}`;
+      let state = isGameRunning ? `Playing as ${username}` : `Logged in as ${username}`;
       if (isGameRunning) {
         details = `Playing ${versionName}`;
       } else if (downloadProgress) {

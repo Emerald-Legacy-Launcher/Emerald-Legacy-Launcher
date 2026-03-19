@@ -109,7 +109,7 @@ export default function SkinViewer({ username, setUsername, playClickSound, skin
     <motion.div
       ref={containerRef}
       initial={{ opacity: 0, x: -20 }}
-      animate={{ opacity: isFocusedSection ? 1 : 0.6, x: 0 }}
+      animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
       className="absolute left-16 top-[42%] -translate-y-1/2 flex flex-col items-center gap-1 outline-none"
