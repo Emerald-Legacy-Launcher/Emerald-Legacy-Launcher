@@ -244,15 +244,14 @@ function AppContent() {
   useEffect(() => {
     const updateRPC = async () => {
       if (showIntro || !username) return;
-
       const version = editions.find(e => e.id === profile);
       const versionName = version ? version.name : "Unknown Version";
-
       let details = "In Menus";
       let state = `Playing as ${username}`;
-
       if (isGameRunning) {
         details = `Playing ${versionName}`;
+      } else if (downloadProgress) {
+        details = `Downloading ${editions.find(e => e.id === downloadingId)?.name || 'Game Files'} (${downloadProgress.toFixed(0)}%)`;
       } else {
         const tabNames: Record<string, string> = {
           main: "Main Menu",
