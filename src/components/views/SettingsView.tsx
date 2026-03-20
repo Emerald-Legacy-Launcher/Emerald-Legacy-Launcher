@@ -8,8 +8,7 @@ const SettingsView = memo(function SettingsView() {
   const { setActiveView } = useUI();
   const { vfxEnabled, setVfxEnabled, musicVol: musicVolume, setMusicVol: setMusicVolume, sfxVol: sfxVolume, setSfxVol: setSfxVolume, layout, setLayout, linuxRunner, setLinuxRunner, perfBoost, setPerfBoost, rpcEnabled, setRpcEnabled } = useConfig();
   const { currentTrack, setCurrentTrack, tracks, playClickSound, playBackSound } = useAudio();
-  const { isGameRunning, stopGame } = useGame();
-
+  const { isGameRunning, stopGame, isRunnerDownloading, runnerDownloadProgress, downloadRunner } = useGame();
   const { isLinux, isMac } = usePlatform();
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const [runners, setRunners] = useState<Runner[]>([]);
@@ -19,7 +18,7 @@ const SettingsView = memo(function SettingsView() {
 
   useEffect(() => {
     TauriService.getAvailableRunners().then(setRunners);
-  }, []);
+  }, [isRunnerDownloading]);
 
   const handleLayoutToggle = () => {
     playClickSound();
@@ -149,6 +148,22 @@ const SettingsView = memo(function SettingsView() {
         type: "button",
         onClick: handleRunnerToggle,
       });
+
+      if (runners.length === 0 || runners.every(r => r.type !== 'proton')) {
+        items.push({
+          id: "download_runner",
+          label: isRunnerDownloading 
+            ? `Downloading Runner... ${Math.floor(runnerDownloadProgress || 0)}%` 
+            : "Download GE-Proton (Recommended)",
+          type: "button",
+          onClick: () => {
+            if (!isRunnerDownloading) {
+              downloadRunner("GE-Proton9-25", "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-25/GE-Proton9-25.tar.gz");
+            }
+          },
+          small: true,
+        });
+      }
     }
 
     if (isMac) {

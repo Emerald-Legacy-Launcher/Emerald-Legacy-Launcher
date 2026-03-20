@@ -12,6 +12,7 @@ import PanoramaBackground from "../components/common/PanoramaBackground";
 import { ClickParticles } from "../components/common/ClickParticles";
 import { AppHeader } from "../components/layout/AppHeader";
 import { DownloadOverlay } from "../components/layout/DownloadOverlay";
+import { AchievementToast } from "../components/common/AchievementToast";
 import { useUI, useConfig, useAudio, useGame, useSkin } from "../context/LauncherContext";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
@@ -86,6 +87,11 @@ export default function App() {
           editions={game.editions}
         />
       </AnimatePresence>
+
+      <AchievementToast 
+        message={game.error} 
+        onClose={() => game.setError(null)} 
+      />
 
       <AnimatePresence>
         {showIntro ? (

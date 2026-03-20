@@ -61,7 +61,8 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
 
   const game = useMemo(() => gameRaw, [
     gameRaw.installs, gameRaw.isGameRunning, gameRaw.downloadProgress,
-    gameRaw.downloadingId, gameRaw.editions
+    gameRaw.downloadingId, gameRaw.editions, gameRaw.isRunnerDownloading,
+    gameRaw.runnerDownloadProgress, gameRaw.error
   ]);
 
   const audio = useMemo(() => audioRaw, [
@@ -92,8 +93,10 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
   }, [activeView, audio]);
 
   useEffect(() => {
-    config.saveConfig(skinSync.skinBase64);
-  }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile]);
+    if (config.isLoaded) {
+      config.saveConfig(skinSync.skinBase64);
+    }
+  }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.isLoaded]);
 
   const uiValue = useMemo(() => ({
     activeView, setActiveView, showIntro, setShowIntro,

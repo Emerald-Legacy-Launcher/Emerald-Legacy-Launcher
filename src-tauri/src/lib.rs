@@ -333,7 +333,7 @@ async fn download_runner(app: AppHandle, state: State<'_, DownloadState>, name: 
         *lock = Some(token);
     }
 
-    let tarball_path = runners_dir.join(format!("{}.tar.xz", name));
+    let tarball_path = runners_dir.join(format!("{}.tar.gz", name));
     let response = reqwest::get(&url).await.map_err(|e| e.to_string())?;
 
     if !response.status().is_success() {
@@ -364,7 +364,7 @@ async fn download_runner(app: AppHandle, state: State<'_, DownloadState>, name: 
     { *state.token.lock().await = None; }
 
     let status = Command::new("tar")
-        .args(["-xf", tarball_path.to_str().unwrap(), "-C", runner_dir.to_str().unwrap(), "--strip-components=1"])
+        .args(["-zxf", tarball_path.to_str().unwrap(), "-C", runner_dir.to_str().unwrap(), "--strip-components=1"])
         .status()
         .map_err(|e| e.to_string())?;
 
@@ -680,22 +680,35 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
     { *state.token.lock().await = None; }
 
     #[cfg(target_os = "linux")]
-    let status = Command::new("unzip")
-        .args(["-o", "-q", zip_path.to_str().unwrap(), "-d", instance_dir.to_str().unwrap()])
-        .status()
-        .map_err(|e| e.to_string())?;
+    {
+        let unzip_check = Command::new("unzip").arg("-v").status();
+        if unzip_check.is_err() || !unzip_check.unwrap().success() {
+            return Err("The 'unzip' command was not found. Please install it (e.g., 'sudo apt install unzip') to continue.".into());
+        }
+
+        let status = Command::new("unzip")
+            .args(["-o", "-q", zip_path.to_str().unwrap(), "-d", instance_dir.to_str().unwrap()])
+            .status()
+            .map_err(|e| e.to_string())?;
+
+        if !status.success() {
+            return Err("Extraction failed".into());
+        }
+    }
 
     #[cfg(not(target_os = "linux"))]
-    let status = Command::new("tar")
-        .args(["-xf", zip_path.to_str().unwrap(), "-C", instance_dir.to_str().unwrap()])
-        .status()
-        .map_err(|e| e.to_string())?;
+    {
+        let status = Command::new("tar")
+            .args(["-xf", zip_path.to_str().unwrap(), "-C", instance_dir.to_str().unwrap()])
+            .status()
+            .map_err(|e| e.to_string())?;
+
+        if !status.success() {
+            return Err("Extraction failed".into());
+        }
+    }
 
     let _ = fs::remove_file(&zip_path);
-
-    if !status.success() {
-        return Err("Extraction failed".into());
-    }
 
     if let Ok(entries) = fs::read_dir(&instance_dir) {
         for entry in entries.flatten() {

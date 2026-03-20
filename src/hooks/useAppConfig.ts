@@ -13,6 +13,7 @@ export function useAppConfig() {
   const [isDayTime, setIsDayTime] = useLocalStorage("lce-daytime", true);
   const [profile, setProfile] = useLocalStorage("lce-profile", "legacy_evolved");
 
+  const [isLoaded, setIsLoaded] = useState(false);
   const [linuxRunner, setLinuxRunner] = useState<string | undefined>();
   const [perfBoost, setPerfBoost] = useState(false);
   const [customEditions, setCustomEditions] = useState<any[]>([]);
@@ -25,6 +26,7 @@ export function useAppConfig() {
       if (config.appleSiliconPerformanceBoost !== undefined)
         setPerfBoost(config.appleSiliconPerformanceBoost);
       if (config.customEditions) setCustomEditions(config.customEditions);
+      setIsLoaded(true);
     });
   }, []);
 
@@ -65,6 +67,7 @@ export function useAppConfig() {
     setPerfBoost,
     customEditions,
     setCustomEditions,
+    isLoaded,
     saveConfig,
   };
 }

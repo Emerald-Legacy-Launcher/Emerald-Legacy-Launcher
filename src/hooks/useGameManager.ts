@@ -34,6 +34,9 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
   const [isGameRunning, setIsGameRunning] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
   const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isRunnerDownloading, setIsRunnerDownloading] = useState(false);
+  const [runnerDownloadProgress, setRunnerDownloadProgress] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const editions = useMemo(() => [...BASE_EDITIONS, ...customEditions], [customEditions]);
 
@@ -50,15 +53,34 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
   useEffect(() => {
     checkInstalls();
     const unlistenDownload = TauriService.onDownloadProgress((p) => setDownloadProgress(p));
+    const unlistenRunner = TauriService.onRunnerDownloadProgress((p) => setRunnerDownloadProgress(p));
     return () => {
       unlistenDownload.then((u) => u());
+      unlistenRunner.then((u) => u());
     };
   }, [customEditions, checkInstalls]);
+
+  const downloadRunner = useCallback(async (name: string, url: string) => {
+    if (isRunnerDownloading) return;
+    setIsRunnerDownloading(true);
+    setRunnerDownloadProgress(0);
+    setError(null);
+    try {
+      await TauriService.downloadRunner(name, url);
+      setRunnerDownloadProgress(null);
+    } catch (e: any) {
+      console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to download runner");
+    } finally {
+      setIsRunnerDownloading(false);
+    }
+  }, [isRunnerDownloading]);
 
   const toggleInstall = useCallback(async (id: string) => {
     if (downloadingId) return;
     const edition = editions.find((e) => e.id === id);
     if (!edition) return;
+    setError(null);
     try {
       setDownloadingId(id);
       setDownloadProgress(0);
@@ -67,8 +89,9 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
       setProfile(id);
       setDownloadProgress(null);
       setDownloadingId(null);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to install version");
       setDownloadProgress(null);
       setDownloadingId(null);
     }
@@ -81,11 +104,13 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
 
   const handleLaunch = useCallback(async () => {
     if (isGameRunning) return;
+    setError(null);
     setIsGameRunning(true);
     try {
       await TauriService.launchGame(profile, []);
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to launch game");
     } finally {
       setIsGameRunning(false);
     }
@@ -117,6 +142,10 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
     isGameRunning,
     downloadProgress,
     downloadingId,
+    isRunnerDownloading,
+    runnerDownloadProgress,
+    error,
+    setError,
     editions,
     toggleInstall,
     handleUninstall,
@@ -124,6 +153,7 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
     stopGame,
     addCustomEdition,
     deleteCustomEdition,
+    downloadRunner,
     checkInstalls,
   };
 }
