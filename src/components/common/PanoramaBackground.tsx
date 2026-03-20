@@ -62,4 +62,4 @@ const PanoramaBackground = React.memo(({ profile, isDay }: PanoramaProps) => {
   );
 });
 
-export default PanoramaBackground; 
+export default PanoramaBackground;
