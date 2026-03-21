@@ -97,14 +97,24 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       if (document.activeElement?.tagName === 'INPUT' && e.key !== 'ArrowDown' && e.key !== 'ArrowRight') return;
 
       if (e.key === 'ArrowRight') {
-        if (focusIndex === 3) onNavigateRight();
+        if (legacyMode) onNavigateRight();
+        else if (focusIndex === 3) onNavigateRight();
         else if (focusIndex === 1 || focusIndex === 2) setFocusIndex(prev => prev + 1);
       } else if (e.key === 'ArrowLeft') {
+        if (legacyMode) return;
         if (focusIndex === 2 || focusIndex === 3) setFocusIndex(prev => prev - 1);
       } else if (e.key === 'ArrowDown') {
-        setFocusIndex(prev => (prev < 3 ? prev + 1 : prev));
+        if (legacyMode) {
+          setFocusIndex(prev => (prev === 1 ? 3 : prev));
+        } else {
+          setFocusIndex(prev => (prev < 3 ? prev + 1 : prev));
+        }
       } else if (e.key === 'ArrowUp') {
-        setFocusIndex(prev => (prev > (legacyMode ? 1 : 0) ? prev - 1 : prev));
+        if (legacyMode) {
+          setFocusIndex(prev => (prev === 3 ? 1 : prev));
+        } else {
+          setFocusIndex(prev => (prev > (legacyMode ? 1 : 0) ? prev - 1 : prev));
+        }
       } else if (e.key === 'Enter') {
         if (focusIndex === 0) {
           (containerRef.current?.querySelector('input') as HTMLElement)?.focus();
@@ -139,7 +149,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
-      className={`absolute ${legacyMode ? 'left-[calc(25vw-159px)]' : 'left-16'} ${legacyMode ? 'top-1/2' : 'top-[42%]'} -translate-y-1/2 flex flex-col items-center gap-1 outline-none z-10`}
+      className={`absolute ${legacyMode ? 'left-[calc(50vw-340px)]' : 'left-16'} ${legacyMode ? 'top-1/2' : 'top-[42%]'} -translate-y-1/2 flex flex-col items-center gap-1 outline-none z-10`}
     >
       {!legacyMode && (
         <div className={`bg-black/20 flex justify-center items-center ${legacyMode ? 'mb-0' : 'mb-2'} px-2 py-1 rounded-sm border-2 transition-colors ${isFocusedSection && focusIndex === 0 ? 'border-[#FFFF55]' : 'border-transparent'}`} data-focus="0" tabIndex={0}>
@@ -160,7 +170,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       {!legacyMode && (
         <canvas ref={canvasRef} className="drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] cursor-ew-resize outline-none" />
       )}
-      <div className={`flex ${legacyMode ? 'flex-col gap-2 mt-4' : 'flex-row gap-4 mt-2'} items-center`}>
+      <div className={`flex ${legacyMode ? 'flex-col gap-2 mt-0' : 'flex-row gap-4 mt-2'} items-center`}>
         <button
           data-focus="1" tabIndex={0}
           onMouseEnter={() => isFocusedSection && setFocusIndex(1)}
@@ -171,16 +181,18 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
         >
           <img src="/images/Change_Skin_Icon.png" alt="Skin" className="w-8 h-8 object-contain" style={{ imageRendering: 'pixelated' }} />
         </button>
-        <button
-          data-focus="2" tabIndex={0}
-          onMouseEnter={() => isFocusedSection && setFocusIndex(2)}
-          onClick={() => { playClickSound(); setShowLayers(!showLayers); }}
-          className={`mc-sq-btn w-12 h-12 flex items-center justify-center outline-none border-none transition-all ${isFocusedSection && focusIndex === 2 ? 'scale-110' : ''}`}
-          style={isFocusedSection && focusIndex === 2 ? { backgroundImage: "url('/images/Button_Square_Highlighted.png')" } : {}}
-          title="Toggle Layers"
-        >
-          <img src="/images/Layer_Icon.png" alt="Layers" className="w-8 h-8 object-contain" style={{ imageRendering: 'pixelated' }} />
-        </button>
+        {!legacyMode && (
+          <button
+            data-focus="2" tabIndex={0}
+            onMouseEnter={() => isFocusedSection && setFocusIndex(2)}
+            onClick={() => { playClickSound(); setShowLayers(!showLayers); }}
+            className={`mc-sq-btn w-12 h-12 flex items-center justify-center outline-none border-none transition-all ${isFocusedSection && focusIndex === 2 ? 'scale-110' : ''}`}
+            style={isFocusedSection && focusIndex === 2 ? { backgroundImage: "url('/images/Button_Square_Highlighted.png')" } : {}}
+            title="Toggle Layers"
+          >
+            <img src="/images/Layer_Icon.png" alt="Layers" className="w-8 h-8 object-contain" style={{ imageRendering: 'pixelated' }} />
+          </button>
+        )}
         <button
           data-focus="3" tabIndex={0}
           onMouseEnter={() => isFocusedSection && setFocusIndex(3)}
