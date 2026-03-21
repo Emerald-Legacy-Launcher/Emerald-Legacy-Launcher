@@ -8,6 +8,7 @@ interface DiscordRPCProps {
   profile: string;
   activeView: string;
   isGameRunning: boolean;
+  isWindowVisible: boolean;
   downloadProgress: number | null;
   downloadingId: string | null;
   editions: any[];
@@ -20,6 +21,7 @@ export function useDiscordRPC({
   profile,
   activeView,
   isGameRunning,
+  isWindowVisible,
   downloadProgress,
   downloadingId,
   editions,
@@ -27,6 +29,8 @@ export function useDiscordRPC({
   useEffect(() => {
     const updateRPC = async () => {
       if (!rpcEnabled || showIntro || !username) return;
+
+      if (!isWindowVisible && !isGameRunning && downloadProgress === null) return;
 
       const version = editions.find((e) => e.id === profile);
       const versionName = version ? version.name : "Unknown Version";
@@ -54,5 +58,5 @@ export function useDiscordRPC({
     };
 
     updateRPC();
-  }, [rpcEnabled, showIntro, username, profile, activeView, isGameRunning, Math.floor(downloadProgress || 0), downloadingId, editions]);
+  }, [rpcEnabled, showIntro, username, profile, activeView, isGameRunning, isWindowVisible, Math.floor(downloadProgress || 0), downloadingId, editions]);
 }

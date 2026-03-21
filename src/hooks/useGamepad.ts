@@ -2,9 +2,10 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 
 export interface UseGamepadProps {
   playSfx: (file: string) => void;
+  isWindowVisible: boolean;
 }
 
-export const useGamepad = ({ playSfx }: UseGamepadProps) => {
+export const useGamepad = ({ playSfx, isWindowVisible }: UseGamepadProps) => {
   const [connected, setConnected] = useState(false);
   const requestRef = useRef<number | undefined>(undefined);
   const focusedRef = useRef(document.hasFocus());
@@ -113,7 +114,7 @@ export const useGamepad = ({ playSfx }: UseGamepadProps) => {
   }, []);
 
   useEffect(() => {
-    if (connected) {
+    if (connected && isWindowVisible) {
       requestRef.current = requestAnimationFrame(update);
     } else if (requestRef.current) {
       cancelAnimationFrame(requestRef.current);
@@ -121,7 +122,7 @@ export const useGamepad = ({ playSfx }: UseGamepadProps) => {
     return () => {
       if (requestRef.current) cancelAnimationFrame(requestRef.current);
     };
-  }, [connected, update]);
+  }, [connected, update, isWindowVisible]);
 
   return { connected };
 };

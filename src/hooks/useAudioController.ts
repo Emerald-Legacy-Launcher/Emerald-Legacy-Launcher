@@ -25,9 +25,10 @@ interface AudioControllerProps {
   sfxVol: number;
   showIntro: boolean;
   isGameRunning: boolean;
+  isWindowVisible: boolean;
 }
 
-export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning }: AudioControllerProps) {
+export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning, isWindowVisible }: AudioControllerProps) {
   const [currentTrack, setCurrentTrack] = useState(0);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [splashIndex, setSplashIndex] = useState(-1);
@@ -81,7 +82,9 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning 
 
   useEffect(() => {
     if (!audioElement) return;
-    if (isGameRunning) {
+    const shouldPause = isGameRunning || !isWindowVisible;
+
+    if (shouldPause) {
       if (!audioElement.paused) {
         musicPausedRef.current = {
           at: audioElement.currentTime,
@@ -97,7 +100,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning 
       }
       audioElement.play().catch(() => {});
     }
-  }, [isGameRunning]);
+  }, [isGameRunning, isWindowVisible]);
 
   useEffect(() => {
     if (audioElement) {

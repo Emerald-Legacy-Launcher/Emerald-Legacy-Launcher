@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppConfig } from "../hooks/useAppConfig";
 import { useAudioController } from "../hooks/useAudioController";
 import { useGameManager } from "../hooks/useGameManager";
@@ -15,6 +16,7 @@ interface UIContextType {
   setLogoAnimDone: (done: boolean) => void;
   isUiHidden: boolean;
   setIsUiHidden: (hidden: boolean) => void;
+  isWindowVisible: boolean;
   showCredits: boolean;
   setShowCredits: (show: boolean) => void;
   focusSection: "menu" | "skin";
@@ -35,6 +37,7 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
   const [logoAnimDone, setLogoAnimDone] = useState(false);
   const [activeView, setActiveView] = useState("main");
   const [isUiHidden, setIsUiHidden] = useState(false);
+  const [isWindowVisible, setIsWindowVisible] = useState(true);
   const [showCredits, setShowCredits] = useState(false);
   const [focusSection, setFocusSection] = useState<"menu" | "skin">("menu");
 
@@ -51,6 +54,7 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     sfxVol: configRaw.sfxVol,
     showIntro,
     isGameRunning: gameRaw.isGameRunning,
+    isWindowVisible,
   });
 
   const config = useMemo(() => configRaw, [
@@ -80,9 +84,10 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     downloadProgress: game.downloadProgress,
     downloadingId: game.downloadingId,
     editions: game.editions,
+    isWindowVisible,
   });
 
-  const { connected } = useGamepad({ playSfx: audio.playSfx });
+  const { connected } = useGamepad({ playSfx: audio.playSfx, isWindowVisible });
 
   const onNavigateToSkin = useCallback(() => setFocusSection("skin"), []);
   const onNavigateToMenu = useCallback(() => setFocusSection("menu"), []);
@@ -99,12 +104,29 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     }
   }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.isLoaded]);
 
+  useEffect(() => {
+    let unlisten: (() => void) | undefined;
+    
+    (async () => {
+      const appWindow = getCurrentWindow();
+      const removeListener = await appWindow.listen<boolean>('tauri://visibility-change', ({ payload }) => {
+        setIsWindowVisible(payload);
+      });
+      unlisten = removeListener;
+    })();
+
+    return () => {
+      if (unlisten) unlisten();
+    };
+  }, []);
+
   const uiValue = useMemo(() => ({
     activeView, setActiveView, showIntro, setShowIntro,
     logoAnimDone, setLogoAnimDone, isUiHidden, setIsUiHidden,
+    isWindowVisible,
     showCredits, setShowCredits, focusSection, setFocusSection,
     onNavigateToSkin, onNavigateToMenu, connected
-  }), [activeView, showIntro, logoAnimDone, isUiHidden, showCredits, focusSection, onNavigateToSkin, onNavigateToMenu, connected]);
+  }), [activeView, showIntro, logoAnimDone, isUiHidden, isWindowVisible, showCredits, focusSection, onNavigateToSkin, onNavigateToMenu, connected]);
 
   return (
     <UIContext.Provider value={uiValue}>

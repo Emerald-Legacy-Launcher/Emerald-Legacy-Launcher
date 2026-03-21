@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useUI } from '../../context/LauncherContext';
 
 interface PanoramaProps {
   profile: string;
@@ -6,6 +7,7 @@ interface PanoramaProps {
 }
 
 const PanoramaBackground = React.memo(({ profile, isDay }: PanoramaProps) => {
+  const { isWindowVisible } = useUI();
   const profileId = profile.startsWith('custom_') ? 'legacy_evolved' : profile;
   const currentPanorama = `/panorama/${profileId}_Panorama_Background_${isDay ? 'Day' : 'Night'}.png`;
 
@@ -46,16 +48,18 @@ const PanoramaBackground = React.memo(({ profile, isDay }: PanoramaProps) => {
       )}
 
       <div ref={containerRef} className="absolute inset-0 overflow-hidden pointer-events-none transition-opacity duration-500">
-        <div 
-          className="absolute top-0 left-0 h-full will-change-transform"
-          style={{
-            width: bgWidth ? `calc(100vw + ${bgWidth}px)` : '200vw',
-            backgroundImage: `url("${currentPanorama}")`,
-            backgroundSize: bgWidth ? `${bgWidth}px 100%` : 'auto 100%',
-            backgroundRepeat: 'repeat-x',
-            animation: bgWidth ? 'panoramaLoop 140s linear infinite' : 'none'
-          }}
-        />
+        {isWindowVisible && (
+          <div 
+            className="absolute top-0 left-0 h-full will-change-transform"
+            style={{
+              width: bgWidth ? `calc(100vw + ${bgWidth}px)` : '200vw',
+              backgroundImage: `url("${currentPanorama}")`,
+              backgroundSize: bgWidth ? `${bgWidth}px 100%` : 'auto 100%',
+              backgroundRepeat: 'repeat-x',
+              animation: bgWidth ? 'panoramaLoop 140s linear infinite' : 'none'
+            }}
+          />
+        )}
       </div>
       <div className="absolute inset-0 bg-black/35 pointer-events-none" />
     </>
