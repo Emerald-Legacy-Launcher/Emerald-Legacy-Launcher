@@ -6,7 +6,7 @@ import { useUI, useConfig, useAudio, useGame } from "../../context/LauncherConte
 
 const SettingsView = memo(function SettingsView() {
   const { setActiveView } = useUI();
-  const { vfxEnabled, setVfxEnabled, musicVol: musicVolume, setMusicVol: setMusicVolume, sfxVol: sfxVolume, setSfxVol: setSfxVolume, layout, setLayout, linuxRunner, setLinuxRunner, perfBoost, setPerfBoost, rpcEnabled, setRpcEnabled, legacyMode, setLegacyMode, keepLauncherOpen, setKeepLauncherOpen } = useConfig();
+  const { vfxEnabled, setVfxEnabled, musicVol: musicVolume, setMusicVol: setMusicVolume, sfxVol: sfxVolume, setSfxVol: setSfxVolume, layout, setLayout, linuxRunner, setLinuxRunner, perfBoost, setPerfBoost, rpcEnabled, setRpcEnabled, legacyMode, setLegacyMode, keepLauncherOpen, setKeepLauncherOpen, enableTrayIcon, setEnableTrayIcon } = useConfig();
   const { currentTrack, setCurrentTrack, tracks, playClickSound, playBackSound } = useAudio();
   const { isGameRunning, stopGame, isRunnerDownloading, runnerDownloadProgress, downloadRunner } = useGame();
   const { isLinux, isMac } = usePlatform();
@@ -50,6 +50,11 @@ const SettingsView = memo(function SettingsView() {
   const handleKeepOpenToggle = () => {
     playClickSound();
     setKeepLauncherOpen(!keepLauncherOpen);
+  };
+
+  const handleTrayToggle = () => {
+    playClickSound();
+    setEnableTrayIcon(!enableTrayIcon);
   };
 
   const handleRunnerToggle = () => {
@@ -159,6 +164,13 @@ const SettingsView = memo(function SettingsView() {
     });
 
     items.push({
+      id: "tray_icon",
+      label: `Tray Icon: ${enableTrayIcon ? "ON" : "OFF"}`,
+      type: "button",
+      onClick: handleTrayToggle,
+    });
+
+    items.push({
       id: "layout",
       label: `Layout: ${layout}`,
       type: "button",
@@ -241,6 +253,7 @@ const SettingsView = memo(function SettingsView() {
     handleRpcToggle,
     handleLegacyToggle,
     handleKeepOpenToggle,
+    handleTrayToggle,
     stopGame,
     playBackSound,
     setActiveView,
@@ -248,6 +261,7 @@ const SettingsView = memo(function SettingsView() {
     setSfxVolume,
     setVfxEnabled,
     keepLauncherOpen,
+    enableTrayIcon,
   ]);
 
   useEffect(() => {

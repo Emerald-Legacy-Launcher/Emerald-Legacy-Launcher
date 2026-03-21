@@ -31,6 +31,7 @@ export interface AppConfig {
   customEditions?: CustomEdition[];
   profile?: string;
   keepLauncherOpen?: boolean;
+  enableTrayIcon?: boolean;
 }
 
 export interface ThemePalette {
@@ -107,6 +108,10 @@ export class TauriService {
 
   static async stopGame(instanceId: string): Promise<void> {
     return invoke('stop_game', { instanceId });
+  }
+
+  static async updateTrayIcon(visible: boolean): Promise<void> {
+    return invoke('update_tray_icon', { visible });
   }
 
   static onDownloadProgress(callback: (percent: number) => void) {

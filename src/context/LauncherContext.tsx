@@ -67,7 +67,7 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     configRaw.username, configRaw.theme, configRaw.layout, configRaw.vfxEnabled,
     configRaw.rpcEnabled, configRaw.musicVol, configRaw.sfxVol, configRaw.isDayTime,
     configRaw.profile, configRaw.linuxRunner, configRaw.perfBoost, configRaw.customEditions,
-    configRaw.legacyMode, configRaw.keepLauncherOpen
+    configRaw.legacyMode, configRaw.keepLauncherOpen, configRaw.enableTrayIcon
   ]);
 
   const game = useMemo(() => gameRaw, [
@@ -108,7 +108,7 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     if (config.isLoaded) {
       config.saveConfig(skinSync.skinBase64);
     }
-  }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.isLoaded]);
+  }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.keepLauncherOpen, config.enableTrayIcon, config.isLoaded]);
 
   useEffect(() => {
     let unlisten: (() => void) | undefined;

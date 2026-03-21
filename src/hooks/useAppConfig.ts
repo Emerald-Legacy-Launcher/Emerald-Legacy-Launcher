@@ -14,6 +14,7 @@ export function useAppConfig() {
   const [profile, setProfile] = useLocalStorage("lce-profile", "legacy_evolved");
   const [legacyMode, setLegacyMode] = useLocalStorage("lce-legacy-mode", false);
   const [keepLauncherOpen, setKeepLauncherOpen] = useLocalStorage("lce-keep-open", false);
+  const [enableTrayIcon, setEnableTrayIcon] = useLocalStorage("lce-tray-icon", true);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [linuxRunner, setLinuxRunner] = useState<string | undefined>();
@@ -29,9 +30,16 @@ export function useAppConfig() {
         setPerfBoost(config.appleSiliconPerformanceBoost);
       if (config.customEditions) setCustomEditions(config.customEditions);
       if (config.keepLauncherOpen !== undefined) setKeepLauncherOpen(config.keepLauncherOpen);
+      if (config.enableTrayIcon !== undefined) setEnableTrayIcon(config.enableTrayIcon);
       setIsLoaded(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      TauriService.updateTrayIcon(enableTrayIcon);
+    }
+  }, [enableTrayIcon, isLoaded]);
 
   const saveConfig = useCallback((skinBase64?: string | null) => {
     TauriService.saveConfig({
@@ -43,8 +51,9 @@ export function useAppConfig() {
       profile,
       customEditions,
       keepLauncherOpen,
+      enableTrayIcon,
     }).catch(console.error);
-  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen]);
+  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen, enableTrayIcon]);
 
   return {
     username,
@@ -67,6 +76,8 @@ export function useAppConfig() {
     setLegacyMode,
     keepLauncherOpen,
     setKeepLauncherOpen,
+    enableTrayIcon,
+    setEnableTrayIcon,
     profile,
     setProfile,
     linuxRunner,
