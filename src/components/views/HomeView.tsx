@@ -6,7 +6,7 @@ const HomeView = memo(function HomeView() {
   const { setActiveView, setShowCredits, focusSection, onNavigateToSkin } = useUI();
   const { profile, legacyMode } = useConfig();
   const { playClickSound, playSfx } = useAudio();
-  const { handleLaunch, isGameRunning, stopGame, editions, installs, toggleInstall, downloadProgress, downloadingId } = useGame();
+  const { handleLaunch, isGameRunning, editions, installs, toggleInstall, downloadProgress, downloadingId } = useGame();
 
   const isFocusedSection = focusSection === "menu";
   const selectedEdition = editions.find((e: any) => e.id === profile);
@@ -17,21 +17,17 @@ const HomeView = memo(function HomeView() {
   const buttons = useMemo(
     () => [
       {
-        label: isGameRunning
-          ? "Stop Game"
-          : isDownloading
-            ? `Downloading... ${Math.floor(downloadProgress || 0)}%`
-            : isInstalled
-              ? `Play Game`
-              : `Download ${selectedVersionName}`,
-        action: isGameRunning
-          ? stopGame
-          : isDownloading
-            ? () => {}
-            : isInstalled
-              ? handleLaunch
-              : () => toggleInstall(profile),
-        isDanger: isGameRunning,
+        label: isDownloading
+          ? `Downloading... ${Math.floor(downloadProgress || 0)}%`
+          : isInstalled
+            ? `Play Game`
+            : `Download ${selectedVersionName}`,
+        action: isDownloading
+          ? () => {}
+          : isInstalled
+            ? handleLaunch
+            : () => toggleInstall(profile),
+        isDanger: false,
       },
       { label: "Help & Options", action: () => setActiveView("settings") },
       { label: "Versions", action: () => setActiveView("versions") },
@@ -44,7 +40,6 @@ const HomeView = memo(function HomeView() {
       downloadProgress,
       isInstalled,
       selectedVersionName,
-      stopGame,
       handleLaunch,
       toggleInstall,
       profile,
