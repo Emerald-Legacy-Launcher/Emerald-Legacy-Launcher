@@ -1,5 +1,8 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TauriService } from "../services/TauriService";
+
+const appWindow = getCurrentWindow();
 
 const BASE_EDITIONS = [
   {
@@ -107,12 +110,16 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
     setError(null);
     setIsGameRunning(true);
     try {
+      await appWindow.hide();
       await TauriService.launchGame(profile, []);
     } catch (e: any) {
       console.error(e);
       setError(typeof e === 'string' ? e : e.message || "Failed to launch game");
     } finally {
       setIsGameRunning(false);
+      await appWindow.show();
+      await appWindow.unminimize();
+      await appWindow.setFocus();
     }
   }, [isGameRunning, profile]);
 
