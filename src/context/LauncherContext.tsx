@@ -89,9 +89,9 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (activeView === "main") {
-      audio.setSplashIndex(-1);
+      audioRaw.setSplashIndex(-1);
     }
-  }, [activeView, audio]);
+  }, [activeView]);
 
   useEffect(() => {
     if (config.isLoaded) {

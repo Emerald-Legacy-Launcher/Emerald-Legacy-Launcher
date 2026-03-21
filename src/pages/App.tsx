@@ -204,6 +204,7 @@ export default function App() {
                       >
                         <div
                           onClick={audio.cycleSplash}
+                          data-tauri-no-drag
                           className="mc-splash text-[#FFFF55] text-[28px] z-100 cursor-pointer whitespace-nowrap"
                           style={{ textShadow: "2px 2px 0px #3F3F00" }}
                         >
