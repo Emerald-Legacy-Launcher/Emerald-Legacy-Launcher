@@ -1,7 +1,7 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Emerald Legacy Launcher",
-  "version": "0.2.0",
+  "version": "1.0.0",
   "identifier": "com.emerald.legacy",
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -12,13 +12,17 @@
   "app": {
     "windows": [
       {
-        "title": "Emerald Legacy",
-        "width": 1000,
-        "height": 650,
-        "decorations": true,
-        "transparent": false,
-        "titleBarStyle": "Visible",
-        "devtools": true
+        "label": "main",
+        "title": "Emerald Legacy Launcher",
+        "width": 1280,
+        "height": 720,
+        "minWidth": 1280,
+        "minHeight": 720,
+        "decorations": false,
+        "transparent": true,
+        "resizable": true,
+        "center": true,
+        "visible": false
       }
     ],
     "security": {
@@ -35,10 +39,5 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ]
-  },
-  "plugins": {
-    "shell": {
-      "open": true
-    }
   }
 }

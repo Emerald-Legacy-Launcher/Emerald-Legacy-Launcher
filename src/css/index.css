@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: 'Mojangles';
+  src: url('/fonts/Mojangles.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.gamepad-connected-indicator {
+  position: fixed;
+  bottom: 10px;
+  left: 10px;
+  color: #FFFF55;
+  font-size: 10px;
+  z-index: 1000;
+  opacity: 0.5;
+}
+
+body {
+  margin: 0;
+  background-color: #000;
+  font-family: 'Mojangles', monospace;
+  -webkit-font-smoothing: none;
+}
+
+.mc-button {
+  background-image: url('/images/button.png');
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  transition: none;
+}
+
+.mc-button:hover:not(:disabled) {
+  background-image: url('/images/button_highlighted.png');
+}
+
+.mc-text-shadow {
+  text-shadow: 1px 1px 0px rgba(63, 63, 63, 1);
+}
+
+.mc-text-shadow-hover {
+  text-shadow: 1px 1px 0px rgba(63, 90, 63, 1);
+}
+
+
+@keyframes sga-burst {
+  0% {
+    transform: translate(-50%, -50%) scale(0.5);
+    opacity: 1;
+  }
+
+  100% {
+    transform: translate(calc(-50% + var(--vX)), calc(-50% + var(--vY))) scale(1.2) rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+.particle-burst {
+  animation: sga-burst 0.8s ease-out forwards;
+  filter: drop-shadow(0 0 8px rgba(180, 100, 255, 0.9));
+}
+
+::-webkit-scrollbar {
+  width: 14px;
+}
+
+::-webkit-scrollbar-track {
+  background: url('/images/backgroundframe.png') center;
+  background-size: 100% auto;
+  image-rendering: pixelated;
+}
+
+::-webkit-scrollbar-thumb {
+  background: url('/images/SliderHandlerBackground.png') no-repeat center;
+  background-size: 100% 100%;
+  image-rendering: pixelated;
+  cursor: pointer;
+}

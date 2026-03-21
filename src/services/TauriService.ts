@@ -1,0 +1,132 @@
+import { invoke } from '@tauri-apps/api/core';
+import { listen } from '@tauri-apps/api/event';
+
+export interface McServer {
+  name: string;
+  ip: string;
+  port: number;
+}
+
+export interface SkinLibraryItem {
+  id: string;
+  name: string;
+  skinBase64: string;
+}
+
+export interface CustomEdition {
+  id: string;
+  name: string;
+  desc: string;
+  url: string;
+}
+
+export interface AppConfig {
+  username: string;
+  linuxRunner?: string;
+  skinBase64?: string;
+  skinLibrary?: SkinLibraryItem[];
+  themeStyleId?: string;
+  themePaletteId?: string;
+  appleSiliconPerformanceBoost?: boolean;
+  customEditions?: CustomEdition[];
+  profile?: string;
+  keepLauncherOpen?: boolean;
+  enableTrayIcon?: boolean;
+}
+
+export interface ThemePalette {
+  id: string;
+  name: string;
+  colors: any;
+}
+
+export interface Runner {
+  id: string;
+  name: string;
+  path: string;
+  type: 'wine' | 'proton';
+}
+
+export interface MacOSSetupProgress {
+  stage: string;
+  message: string;
+  percent?: number;
+}
+
+export class TauriService {
+  static async saveConfig(config: AppConfig): Promise<void> {
+    return invoke('save_config', { config });
+  }
+
+  static async loadConfig(): Promise<AppConfig> {
+    return invoke('load_config');
+  }
+
+  static async getExternalPalettes(): Promise<ThemePalette[]> {
+    return invoke('get_external_palettes');
+  }
+
+  static async importTheme(): Promise<string> {
+    return invoke('import_theme');
+  }
+
+  static async getAvailableRunners(): Promise<Runner[]> {
+    return invoke('get_available_runners');
+  }
+
+  static async downloadRunner(name: string, url: string): Promise<string> {
+    return invoke('download_runner', { name, url });
+  }
+
+  static async checkGameInstalled(instanceId: string): Promise<boolean> {
+    return invoke('check_game_installed', { instanceId });
+  }
+
+  static async openInstanceFolder(instanceId: string): Promise<void> {
+    return invoke('open_instance_folder', { instanceId });
+  }
+
+  static async deleteInstance(instanceId: string): Promise<void> {
+    return invoke('delete_instance', { instanceId });
+  }
+
+  static async cancelDownload(): Promise<void> {
+    return invoke('cancel_download');
+  }
+
+  static async setupMacosRuntime(): Promise<void> {
+    return invoke('setup_macos_runtime');
+  }
+
+  static async downloadAndInstall(url: string, instanceId: string): Promise<string> {
+    return invoke('download_and_install', { url, instanceId });
+  }
+
+  static async launchGame(instanceId: string, servers: McServer[]): Promise<void> {
+    return invoke('launch_game', { instanceId, servers });
+  }
+
+  static async stopGame(instanceId: string): Promise<void> {
+    return invoke('stop_game', { instanceId });
+  }
+
+  static async updateTrayIcon(visible: boolean): Promise<void> {
+    return invoke('update_tray_icon', { visible });
+  }
+
+  static onDownloadProgress(callback: (percent: number) => void) {
+    return listen<number>('download-progress', (event) => callback(event.payload));
+  }
+
+  static onRunnerDownloadProgress(callback: (percent: number) => void) {
+    return listen<number>('runner-download-progress', (event) => callback(event.payload));
+  }
+
+  static onMacosProgress(callback: (payload: MacOSSetupProgress) => void) {
+    return listen<MacOSSetupProgress>('macos-setup-progress', (event) => callback(event.payload));
+  }
+
+  static async openUrl(url: string): Promise<void> {
+    return invoke('plugin:opener|open_url', { url });
+  }
+}

@@ -1,18 +1,26 @@
 {
-  "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": ["main"],
+  "description": "Default permissions",
+  "windows": [
+    "main"
+  ],
   "permissions": [
     "core:default",
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-toggle-maximize",
+    "core:window:allow-close",
+    "core:window:allow-set-title",
+    "core:window:allow-start-dragging",
+    "core:window:allow-show",
+    "core:window:allow-hide",
+    "core:window:allow-unminimize",
+    "core:window:allow-set-focus",
     "opener:default",
-    {
-      "identifier": "opener:allow-open-url",
-      "allow": [
-        { "url": "https://github.com/KayJannOnGit/*" },
-        { "url": "https://discord.gg/*" },
-        { "url": "https://reddit.com/*" }
-      ]
-    }
+    "gamepad:default",
+    "drpc:allow-is-running",
+    "drpc:default",
+    "core:event:allow-listen",
+    "core:app:default"
   ]
 }

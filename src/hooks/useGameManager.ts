@@ -1,0 +1,169 @@
+import { useState, useEffect, useCallback, useMemo } from "react";
+import { getCurrentWindow } from "@tauri-apps/api/window";
+import { TauriService } from "../services/TauriService";
+
+const appWindow = getCurrentWindow();
+
+const BASE_EDITIONS = [
+  {
+    id: "legacy_evolved",
+    name: "Legacy Evolved",
+    desc: "Backporting the newer title updates back to the LCE",
+    url: "https://github.com/piebotc/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
+  },
+  {
+    id: "vanilla_tu24",
+    name: "Title Update 24",
+    desc: "Based on TU19, but with the features of TU24.",
+    url: "https://huggingface.co/datasets/KayJann/emerald-legacy-assets/resolve/main/emerald_tu24_vanilla.zip",
+  },
+  {
+    id: "vanilla_tu19",
+    name: "Title Update 19",
+    desc: "Leaked 4J Studios build. (smartcmd)",
+    url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
+  },
+];
+
+interface GameManagerProps {
+  profile: string;
+  setProfile: (id: string) => void;
+  customEditions: any[];
+  setCustomEditions: (editions: any[]) => void;
+  keepLauncherOpen: boolean;
+}
+
+export function useGameManager({ profile, setProfile, customEditions, setCustomEditions, keepLauncherOpen }: GameManagerProps) {
+  const [installs, setInstalls] = useState<string[]>([]);
+  const [isGameRunning, setIsGameRunning] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
+  const [downloadingId, setDownloadingId] = useState<string | null>(null);
+  const [isRunnerDownloading, setIsRunnerDownloading] = useState(false);
+  const [runnerDownloadProgress, setRunnerDownloadProgress] = useState<number | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const editions = useMemo(() => [...BASE_EDITIONS, ...customEditions], [customEditions]);
+
+  const checkInstalls = useCallback(async () => {
+    const results = await Promise.all(
+      editions.map(async (e) => {
+        const isInstalled = await TauriService.checkGameInstalled(e.id);
+        return isInstalled ? e.id : null;
+      }),
+    );
+    setInstalls(results.filter((id): id is string => id !== null));
+  }, [editions]);
+
+  useEffect(() => {
+    checkInstalls();
+    const unlistenDownload = TauriService.onDownloadProgress((p) => setDownloadProgress(p));
+    const unlistenRunner = TauriService.onRunnerDownloadProgress((p) => setRunnerDownloadProgress(p));
+    return () => {
+      unlistenDownload.then((u) => u());
+      unlistenRunner.then((u) => u());
+    };
+  }, [customEditions, checkInstalls]);
+
+  const downloadRunner = useCallback(async (name: string, url: string) => {
+    if (isRunnerDownloading) return;
+    setIsRunnerDownloading(true);
+    setRunnerDownloadProgress(0);
+    setError(null);
+    try {
+      await TauriService.downloadRunner(name, url);
+      setRunnerDownloadProgress(null);
+    } catch (e: any) {
+      console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to download runner");
+    } finally {
+      setIsRunnerDownloading(false);
+    }
+  }, [isRunnerDownloading]);
+
+  const toggleInstall = useCallback(async (id: string) => {
+    if (downloadingId) return;
+    const edition = editions.find((e) => e.id === id);
+    if (!edition) return;
+    setError(null);
+    try {
+      setDownloadingId(id);
+      setDownloadProgress(0);
+      await TauriService.downloadAndInstall(edition.url, id);
+      await checkInstalls();
+      setProfile(id);
+      setDownloadProgress(null);
+      setDownloadingId(null);
+    } catch (e: any) {
+      console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to install version");
+      setDownloadProgress(null);
+      setDownloadingId(null);
+    }
+  }, [downloadingId, editions, checkInstalls, setProfile]);
+
+  const handleUninstall = useCallback(async (id: string) => {
+    await TauriService.deleteInstance(id);
+    await checkInstalls();
+  }, [checkInstalls]);
+
+  const handleLaunch = useCallback(async () => {
+    if (isGameRunning) return;
+    setError(null);
+    setIsGameRunning(true);
+    try {
+      if (!keepLauncherOpen) {
+        await appWindow.hide();
+      }
+      await TauriService.launchGame(profile, []);
+    } catch (e: any) {
+      console.error(e);
+      setError(typeof e === 'string' ? e : e.message || "Failed to launch game");
+    } finally {
+      setIsGameRunning(false);
+      await appWindow.show();
+      await appWindow.unminimize();
+      await appWindow.setFocus();
+    }
+  }, [isGameRunning, profile]);
+
+  const stopGame = useCallback(async () => {
+    try {
+      await TauriService.stopGame(profile);
+      setIsGameRunning(false);
+    } catch (e) {
+      console.error(e);
+    }
+  }, [profile]);
+
+  const addCustomEdition = useCallback((edition: { name: string; desc: string; url: string }) => {
+    const id = `custom_${Date.now()}`;
+    const newEdition = { ...edition, id };
+    setCustomEditions([...customEditions, newEdition]);
+    return id;
+  }, [customEditions, setCustomEditions]);
+
+  const deleteCustomEdition = useCallback((id: string) => {
+    setCustomEditions(customEditions.filter((e) => e.id !== id));
+    TauriService.deleteInstance(id).catch(console.error);
+  }, [customEditions, setCustomEditions]);
+
+  return {
+    installs,
+    isGameRunning,
+    downloadProgress,
+    downloadingId,
+    isRunnerDownloading,
+    runnerDownloadProgress,
+    error,
+    setError,
+    editions,
+    toggleInstall,
+    handleUninstall,
+    handleLaunch,
+    stopGame,
+    addCustomEdition,
+    deleteCustomEdition,
+    downloadRunner,
+    checkInstalls,
+  };
+}
