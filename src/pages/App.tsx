@@ -31,6 +31,9 @@ export default function App() {
   const game = useGame();
   const { skinUrl, setSkinUrl } = useSkin();
 
+  const selectedEdition = game.editions.find((e: any) => e.id === config.profile);
+  const selectedVersionName = selectedEdition?.name || "";
+
   useEffect(() => {
     appWindow.show();
     setTimeout(() => setShowIntro(false), 2400);
@@ -68,7 +71,7 @@ export default function App() {
 
       <PanoramaBackground profile={config.profile} isDay={config.isDayTime} />
       {config.vfxEnabled && <ClickParticles />}
-      
+
       <AnimatePresence>
         {showCredits && (
           <TeamModal
@@ -88,9 +91,9 @@ export default function App() {
         />
       </AnimatePresence>
 
-      <AchievementToast 
-        message={game.error} 
-        onClose={() => game.setError(null)} 
+      <AchievementToast
+        message={game.error}
+        onClose={() => game.setError(null)}
       />
 
       <AnimatePresence>
@@ -189,21 +192,30 @@ export default function App() {
                 />
                 <AnimatePresence>
                   {logoAnimDone && (
-                    <motion.div
-                      key="splash"
-                      {...uiFade}
-                      className="absolute bottom-[20%] right-[5%] w-0 h-0 flex items-center justify-center"
-                    >
-                      <div
-                        onClick={audio.cycleSplash}
-                        className="mc-splash text-[#FFFF55] text-[28px] z-100 cursor-pointer whitespace-nowrap"
-                        style={{ textShadow: "2px 2px 0px #3F3F00" }}
+                    <>
+                      <motion.div
+                        key="splash"
+                        {...uiFade}
+                        className="absolute bottom-[20%] right-[5%] w-0 h-0 flex items-center justify-center"
                       >
-                        {audio.splashIndex === -1
-                          ? `Welcome ${config.username}!`
-                          : audio.splashes[audio.splashIndex]}
-                      </div>
-                    </motion.div>
+                        <div
+                          onClick={audio.cycleSplash}
+                          className="mc-splash text-[#FFFF55] text-[28px] z-100 cursor-pointer whitespace-nowrap"
+                          style={{ textShadow: "2px 2px 0px #3F3F00" }}
+                        >
+                          {audio.splashIndex === -1
+                            ? `Welcome ${config.username}!`
+                            : audio.splashes[audio.splashIndex]}
+                        </div>
+                      </motion.div>
+                      <motion.div
+                        key="tu-subtitle"
+                        {...uiFade}
+                        className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
+                      >
+                        {selectedVersionName}
+                      </motion.div>
+                    </>
                   )}
                 </AnimatePresence>
               </div>

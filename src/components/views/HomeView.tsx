@@ -22,7 +22,7 @@ const HomeView = memo(function HomeView() {
           : isDownloading
             ? `Downloading... ${Math.floor(downloadProgress || 0)}%`
             : isInstalled
-              ? `Play ${selectedVersionName}`
+              ? `Play Game`
               : `Download ${selectedVersionName}`,
         action: isGameRunning
           ? stopGame
