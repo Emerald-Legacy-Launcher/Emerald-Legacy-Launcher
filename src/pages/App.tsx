@@ -212,13 +212,15 @@ export default function App() {
                             : audio.splashes[audio.splashIndex]}
                         </div>
                       </motion.div>
-                      <motion.div
-                        key="tu-subtitle"
-                        {...uiFade}
-                        className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
-                      >
-                        {selectedVersionName}
-                      </motion.div>
+                      {activeView === "main" && (
+                        <motion.div
+                          key="tu-subtitle"
+                          {...uiFade}
+                          className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
+                        >
+                          {selectedVersionName}
+                        </motion.div>
+                      )}
                     </>
                   )}
                 </AnimatePresence>
