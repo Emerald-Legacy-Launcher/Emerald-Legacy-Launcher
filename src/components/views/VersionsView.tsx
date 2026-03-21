@@ -123,7 +123,7 @@ const VersionsView = memo(function VersionsView() {
       transition={{ duration: 0.3 }}
       className="flex flex-col items-center w-full max-w-4xl outline-none"
     >
-      <h2 className="text-2xl text-white mc-text-shadow mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80 font-bold">
+      <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80 font-bold">
         Versions
       </h2>
 
