@@ -81,20 +81,20 @@ const SettingsView = memo(function SettingsView() {
 
   type SettingsItem =
     | {
-        id: string;
-        label: string;
-        type: "slider";
-        value: number;
-        onChange: (val: any) => void;
-      }
+      id: string;
+      label: string;
+      type: "slider";
+      value: number;
+      onChange: (val: any) => void;
+    }
     | {
-        id: string;
-        label: string;
-        type: "button";
-        onClick: () => void;
-        small?: boolean;
-        color?: string;
-      };
+      id: string;
+      label: string;
+      type: "button";
+      onClick: () => void;
+      small?: boolean;
+      color?: string;
+    };
 
   const settingsItems = useMemo<SettingsItem[]>(() => {
     const items: SettingsItem[] = [
@@ -121,17 +121,17 @@ const SettingsView = memo(function SettingsView() {
     ];
 
     items.push({
-        id: "vfx",
-        label: `VFX: ${vfxEnabled ? "ON" : "OFF"}`,
-        type: "button",
-        onClick: handleVfxToggle,
+      id: "vfx",
+      label: `VFX: ${vfxEnabled ? "ON" : "OFF"}`,
+      type: "button",
+      onClick: handleVfxToggle,
     });
 
     items.push({
-        id: "rpc",
-        label: `Discord RPC: ${rpcEnabled ? "ON" : "OFF"}`,
-        type: "button",
-        onClick: handleRpcToggle,
+      id: "rpc",
+      label: `Discord RPC: ${rpcEnabled ? "ON" : "OFF"}`,
+      type: "button",
+      onClick: handleRpcToggle,
     });
 
     items.push({
@@ -152,8 +152,8 @@ const SettingsView = memo(function SettingsView() {
       if (runners.length === 0 || runners.every(r => r.type !== 'proton')) {
         items.push({
           id: "download_runner",
-          label: isRunnerDownloading 
-            ? `Downloading Runner... ${Math.floor(runnerDownloadProgress || 0)}%` 
+          label: isRunnerDownloading
+            ? `Downloading Runner... ${Math.floor(runnerDownloadProgress || 0)}%`
             : "Download GE-Proton (Recommended)",
           type: "button",
           onClick: () => {
@@ -346,19 +346,18 @@ const SettingsView = memo(function SettingsView() {
               data-index={index}
               onMouseEnter={() => setFocusIndex(index)}
               onClick={item.onClick}
-              className={`w-[360px] h-10 flex items-center justify-center px-4 relative z-30 transition-colors outline-none border-none shrink-0 ${
-                isRed
-                  ? focusIndex === index
-                    ? "text-red-400"
-                    : "text-red-200"
-                  : focusIndex === index
-                    ? "text-[#FFFF55]"
-                    : "text-white"
-              } ${isRed ? "hover:text-red-500" : "hover:text-[#FFFF55]"}`}
+              className={`w-[360px] h-10 flex items-center justify-center px-4 relative z-30 transition-colors outline-none border-none shrink-0 ${isRed
+                ? focusIndex === index
+                  ? "text-red-400"
+                  : "text-red-200"
+                : focusIndex === index
+                  ? "text-[#FFFF55]"
+                  : "text-white"
+                } ${isRed ? "hover:text-red-500" : "hover:text-[#FFFF55]"}`}
               style={getItemStyle(index)}
             >
               <span
-                className={`mc-text-shadow tracking-widest uppercase ${isSmall ? "text-xs" : "text-xl"} truncate w-full text-center`}
+                className={`mc-text-shadow tracking-widest uppercase ${isSmall ? "text-xs" : item.label.length > 20 ? "text-lg" : "text-xl"} truncate w-full text-center`}
               >
                 {item.label}
               </span>
@@ -377,9 +376,8 @@ const SettingsView = memo(function SettingsView() {
             data-index={backIndex}
             onMouseEnter={() => setFocusIndex(backIndex)}
             onClick={backItem.onClick}
-            className={`w-72 h-10 flex items-center justify-center transition-colors text-xl mc-text-shadow outline-none border-none hover:text-[#FFFF55] ${
-              focusIndex === backIndex ? "text-[#FFFF55]" : "text-white"
-            }`}
+            className={`w-72 h-10 flex items-center justify-center transition-colors text-xl mc-text-shadow outline-none border-none hover:text-[#FFFF55] ${focusIndex === backIndex ? "text-[#FFFF55]" : "text-white"
+              }`}
             style={getItemStyle(backIndex)}
           >
             Back
