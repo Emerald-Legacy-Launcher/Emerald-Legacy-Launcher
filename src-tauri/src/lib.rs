@@ -234,8 +234,7 @@ fn import_theme(app: AppHandle) -> Result<String, String> {
 
 #[tauri::command]
 fn get_available_runners(app: AppHandle) -> Vec<Runner> {
-    let runners = Vec::new();
-
+    let mut runners = Vec::new();
     #[cfg(target_os = "linux")]
     {
         if let Ok(output) = Command::new("which").arg("wine").output() {
