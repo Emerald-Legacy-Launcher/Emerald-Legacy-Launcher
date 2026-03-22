@@ -25,6 +25,14 @@ const BASE_EDITIONS = [
   },
 ];
 
+const PARTNERSHIP_SERVERS = [
+  {
+    name: "Kowhaifans Clubhouse",
+    ip: "kowhaifan.ddns.net",
+    port: 25565,
+  },
+];
+
 interface GameManagerProps {
   profile: string;
   setProfile: (id: string) => void;
@@ -115,7 +123,7 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
       if (!keepLauncherOpen) {
         await appWindow.hide();
       }
-      await TauriService.launchGame(profile, []);
+      await TauriService.launchGame(profile, PARTNERSHIP_SERVERS);
     } catch (e: any) {
       console.error(e);
       setError(typeof e === 'string' ? e : e.message || "Failed to launch game");

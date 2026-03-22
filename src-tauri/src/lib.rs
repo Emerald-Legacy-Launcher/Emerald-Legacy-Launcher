@@ -753,47 +753,65 @@ async fn download_and_install(app: AppHandle, state: State<'_, DownloadState>, u
 fn ensure_server_list(instance_dir: &PathBuf, servers: Vec<McServer>) {
     let servers_db = instance_dir.join("servers.db");
     if servers.is_empty() { return; }
-    let mut records = Vec::new();
-    for server in &servers {
+    
+    let mut records_to_add = Vec::new();
+    for server in servers {
         let ip_bytes = server.ip.as_bytes();
         let name_bytes = server.name.as_bytes();
-        records.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
-        records.extend_from_slice(ip_bytes);
-        records.extend_from_slice(&server.port.to_le_bytes());
-        records.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
-        records.extend_from_slice(name_bytes);
+        let mut record = Vec::new();
+        record.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
+        record.extend_from_slice(ip_bytes);
+        record.extend_from_slice(&server.port.to_le_bytes());
+        record.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
+        record.extend_from_slice(name_bytes);
+        records_to_add.push((server, record));
     }
 
     if !servers_db.exists() {
         let mut file_content = Vec::new();
         file_content.extend_from_slice(b"MCSV");
         file_content.extend_from_slice(&1u32.to_le_bytes()); // Version
-        file_content.extend_from_slice(&(servers.len() as u32).to_le_bytes()); // Count
-        file_content.append(&mut records);
+        file_content.extend_from_slice(&(records_to_add.len() as u32).to_le_bytes()); // Count
+        for (_, record) in records_to_add {
+            file_content.extend_from_slice(&record);
+        }
         let _ = fs::write(&servers_db, file_content);
-    } else {
-        if let Ok(mut content) = fs::read(&servers_db) {
-            if content.len() < 12 || &content[0..4] != b"MCSV" { return; }
-            let mut count = u32::from_le_bytes(content[8..12].try_into().unwrap_or([0; 4]));
-            let mut modified = false;
-            for server in servers {
-                let ip_bytes = server.ip.as_bytes();
-                if !content.windows(ip_bytes.len()).any(|w| w == ip_bytes) {
-                    let name_bytes = server.name.as_bytes();
-                    content.extend_from_slice(&(ip_bytes.len() as u16).to_le_bytes());
-                    content.extend_from_slice(ip_bytes);
-                    content.extend_from_slice(&server.port.to_le_bytes());
-                    content.extend_from_slice(&(name_bytes.len() as u16).to_le_bytes());
-                    content.extend_from_slice(name_bytes);
-                    count += 1;
-                    modified = true;
-                }
-            }
+    } else if let Ok(mut content) = fs::read(&servers_db) {
+        if content.len() < 12 || &content[0..4] != b"MCSV" { return; }
+        let mut count = u32::from_le_bytes(content[8..12].try_into().unwrap_or([0; 4]));
+        let mut pos = 12;
+        let mut existing_ips_ports = std::collections::HashSet::new();
+        
+        for _ in 0..count {
+            if pos + 2 > content.len() { break; }
+            let ip_len = u16::from_le_bytes(content[pos..pos+2].try_into().unwrap_or([0; 2])) as usize;
+            pos += 2;
+            if pos + ip_len > content.len() { break; }
+            let ip = String::from_utf8_lossy(&content[pos..pos+ip_len]).to_string();
+            pos += ip_len;
+            if pos + 4 > content.len() { break; }
+            let port = u32::from_le_bytes(content[pos..pos+4].try_into().unwrap_or([0; 4]));
+            pos += 4;
+            if pos + 2 > content.len() { break; }
+            let name_len = u16::from_le_bytes(content[pos..pos+2].try_into().unwrap_or([0; 2])) as usize;
+            pos += 2;
+            pos += name_len;
+            
+            existing_ips_ports.insert((ip, port));
+        }
 
-            if modified {
-                content[8..12].copy_from_slice(&count.to_le_bytes());
-                let _ = fs::write(&servers_db, content);
+        let mut modified = false;
+        for (server, record) in records_to_add {
+            if !existing_ips_ports.contains(&(server.ip.clone(), server.port.into())) {
+                content.extend_from_slice(&record);
+                count += 1;
+                modified = true;
             }
+        }
+
+        if modified {
+            content[8..12].copy_from_slice(&count.to_le_bytes());
+            let _ = fs::write(&servers_db, content);
         }
     }
 }
