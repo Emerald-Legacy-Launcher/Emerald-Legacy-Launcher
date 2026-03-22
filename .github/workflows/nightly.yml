@@ -1,0 +1,101 @@
+name: 'nightly'
+on:
+  push:
+    branches: ["dev"]
+
+jobs:
+  publish-tauri:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'macos-latest'
+            args: '--target aarch64-apple-darwin'
+          - platform: 'macos-latest'
+            args: '--target x86_64-apple-darwin'
+          - platform: 'ubuntu-22.04'
+            args: ''
+          - platform: 'windows-latest'
+            args: ''
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: 'pnpm'
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: install frontend dependencies
+        run: pnpm install
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: nightly
+          releaseName: 'Emerald Nightly'
+          releaseBody: |
+            # Emerald Legacy Launcher (Nightly)
+            # What to download?
+            - `Emerald.Legacy.Launcher-*.rpm` for GNU/Linux (RHEL)
+            - `Emerald.Legacy.Launcher-*.deb` for GNU/Linux (Debian+Ubuntu)
+            - `Emerald.Legacy.Launcher-*.AppImage` for GNU/Linux (Universal)
+            - `Emerald.Legacy.Launcher-*_x64.dmg` for macOS (Intel)
+            - `Emerald.Legacy.Launcher-*_aarch64.dmg` for macOS (M-series)
+            - `Emerald.Legacy.Launcher-*.exe` for Windows (Setup)
+            - `Emerald.Legacy.Launcher-*.msi` for Windows (Setup)
+            ---
+            # Windows SmartScreen
+            This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
+            
+            1. Click the **"More info"** link under the main text.
+            2. Click the **"Run anyway"** button that appears.
+          
+          releaseDraft: false
+          prerelease: true
+          args: ${{ matrix.args }}
+
+  publish-flatpak:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    needs: publish-tauri  # Wait for Tauri release to be created
+    container:
+      image: bilelmoussaoui/flatpak-github-actions:freedesktop-23.08
+      options: --privileged
+    steps:
+      - uses: actions/checkout@v4
+      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+          manifest-path: flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
