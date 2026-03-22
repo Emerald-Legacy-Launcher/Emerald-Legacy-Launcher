@@ -16,9 +16,10 @@
     "framer-motion": "^12.36.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
-    "skinview3d": "^3.4.1"
+    "three": "^0.183.2"
   },
   "devDependencies": {
+    "@types/three": "^0.183.1",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/vite": "^4.2.1",
     "@tauri-apps/cli": "^2",
