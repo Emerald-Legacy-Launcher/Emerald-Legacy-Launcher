@@ -38,7 +38,7 @@ modules:
       - cp -r dist /app/share/emerald-legacy-launcher/
       - install -Dm644 flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.desktop /app/share/applications/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.desktop
       - install -Dm644 flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.metainfo.xml /app/share/metainfo/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.metainfo.xml
-      - install -Dm644 public/images/logo.png /app/share/icons/hicolor/512x512/apps/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.png
+      - install -Dm644 public/images/icon.png /app/share/icons/hicolor/512x512/apps/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.png
     sources:
       - type: dir
         path: ..
