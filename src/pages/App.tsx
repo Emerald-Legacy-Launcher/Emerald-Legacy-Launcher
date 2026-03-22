@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import HomeView from "../components/views/HomeView";
 import SettingsView from "../components/views/SettingsView";
@@ -6,6 +6,7 @@ import VersionsView from "../components/views/VersionsView";
 import ThemesView from "../components/views/ThemesView";
 import SkinsView from "../components/views/SkinsView";
 import WorkshopView from "../components/views/WorkshopView";
+import SetupView from "../components/views/SetupView";
 import SkinViewer from "../components/common/SkinViewer";
 import TeamModal from "../components/modals/TeamModal";
 import PanoramaBackground from "../components/common/PanoramaBackground";
@@ -32,14 +33,36 @@ export default function App() {
   const game = useGame();
   const { skinUrl, setSkinUrl } = useSkin();
 
+  const [showSetup, setShowSetup] = useState(true);
+  const [displayIsDay, setDisplayIsDay] = useState(config.isDayTime);
+
+  useEffect(() => {
+    setDisplayIsDay(config.isDayTime);
+  }, [config.isDayTime]);
+
   const selectedEdition = game.editions.find((e: any) => e.id === config.profile);
   const selectedVersionName = selectedEdition?.name || "";
 
   useEffect(() => {
+    if (config.isLoaded) {
+      // Check localStorage directly to ensure accurate setup state
+      const setupCompleted = localStorage.getItem('lce-setup-completed') === 'true';
+      setShowSetup(!setupCompleted);
+    }
+  }, [config.isLoaded]);
+
+  useEffect(() => {
     appWindow.show();
-    setTimeout(() => setShowIntro(false), 2400);
-    setTimeout(() => setLogoAnimDone(true), 3400);
-  }, []);
+    // Only start intro timing if setup is not shown
+    if (!showSetup) {
+      setTimeout(() => setShowIntro(false), 2400);
+      setTimeout(() => setLogoAnimDone(true), 3400);
+    } else if (showSetup) {
+      // Skip intro entirely if setup is shown
+      setShowIntro(false);
+      setLogoAnimDone(true);
+    }
+  }, [showSetup]);
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault();
@@ -51,7 +74,14 @@ export default function App() {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: 0.3 },
+    transition: { duration: 0.5 }
+  };
+
+  const backgroundFade = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 },
+    transition: { duration: 0.8 }
   };
 
   return (
@@ -70,7 +100,17 @@ export default function App() {
         .mc-sq-btn:hover { background: url('/images/Button_Square_Highlighted.png') no-repeat center; background-size: 100% 100%; }
       `}</style>
 
-      <PanoramaBackground profile={config.profile} isDay={config.isDayTime} />
+      <div className="absolute inset-0">
+        <AnimatePresence>
+          <motion.div
+            key={displayIsDay ? 'day' : 'night'}
+            className="absolute inset-0"
+            {...backgroundFade}
+          >
+            <PanoramaBackground profile={config.profile} isDay={displayIsDay} />
+          </motion.div>
+        </AnimatePresence>
+      </div>
       {config.vfxEnabled && <ClickParticles />}
 
       <AnimatePresence>
@@ -106,7 +146,15 @@ export default function App() {
       />
 
       <AnimatePresence>
-        {showIntro ? (
+        {showSetup ? (
+          <SetupView
+            key="setup"
+            onComplete={() => {
+              setShowSetup(false);
+              setShowIntro(true);
+            }}
+          />
+        ) : showIntro ? (
           <motion.div
             key="intro"
             initial={{ opacity: 0 }}
@@ -165,7 +213,7 @@ export default function App() {
                       className="absolute bottom-6 right-8 z-50 flex items-center gap-3"
                     >
                       <span className="text-[#E0E0E0] text-[10px] mc-text-shadow tracking-widest uppercase opacity-70 mt-1">
-                        {config.isDayTime ? "Day" : "Night"}
+                        {displayIsDay ? "Day" : "Night"}
                       </span>
                       <button
                         onClick={() => {
@@ -175,7 +223,7 @@ export default function App() {
                         className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
                       >
                         <img
-                          src={config.isDayTime ? "/images/Day_Toggle.png" : "/images/Night_Toggle.png"}
+                          src={displayIsDay ? "/images/Day_Toggle.png" : "/images/Night_Toggle.png"}
                           alt="Toggle Time"
                           className="w-12 h-12 cursor-pointer block object-contain"
                           style={{ imageRendering: "pixelated" }}

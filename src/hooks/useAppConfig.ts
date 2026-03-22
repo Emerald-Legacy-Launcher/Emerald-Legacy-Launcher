@@ -15,6 +15,7 @@ export function useAppConfig() {
   const [legacyMode, setLegacyMode] = useLocalStorage("lce-legacy-mode", false);
   const [keepLauncherOpen, setKeepLauncherOpen] = useLocalStorage("lce-keep-open", false);
   const [enableTrayIcon, setEnableTrayIcon] = useLocalStorage("lce-tray-icon", true);
+  const [hasCompletedSetup, setHasCompletedSetup] = useLocalStorage("lce-setup-completed", false);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [linuxRunner, setLinuxRunner] = useState<string | undefined>();
@@ -88,6 +89,8 @@ export function useAppConfig() {
     customEditions,
     setCustomEditions,
     isLoaded,
+    hasCompletedSetup,
+    setHasCompletedSetup,
     saveConfig,
   };
 }

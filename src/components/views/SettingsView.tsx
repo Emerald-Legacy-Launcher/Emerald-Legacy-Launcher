@@ -70,13 +70,97 @@ const SettingsView = memo(function SettingsView() {
     setCurrentTrack((currentTrack + 1) % tracks.length);
   };
 
-  const handleMacosSetup = async () => {
+  const handleResetSetup = () => {
     playClickSound();
-    try {
-      await TauriService.setupMacosRuntime();
-    } catch (e) {
-      console.error(e);
-    }
+    
+    // Create styled confirmation dialog
+    const dialog = document.createElement('div');
+    dialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+    dialog.innerHTML = `
+      <div class="relative p-8 max-w-md mx-4" style="background-image: url('/images/frame_background.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated;">
+        <h3 class="text-2xl font-bold text-white mb-4 text-center" style="text-shadow: 2px 2px 0px rgba(0,0,0,0.8)">Reset Setup</h3>
+        <p class="text-white mb-6 text-center">Are you sure you want to reset launcher setup?</p>
+        <div class="flex gap-4 justify-center">
+          <button id="reset-yes" class="mc-sq-btn px-6 py-3 text-white hover:scale-105 active:scale-95 transition-transform">Yes</button>
+          <button id="reset-no" class="mc-sq-btn px-6 py-3 text-white hover:scale-105 active:scale-95 transition-transform">No</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    const handleYes = () => {
+      document.body.removeChild(dialog);
+      showSecondConfirmation();
+    };
+    
+    const handleNo = () => {
+      document.body.removeChild(dialog);
+    };
+    
+    dialog.querySelector('#reset-yes')?.addEventListener('click', handleYes);
+    dialog.querySelector('#reset-no')?.addEventListener('click', handleNo);
+    
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        document.body.removeChild(dialog);
+      }
+    });
+  };
+  
+  const showSecondConfirmation = () => {
+    const dialog = document.createElement('div');
+    dialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
+    dialog.innerHTML = `
+      <div class="relative p-8 max-w-md mx-4" style="background-image: url('/images/frame_background.png'); background-size: 100% 100%; background-repeat: no-repeat; image-rendering: pixelated;">
+        <h3 class="text-2xl font-bold text-yellow-400 mb-4 text-center" style="text-shadow: 2px 2px 0px rgba(0,0,0,0.8)">CONFIRM RESET</h3>
+        <div class="text-white mb-6 text-left">
+          <p class="mb-2">⚠️ This will:</p>
+          <ul class="list-disc list-inside space-y-1 text-sm">
+            <li>Clear all launcher settings</li>
+            <li>Reset your username</li>
+            <li>Show setup screen again</li>
+            <li>Require reconfiguration</li>
+          </ul>
+          <p class="mt-3 text-yellow-400 font-bold">This action cannot be undone!</p>
+        </div>
+        <div class="flex gap-4 justify-center">
+          <button id="reset-final-yes" class="mc-sq-btn px-6 py-3 text-yellow-400 hover:scale-105 active:scale-95 transition-transform">YES, RESET</button>
+          <button id="reset-final-no" class="mc-sq-btn px-6 py-3 text-white hover:scale-105 active:scale-95 transition-transform">Cancel</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    const handleFinalYes = () => {
+      document.body.removeChild(dialog);
+      performReset();
+    };
+    
+    const handleFinalNo = () => {
+      document.body.removeChild(dialog);
+    };
+    
+    dialog.querySelector('#reset-final-yes')?.addEventListener('click', handleFinalYes);
+    dialog.querySelector('#reset-final-no')?.addEventListener('click', handleFinalNo);
+    
+    dialog.addEventListener('click', (e) => {
+      if (e.target === dialog) {
+        document.body.removeChild(dialog);
+      }
+    });
+  };
+
+  const performReset = () => {
+    // Clear all localStorage data
+    localStorage.clear();
+    
+    // Set setup as not completed
+    localStorage.setItem('lce-setup-completed', 'false');
+    
+    // Force reload to show setup screen
+    window.location.reload();
   };
 
   let trackName = "Unknown";
@@ -209,13 +293,6 @@ const SettingsView = memo(function SettingsView() {
         type: "button",
         onClick: handlePerfToggle,
       });
-      items.push({
-        id: "macos_setup",
-        label: "Setup macOS Compatibility",
-        type: "button",
-        onClick: handleMacosSetup,
-        small: true,
-      });
     }
 
     if (isGameRunning) {
@@ -227,6 +304,15 @@ const SettingsView = memo(function SettingsView() {
         color: "red",
       });
     }
+
+    items.push({
+      id: "reset_setup",
+      label: "Reset Setup",
+      type: "button",
+      onClick: handleResetSetup,
+      color: "orange",
+      small: true,
+    });
 
     items.push({
       id: "back",
@@ -249,7 +335,6 @@ const SettingsView = memo(function SettingsView() {
     handleLayoutToggle,
     handleRunnerToggle,
     handlePerfToggle,
-    handleMacosSetup,
     handleRpcToggle,
     handleLegacyToggle,
     handleKeepOpenToggle,

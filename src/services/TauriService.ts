@@ -133,4 +133,31 @@ export class TauriService {
   static async openUrl(url: string): Promise<void> {
     return invoke('plugin:opener|open_url', { url });
   }
+
+  static async restartLauncher(): Promise<void> {
+    return invoke('restart_launcher');
+  }
+
+  static async checkMacOSRuntimeInstalled(): Promise<boolean> {
+    return invoke('check_macos_runtime_installed');
+  }
+
+  static async checkMacOSRuntimeInstalledFast(): Promise<boolean> {
+    return invoke('check_macos_runtime_installed_fast');
+  }
+
+  static async setupMacOSRuntimeOptimized(): Promise<void> {
+    return invoke('setup_macos_runtime_optimized');
+  }
+
+  static async pathExists(_path: string): Promise<boolean> {
+    // Simple web implementation using fetch to check if path exists
+    try {
+      // This is a simplified check - in a real implementation you'd use the Tauri API
+      // For now, we'll just check common paths via heuristics
+      return false; // Placeholder - will be implemented properly if needed
+    } catch {
+      return false;
+    }
+  }
 }

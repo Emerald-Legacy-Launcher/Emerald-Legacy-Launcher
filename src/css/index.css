@@ -17,6 +17,27 @@
   opacity: 0.5;
 }
 
+.mc-setup-nav-btn {
+  border: 4px solid transparent;
+  border-image: url('/images/Button_Background.png') 4 stretch;
+  image-rendering: pixelated;
+  background: rgba(0,0,0,0.6);
+  transition: all 0.2s ease;
+}
+
+.mc-setup-nav-btn:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.mc-setup-nav-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.mc-setup-nav-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 body {
   margin: 0;
   background-color: #000;

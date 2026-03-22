@@ -99,7 +99,7 @@ fn get_macos_runtime_dir(app: &AppHandle) -> PathBuf {
         .unwrap_or_else(|| PathBuf::from("/"));
     home.join("Library")
         .join("Application Support")
-        .join("Emerald")
+        .join("com.emerald.legacy")
         .join("runtime")
 }
 
@@ -233,8 +233,8 @@ fn import_theme(app: AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn get_available_runners(app: AppHandle) -> Vec<Runner> {
-    let mut runners = Vec::new();
+fn get_available_runners(_app: AppHandle) -> Vec<Runner> {
+    let runners = Vec::new();
 
     #[cfg(target_os = "linux")]
     {
@@ -517,6 +517,14 @@ async fn setup_macos_runtime(window: tauri::Window, app: AppHandle) -> Result<()
         drop(file);
 
         emit_macos_setup_progress(&window, "extracting", "Extracting runtime…".into(), None);
+        
+        let archive_metadata = fs::metadata(&archive_path).map_err(|e| format!("Cannot read archive: {}", e))?;
+        println!("Archive size: {} bytes", archive_metadata.len());
+        
+        if archive_metadata.len() < 100_000_000 {
+            return Err(format!("Archive too small: {} bytes", archive_metadata.len()));
+        }
+        
         let status = Command::new("tar")
             .args([
                 "-xf",
@@ -526,12 +534,15 @@ async fn setup_macos_runtime(window: tauri::Window, app: AppHandle) -> Result<()
             ])
             .stdin(Stdio::null())
             .stdout(Stdio::null())
-            .stderr(Stdio::null())
+            .stderr(Stdio::piped())
             .status()
             .map_err(|e| e.to_string())?;
+        
+        println!("Tar exit status: {:?}", status);
+        
         let _ = fs::remove_file(&archive_path);
         if !status.success() {
-            return Err("Extraction failed".into());
+            return Err(format!("Extraction failed with status: {:?}", status));
         }
 
         fs::create_dir_all(&prefix_dir).map_err(|e| e.to_string())?;
@@ -796,8 +807,8 @@ fn ensure_server_list(instance_dir: &PathBuf, servers: Vec<McServer>) {
 
     let mut file_content = Vec::new();
     file_content.extend_from_slice(b"MCSV");
-    file_content.extend_from_slice(&1u32.to_le_bytes()); // Version
-    file_content.extend_from_slice(&(unique_servers.len() as u32).to_le_bytes()); // Count
+    file_content.extend_from_slice(&1u32.to_le_bytes());
+    file_content.extend_from_slice(&(unique_servers.len() as u32).to_le_bytes());
     for server in unique_servers {
         let ip_bytes = server.ip.as_bytes();
         let name_bytes = server.name.as_bytes();
@@ -1033,7 +1044,7 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instance_id: S
                 .stdout(Stdio::null())
                 .stderr(Stdio::null());
 
-            let mut child = cmd.spawn().map_err(|e| e.to_string())?;
+            let child = cmd.spawn().map_err(|e| e.to_string())?;
             {
                 let mut lock = state.child.lock().await;
                 *lock = Some(child);
@@ -1095,7 +1106,7 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instance_id: S
 }
 
 #[cfg(unix)]
-fn kill_process_tree(app: &AppHandle, instance_id: &str) { // neo: dont question me.
+fn kill_process_tree(app: &AppHandle, instance_id: &str) {
     let root = get_app_dir(&app);
     let instance_dir = root.join("instances").join(instance_id);
     let target = unix_path_to_wine_z_path(&instance_dir.join("Minecraft.Client.exe"));

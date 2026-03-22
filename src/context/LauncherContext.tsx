@@ -1,5 +1,4 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useAppConfig } from "../hooks/useAppConfig";
 import { TauriService } from "../services/TauriService";
 import { useAudioController } from "../hooks/useAudioController";
@@ -118,19 +117,42 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
   }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.keepLauncherOpen, config.enableTrayIcon, config.isLoaded]);
 
   useEffect(() => {
-    let unlisten: (() => void) | undefined;
-    
-    (async () => {
-      const appWindow = getCurrentWindow();
-      const removeListener = await appWindow.listen<boolean>('tauri://visibility-change', ({ payload }) => {
-        setIsWindowVisible(payload);
-      });
-      unlisten = removeListener;
-    })();
+    const setupVisibilityDetection = async () => {
+      try {
+        const { listen } = await import("@tauri-apps/api/event");
 
-    return () => {
-      if (unlisten) unlisten();
+        const unlistenClose = await listen("tauri://close-requested", () => {
+          console.log("Window close requested - hiding music");
+          setIsWindowVisible(false);
+        });
+
+        const unlistenShow = await listen("tauri://window-shown", () => {
+          console.log("Window shown - resuming music");
+          setIsWindowVisible(true);
+        });
+
+        const unlistenFocus = await listen("tauri://focus", () => {
+          console.log("Window focused - resuming music");
+          setIsWindowVisible(true);
+        });
+
+        const unlistenBlur = await listen("tauri://blur", () => {
+          console.log("Window blurred - checking visibility");
+        });
+
+        return () => {
+          unlistenClose();
+          unlistenShow();
+          unlistenFocus();
+          unlistenBlur();
+        };
+      } catch (error) {
+        console.error("Failed to setup visibility detection:", error);
+        setIsWindowVisible(true);
+      }
     };
+
+    setupVisibilityDetection();
   }, []);
 
   const uiValue = useMemo(() => ({

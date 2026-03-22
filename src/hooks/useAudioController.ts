@@ -44,6 +44,54 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
   const playBackSound = useCallback(() => playSfx("back.ogg"), [playSfx]);
   const playSplashSound = useCallback(() => playSfx("orb.ogg"), [playSfx]);
 
+  const fadeOut = useCallback((audio: HTMLAudioElement, duration: number = 2000) => {
+    return new Promise<void>((resolve) => {
+      const initialVolume = audio.volume;
+      const steps = 30;
+      const stepDuration = duration / steps;
+      let currentStep = 0;
+
+      const interval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        audio.volume = initialVolume * (1 - progress);
+
+        if (currentStep >= steps) {
+          clearInterval(interval);
+          audio.pause();
+          audio.volume = initialVolume;
+          resolve();
+        }
+      }, stepDuration);
+    });
+  }, []);
+
+  const fadeIn = useCallback((audio: HTMLAudioElement, targetVolume: number, duration: number = 2000) => {
+    return new Promise<void>((resolve) => {
+      audio.volume = 0;
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => {});
+      }
+
+      const steps = 30;
+      const stepDuration = duration / steps;
+      let currentStep = 0;
+
+      const interval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        audio.volume = targetVolume * progress;
+
+        if (currentStep >= steps) {
+          clearInterval(interval);
+          audio.volume = targetVolume;
+          resolve();
+        }
+      }, stepDuration);
+    });
+  }, []);
+
   const cycleSplash = useCallback(() => {
     playSplashSound();
     let newIndex;
@@ -54,7 +102,9 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
   }, [playSplashSound, splashIndex]);
 
   useEffect(() => {
-    if (showIntro || audioElement) return;
+    if (showIntro) return;
+    if (audioElement) return;
+    
     const audio = new Audio(TRACKS[currentTrack]);
     audio.volume = musicVol / 100;
     const handleEnded = () => setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
@@ -63,7 +113,14 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
-        document.addEventListener("click", () => audio.play(), { once: true });
+        console.log("Autoplay prevented, waiting for user interaction");
+        const startMusic = () => {
+          audio.play().catch(() => {});
+          document.removeEventListener("click", startMusic);
+          document.removeEventListener("keydown", startMusic);
+        };
+        document.addEventListener("click", startMusic, { once: true });
+        document.addEventListener("keydown", startMusic, { once: true });
       });
     }
     
@@ -72,7 +129,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
       audio.removeEventListener("ended", handleEnded);
       audio.pause();
     };
-  }, [showIntro]);
+  }, [showIntro, audioElement, currentTrack, musicVol]);
 
   useEffect(() => {
     if (!audioElement) return;
@@ -90,7 +147,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
           at: audioElement.currentTime,
           track: currentTrack,
         };
-        audioElement.pause();
+        fadeOut(audioElement, 2000);
       }
     } else if (musicPausedRef.current) {
       const { at, track } = musicPausedRef.current;
@@ -98,9 +155,9 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
       if (track === currentTrack) {
         audioElement.currentTime = at;
       }
-      audioElement.play().catch(() => {});
+      fadeIn(audioElement, musicVol / 100, 2000);
     }
-  }, [isGameRunning, isWindowVisible]);
+  }, [isGameRunning, isWindowVisible, audioElement, currentTrack, musicVol, fadeOut, fadeIn]);
 
   useEffect(() => {
     if (audioElement) {
