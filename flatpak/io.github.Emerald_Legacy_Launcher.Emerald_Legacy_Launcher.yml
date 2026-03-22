@@ -15,6 +15,7 @@ finish-args:
   - --filesystem=xdg-data
 
 modules:
+  - shared-modules/libayatana-appindicator/libayatana-appindicator-gtk3.json
   - name: emerald-legacy-launcher
     buildsystem: simple
     build-options:

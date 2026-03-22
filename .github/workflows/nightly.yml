@@ -89,6 +89,8 @@ jobs:
       options: --privileged
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
@@ -97,6 +99,6 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
-          tag: nightly
+          tag_name: nightly
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
