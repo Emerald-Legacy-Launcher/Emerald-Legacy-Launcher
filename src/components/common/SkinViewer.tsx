@@ -34,15 +34,16 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
     camera.position.set(0, 0, 70);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(window.devicePixelRatio);
     mountRef.current.innerHTML = "";
     mountRef.current.appendChild(renderer.domElement);
 
-    scene.add(new THREE.AmbientLight(0xffffff, 0.9));
-    const dl = new THREE.DirectionalLight(0xffffff, 0.5);
-    dl.position.set(10, 20, 15);
+    scene.add(new THREE.AmbientLight(0xffffff, 0.4));
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.6));
+    const dl = new THREE.DirectionalLight(0xffffff, 0.8);
+    dl.position.set(10, 20, 10);
     scene.add(dl);
 
     const playerGroup = new THREE.Group();
@@ -58,10 +59,10 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       const img = texture.image;
       const isLegacy = img.height === 32;
 
-      const createFaceMaterial = (x: number, y: number, w: number, h: number) => {
+      const createFaceMaterial = (x: number, y: number, w: number, h: number, flipX = false) => {
         const matTex = texture.clone();
-        matTex.repeat.set(w / 64, h / img.height);
-        matTex.offset.set(x / 64, 1 - (y + h) / img.height);
+        matTex.repeat.set((flipX ? -w : w) / 64, h / img.height);
+        matTex.offset.set((flipX ? x + w : x) / 64, 1 - (y + h) / img.height);
         matTex.needsUpdate = true;
         return new THREE.MeshLambertMaterial({ map: matTex, transparent: true, alphaTest: 0.5, side: THREE.FrontSide });
       };
@@ -70,12 +71,12 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
         const group = new THREE.Group();
         const geo = new THREE.BoxGeometry(w, h, d);
         const mats = [
-          createFaceMaterial(uv.right[0], uv.right[1], uv.right[2], uv.right[3]),
-          createFaceMaterial(uv.left[0], uv.left[1], uv.left[2], uv.left[3]),
+          createFaceMaterial(uv.right[0], uv.right[1], uv.right[2], uv.right[3], true),
+          createFaceMaterial(uv.left[0], uv.left[1], uv.left[2], uv.left[3], true),
           createFaceMaterial(uv.top[0], uv.top[1], uv.top[2], uv.top[3]),
           createFaceMaterial(uv.bottom[0], uv.bottom[1], uv.bottom[2], uv.bottom[3]),
           createFaceMaterial(uv.front[0], uv.front[1], uv.front[2], uv.front[3]),
-          createFaceMaterial(uv.back[0], uv.back[1], uv.back[2], uv.back[3])
+          createFaceMaterial(uv.back[0], uv.back[1], uv.back[2], uv.back[3], true)
         ];
         const mesh = new THREE.Mesh(geo, mats);
         group.add(mesh);
@@ -83,12 +84,12 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
         if (overlayUv) {
           const oGeo = new THREE.BoxGeometry(w + 0.5, h + 0.5, d + 0.5);
           const oMats = [
-            createFaceMaterial(overlayUv.right[0], overlayUv.right[1], overlayUv.right[2], overlayUv.right[3]),
-            createFaceMaterial(overlayUv.left[0], overlayUv.left[1], overlayUv.left[2], overlayUv.left[3]),
+            createFaceMaterial(overlayUv.right[0], overlayUv.right[1], overlayUv.right[2], overlayUv.right[3], true),
+            createFaceMaterial(overlayUv.left[0], overlayUv.left[1], overlayUv.left[2], overlayUv.left[3], true),
             createFaceMaterial(overlayUv.top[0], overlayUv.top[1], overlayUv.top[2], overlayUv.top[3]),
             createFaceMaterial(overlayUv.bottom[0], overlayUv.bottom[1], overlayUv.bottom[2], overlayUv.bottom[3]),
             createFaceMaterial(overlayUv.front[0], overlayUv.front[1], overlayUv.front[2], overlayUv.front[3]),
-            createFaceMaterial(overlayUv.back[0], overlayUv.back[1], overlayUv.back[2], overlayUv.back[3])
+            createFaceMaterial(overlayUv.back[0], overlayUv.back[1], overlayUv.back[2], overlayUv.back[3], true)
           ];
           const oMesh = new THREE.Mesh(oGeo, oMats);
           oMesh.visible = showLayers;
