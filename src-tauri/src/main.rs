@@ -27,7 +27,8 @@ fn main() {
                 let low = l.to_lowercase();
                 (low.contains("gbm") && low.contains("buffer")) || 
                 (low.contains("dmabuf") && low.contains("renderer")) ||
-                (low.contains("invalid argument") && low.contains("buffer"))
+                (low.contains("invalid argument") && low.contains("buffer")) ||
+                (low.contains("wayland") && low.contains("protocol error"))
             }
 
             let h1 = thread::spawn(move || {
