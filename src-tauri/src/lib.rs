@@ -233,7 +233,7 @@ fn import_theme(app: AppHandle) -> Result<String, String> {
 }
 
 #[tauri::command]
-fn get_available_runners(_app: AppHandle) -> Vec<Runner> {
+fn get_available_runners(app: AppHandle) -> Vec<Runner> {
     let runners = Vec::new();
 
     #[cfg(target_os = "linux")]
@@ -296,7 +296,6 @@ fn get_available_runners(_app: AppHandle) -> Vec<Runner> {
                     let dir_name = entry.file_name().to_string_lossy().to_string();
                     let wine_bin = path.join("bin").join("wine");
                     let proton_bin = path.join("proton");
-
                     if proton_bin.exists() {
                         runners.push(Runner {
                             id: format!("downloaded_{}", dir_name),
