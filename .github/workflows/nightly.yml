@@ -4,7 +4,7 @@ on:
     branches: ["dev"]
 
 jobs:
-  publish-tauri:
+  nightly-tauri:
     permissions:
       contents: write
     strategy:
@@ -79,7 +79,7 @@ jobs:
           prerelease: true
           args: ${{ matrix.args }}
 
-  publish-flatpak:
+  nightly-flatpak:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -97,5 +97,6 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           files: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+          tag: nightly
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
