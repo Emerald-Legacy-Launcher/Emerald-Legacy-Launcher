@@ -150,6 +150,10 @@ export class TauriService {
     return invoke('setup_macos_runtime_optimized');
   }
 
+  static async fetchSkin(username: string): Promise<[string, string]> {
+    return invoke('fetch_skin', { username });
+  }
+
   static async pathExists(_path: string): Promise<boolean> {
     // Simple web implementation using fetch to check if path exists
     try {

@@ -46,6 +46,53 @@ const SkinsView = memo(function SkinsView() {
 
   const [activeSkinId, setActiveSkinId] = useState<string | null>(null);
 
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [importMode, setImportMode] = useState<'file' | 'username' | null>(null);
+  const [importUsername, setImportUsername] = useState('');
+  const [isImporting, setIsImporting] = useState(false);
+  const [importError, setImportError] = useState('');
+
+  const processSkinImage = (url: string, defaultName: string) => {
+    const img = new Image();
+    img.crossOrigin = "Anonymous";
+    img.onload = () => {
+      const cvs = document.createElement("canvas");
+      cvs.width = 64;
+      cvs.height = 32;
+      const ctx = cvs.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(img, 0, 0, 64, 32, 0, 0, 64, 32);
+        const base64String = cvs.toDataURL("image/png");
+        const newId = Date.now().toString();
+        const newSkin = { id: newId, name: defaultName, url: base64String };
+        setSavedSkins(prev => [...prev, newSkin]);
+        setSkinUrl(base64String);
+        setActiveSkinId(newId);
+      }
+    };
+    img.src = url;
+  };
+
+  const handleFetchUsername = async () => {
+    if (!importUsername.trim()) return;
+    playClickSound();
+    setIsImporting(true);
+    setImportError('');
+    try {
+      const [base64Raw, exactName] = await TauriService.fetchSkin(importUsername.trim());
+      const skinBase64 = `data:image/png;base64,${base64Raw}`;
+      processSkinImage(skinBase64, exactName.substring(0, 16));
+
+      setShowImportModal(false);
+      setImportMode(null);
+      setImportUsername('');
+    } catch (e: any) {
+      setImportError(typeof e === 'string' ? e : (e.message || 'Failed to fetch skin'));
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   useEffect(() => {
     if (!activeSkinId) {
       const match = savedSkins.find(s => s.url === skinUrl);
@@ -55,6 +102,16 @@ const SkinsView = memo(function SkinsView() {
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (showImportModal) {
+        if (e.key === 'Escape') {
+          playBackSound();
+          setShowImportModal(false);
+          setImportMode(null);
+          setImportUsername('');
+          setImportError('');
+        }
+        return;
+      }
       if (document.activeElement?.tagName === 'INPUT') return;
       if (e.key === 'Escape') {
         playBackSound();
@@ -96,7 +153,7 @@ const SkinsView = memo(function SkinsView() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusIndex, savedSkins.length, playBackSound, setActiveView, playClickSound]);
+  }, [focusIndex, savedSkins.length, playBackSound, setActiveView, playClickSound, showImportModal]);
 
   useEffect(() => {
     if (focusIndex !== null) {
@@ -107,7 +164,7 @@ const SkinsView = memo(function SkinsView() {
 
   const handleImportClick = () => {
     playClickSound();
-    fileInputRef.current?.click();
+    setShowImportModal(true);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,26 +176,12 @@ const SkinsView = memo(function SkinsView() {
     const reader = new FileReader();
     reader.onload = (event) => {
       const url = event.target?.result as string;
-      const img = new Image();
-      img.onload = () => {
-        const cvs = document.createElement("canvas");
-        cvs.width = 64;
-        cvs.height = 32;
-        const ctx = cvs.getContext("2d");
-        if (ctx) {
-          ctx.drawImage(img, 0, 0, 64, 32, 0, 0, 64, 32);
-          const base64String = cvs.toDataURL("image/png");
-          const newId = Date.now().toString();
-          const newSkin = { id: newId, name: defaultName, url: base64String };
-          setSavedSkins([...savedSkins, newSkin]);
-          setSkinUrl(base64String);
-          setActiveSkinId(newId);
-        }
-      };
-      img.src = url;
+      processSkinImage(url, defaultName);
     };
     reader.readAsDataURL(file);
     e.target.value = '';
+    setShowImportModal(false);
+    setImportMode(null);
   };
 
   const handleSkinSelect = (skin: SavedSkin) => {
@@ -252,6 +295,71 @@ const SkinsView = memo(function SkinsView() {
       >
         Back
       </button>
+
+      {showImportModal && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="flex flex-col items-center bg-[#252525] p-6 border-4 border-[#373737] shadow-[0_0_20px_rgba(0,0,0,0.8)] relative" style={{ backgroundImage: "url('/images/frame_background.png')", backgroundSize: "100% 100%", imageRendering: "pixelated", minWidth: '400px' }}>
+            <h2 className="text-2xl text-white mc-text-shadow mb-6 tracking-widest uppercase font-bold text-center">Import Skin</h2>
+
+            {!importMode ? (
+              <div className="flex flex-col gap-4 w-full px-4 mb-2">
+                <button
+                  onClick={() => { playClickSound(); fileInputRef.current?.click(); }}
+                  className="w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white hover:text-[#FFFF55] outline-none"
+                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                >
+                  From File
+                </button>
+                <button
+                  onClick={() => { playClickSound(); setImportMode('username'); }}
+                  className="w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white hover:text-[#FFFF55] outline-none"
+                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                >
+                  From Username
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-4 w-full px-4 mb-2">
+                <input
+                  type="text"
+                  placeholder="Minecraft Username"
+                  value={importUsername}
+                  onChange={(e) => setImportUsername(e.target.value)}
+                  onKeyDown={(e) => { if (e.key === 'Enter') handleFetchUsername(); }}
+                  autoFocus
+                  spellCheck={false}
+                  className="w-full h-12 bg-black/50 border-2 border-[#373737] text-white px-4 text-xl outline-none focus:border-[#FFFF55] transition-colors"
+                />
+
+                {importError && <span className="text-red-400 text-sm text-center mc-text-shadow">{importError}</span>}
+
+                <button
+                  onClick={handleFetchUsername}
+                  disabled={isImporting}
+                  className={`w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white outline-none ${isImporting ? 'opacity-50' : 'hover:text-[#FFFF55]'}`}
+                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                >
+                  {isImporting ? 'Fetching...' : 'Fetch Skin'}
+                </button>
+              </div>
+            )}
+
+            <button
+              onClick={() => {
+                playBackSound();
+                setShowImportModal(false);
+                setImportMode(null);
+                setImportUsername('');
+                setImportError('');
+              }}
+              className="w-40 h-10 flex items-center justify-center transition-colors text-lg mc-text-shadow mt-6 text-white hover:text-[#FFFF55] outline-none"
+              style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 });

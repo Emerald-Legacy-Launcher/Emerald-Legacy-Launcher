@@ -1137,6 +1137,34 @@ fn update_tray_icon(app: AppHandle, visible: bool) {
     }
 }
 
+#[tauri::command]
+async fn fetch_skin(username: String) -> Result<(String, String), String> {
+    let client = reqwest::Client::new();
+    let mojang_url = format!("https://api.mojang.com/users/profiles/minecraft/{}", username);
+    let mojang_res = client.get(&mojang_url).send().await.map_err(|e| format!("Failed request to mojang: {}", e))?;
+    if !mojang_res.status().is_success() {
+        return Err("Player not found".to_string());
+    }
+    let mojang_text = mojang_res.text().await.map_err(|e| format!("Failed to read mojang text: {}", e))?;
+    let mojang_data: serde_json::Value = serde_json::from_str(&mojang_text).map_err(|e| format!("Invalid Mojang JSON: {}", e))?;
+    let id = mojang_data.get("id").and_then(|v| v.as_str()).ok_or_else(|| "Invalid Moajng response format".to_string())?;
+    let name_exact = mojang_data.get("name").and_then(|v| v.as_str()).unwrap_or(&username).to_string();
+    
+    let mc_api_url = format!("https://api.minecraftapi.net/v3/profile/{}", id);
+    let mc_api_res = client.get(&mc_api_url).send().await.map_err(|e| format!("Failed request to mc api: {}", e))?;
+    if !mc_api_res.status().is_success() {
+        return Err("Error fetching skin data".to_string());
+    }
+    let mc_api_text = mc_api_res.text().await.map_err(|e| format!("Failed to read mc api text: {}", e))?;
+    let mc_api_data: serde_json::Value = serde_json::from_str(&mc_api_text).map_err(|e| format!("Invalid MC API JSON: {}", e))?;
+    let image_b64 = mc_api_data.get("skin")
+        .and_then(|s| s.get("image"))
+        .and_then(|v| v.as_str())
+        .ok_or_else(|| "No skin found".to_string())?;
+        
+    Ok((image_b64.to_string(), name_exact))
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -1145,7 +1173,7 @@ pub fn run() {
         .plugin(tauri_plugin_gamepad::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_drpc::init())
-        .invoke_handler(tauri::generate_handler![setup_macos_runtime, launch_game, stop_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner, delete_instance, update_tray_icon, sync_dlc])
+        .invoke_handler(tauri::generate_handler![setup_macos_runtime, launch_game, stop_game, check_game_installed, save_config, load_config, download_and_install, open_instance_folder, cancel_download, get_available_runners, get_external_palettes, import_theme, download_runner, delete_instance, update_tray_icon, sync_dlc, fetch_skin])
         .setup(|app| {
             let config = load_config(app.handle().clone());
             let visible = config.enable_tray_icon.unwrap_or(true);
