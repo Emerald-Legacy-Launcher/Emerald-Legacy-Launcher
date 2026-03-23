@@ -23,6 +23,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
 
   const [showLayers, setShowLayers] = useLocalStorage('lce-show-layers', true);
   const overlaysRef = useRef<THREE.Mesh[]>([]);
+  const requestRenderRef = useRef<(() => void) | null>(null);
 
   useEffect(() => {
     if (!mountRef.current) return;
@@ -132,6 +133,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       playerGroup.add(leftLeg);
 
       playerGroup.rotation.y = -0.3;
+      requestRenderRef.current?.();
     });
 
     let isDragging = false;
@@ -146,6 +148,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       if (isDragging) {
         playerGroup.rotation.y += (e.clientX - previousMousePosition.x) * 0.01;
         previousMousePosition = { x: e.clientX, y: e.clientY };
+        requestRenderRef.current?.();
       }
     };
 
@@ -153,18 +156,32 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
     window.addEventListener("mousemove", onMouseMove);
     window.addEventListener("mouseup", onMouseUp);
 
-    let animationId: number;
-    const animate = () => {
-      animationId = requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    };
-    animate();
+    requestRenderRef.current = () => renderer.render(scene, camera);
+    requestRenderRef.current();
 
     return () => {
-      cancelAnimationFrame(animationId);
-      renderer.dispose();
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
+
+      scene.traverse((object) => {
+        if (object instanceof THREE.Mesh) {
+          if (object.geometry) object.geometry.dispose();
+          if (object.material) {
+            if (Array.isArray(object.material)) {
+              object.material.forEach((mat) => {
+                if (mat.map) mat.map.dispose();
+                mat.dispose();
+              });
+            } else {
+              if (object.material.map) object.material.map.dispose();
+              object.material.dispose();
+            }
+          }
+        }
+      });
+      renderer.dispose();
+      overlaysRef.current = [];
+      requestRenderRef.current = null;
     };
   }, [skinUrl]);
 
@@ -172,6 +189,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
     overlaysRef.current.forEach(overlay => {
       overlay.visible = showLayers;
     });
+    requestRenderRef.current?.();
   }, [showLayers]);
 
   useEffect(() => {
