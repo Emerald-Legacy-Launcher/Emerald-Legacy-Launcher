@@ -925,7 +925,7 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instance_id: S
                     let mut c = tokio::process::Command::new(proton_exe);
                     let compat_data = instance_dir.join("proton_prefix");
                     fs::create_dir_all(&compat_data).map_err(|e| e.to_string())?;
-                    c.env("STEAM_COMPAT_CLIENT_INSTALL_PATH", &instance_dir);
+                    c.env("STEAM_COMPAT_CLIENT_INSTALL_PATH", "");
                     c.env("STEAM_COMPAT_DATA_PATH", compat_data.to_str().unwrap());
                     c.env("SteamAppId", "480");
                     c.arg("run");
