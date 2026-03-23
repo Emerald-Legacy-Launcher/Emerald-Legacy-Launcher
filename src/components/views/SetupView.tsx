@@ -10,9 +10,17 @@ interface SetupViewProps {
 
 const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const { isLinux, isMac } = usePlatform();
-  const { username, setUsername, setHasCompletedSetup } = useConfig();
+  const { username, setUsername, setHasCompletedSetup, profile } = useConfig();
   const { playClickSound, playSfx } = useAudio();
-  
+
+  const titleImage = (() => {
+    if (profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
+    if (profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
+    if (profile === "vanilla_tu24") return "/images/minecraft_title_tu24.png";
+    if (profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
+    return "/images/MenuTitle.png";
+  })();
+
   const [currentStep, setCurrentStep] = useState(0);
   const [tempUsername, setTempUsername] = useState(username);
   const [runners, setRunners] = useState<Runner[]>([]);
@@ -20,7 +28,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const [isSettingUpRuntime, setIsSettingUpRuntime] = useState(false);
   const [setupProgress, setSetupProgress] = useState<{ stage: string; message: string; percent?: number } | null>(null);
   const [runtimeAlreadyInstalled, setRuntimeAlreadyInstalled] = useState(false);
-  
+
   const [enableTrayIcon, setEnableTrayIcon] = useState(true);
   const [enableVfx, setEnableVfx] = useState(true);
   const [enableDiscordRPC, setEnableDiscordRPC] = useState(true);
@@ -35,7 +43,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
 
     if (isMac) {
       checkMacOSRuntime();
-      
+
       const unlisten = TauriService.onMacosProgress((progress) => {
         console.log("[macOS Setup Progress]", progress);
         setSetupProgress(progress);
@@ -50,7 +58,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const checkMacOSRuntime = async () => {
     try {
       const localStorageInstalled = localStorage.getItem('lce-macos-runtime-installed') === 'true';
-      
+
       if (localStorageInstalled) {
         console.log("[macOS Runtime] Using cached installation status");
         try {
@@ -86,7 +94,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
 
   const handleNext = async () => {
     playClickSound();
-    
+
     if (currentStep === 0) {
       setUsername(tempUsername);
       setCurrentStep(1);
@@ -112,16 +120,16 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
     playClickSound();
     setIsSettingUpRuntime(true);
     setSetupProgress({ stage: "preparing", message: "Preparing macOS runtime setup...", percent: 0 });
-    
+
     try {
       console.log("[macOS Setup] Starting runtime installation...");
       await TauriService.setupMacosRuntime();
       console.log("[macOS Setup] Runtime installation completed successfully!");
       setSetupProgress({ stage: "completed", message: "Setup completed successfully!", percent: 100 });
-      
+
       localStorage.setItem('lce-macos-runtime-installed', 'true');
       setRuntimeAlreadyInstalled(true);
-      
+
       setTimeout(() => {
         setCurrentStep(2);
         setIsSettingUpRuntime(false);
@@ -148,9 +156,9 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
     <div className="w-full h-full flex items-center justify-center bg-black">
       <div className="relative w-full h-full flex items-center justify-center p-8">
         <div className="absolute top-8 left-1/2 transform -translate-x-1/2">
-          <img 
-            src="/images/MenuTitle.png" 
-            alt="Emerald Legacy" 
+          <img
+            src={titleImage}
+            alt="Emerald Legacy"
             className="h-16"
             style={{ imageRendering: "pixelated" }}
           />
@@ -166,13 +174,13 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
             className="max-w-2xl mx-auto"
           >
             <div className="relative p-8"
-                 style={{
-                   backgroundImage: "url('/images/frame_background.png')",
-                   backgroundSize: "100% 100%",
-                   backgroundRepeat: "no-repeat",
-                   imageRendering: "pixelated",
-                   transformOrigin: "center center"
-                 }}>
+              style={{
+                backgroundImage: "url('/images/frame_background.png')",
+                backgroundSize: "100% 100%",
+                backgroundRepeat: "no-repeat",
+                imageRendering: "pixelated",
+                transformOrigin: "center center"
+              }}>
               <div className="flex justify-center space-x-2 mb-8">
                 {Array.from({ length: totalSteps }, (_, i) => (
                   <motion.div
@@ -180,13 +188,12 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ delay: i * 0.05 }}
-                    className={`h-2 w-16 transition-all ${
-                      i <= currentStep ? "bg-white" : "bg-white/20"
-                    }`}
+                    className={`h-2 w-16 transition-all ${i <= currentStep ? "bg-white" : "bg-white/20"
+                      }`}
                   />
                 ))}
               </div>
-              
+
               <AnimatePresence mode="wait">
                 <motion.div
                   key={`content-${currentStep}`}
@@ -201,7 +208,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         Welcome to Emerald Legacy
                       </h2>
                       <p className="text-lg mb-8 text-white/80">Let's configure your launcher</p>
-                      
+
                       <div className="space-y-4">
                         <label className="block text-left">
                           <span className="text-white font-bold mb-2 block">Username</span>
@@ -224,19 +231,19 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         macOS Compatibility
                       </h2>
                       <p className="text-lg mb-6 text-white/80">
-                        {runtimeAlreadyInstalled 
-                          ? "Emerald Legacy compatibility runtime is already installed" 
+                        {runtimeAlreadyInstalled
+                          ? "Emerald Legacy compatibility runtime is already installed"
                           : "Emerald Legacy needs compatibility runtime for macOS"
                         }
                       </p>
-                      
+
                       {setupProgress && (
                         <div className="mb-4 p-4 bg-black/50 border border-white/20 rounded">
                           <p className="text-sm font-bold text-yellow-400 mb-2">{setupProgress.stage.toUpperCase()}</p>
                           <p className="text-xs opacity-80">{setupProgress.message}</p>
                           {setupProgress.percent !== undefined && (
                             <div className="w-full bg-white/20 h-2 rounded-full mt-3">
-                              <div 
+                              <div
                                 className="h-full bg-green-500 rounded-full transition-all duration-300"
                                 style={{ width: `${setupProgress.percent}%` }}
                               />
@@ -244,26 +251,24 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                           )}
                         </div>
                       )}
-                      
+
                       <div className="space-y-4">
-                        <div className={`p-4 rounded-lg ${
-                          runtimeAlreadyInstalled 
-                            ? "bg-green-600/20 border-2 border-green-400" 
-                            : "bg-yellow-600/20 border-2 border-yellow-400"
-                        }`}>
-                          <p className={`font-bold mb-2 ${
-                            runtimeAlreadyInstalled ? "text-green-400" : "text-yellow-400"
+                        <div className={`p-4 rounded-lg ${runtimeAlreadyInstalled
+                          ? "bg-green-600/20 border-2 border-green-400"
+                          : "bg-yellow-600/20 border-2 border-yellow-400"
                           }`}>
+                          <p className={`font-bold mb-2 ${runtimeAlreadyInstalled ? "text-green-400" : "text-yellow-400"
+                            }`}>
                             {runtimeAlreadyInstalled ? "✓ Runtime Detected" : "⚠ Runtime Not Detected"}
                           </p>
                           <p className="text-xs text-white/80">
-                            {runtimeAlreadyInstalled 
+                            {runtimeAlreadyInstalled
                               ? "The compatibility runtime is properly installed and ready to use."
                               : "You must install the compatibility runtime before proceeding to the next step."
                             }
                           </p>
                         </div>
-                        
+
                         <button
                           onClick={handleMacosSetup}
                           disabled={isSettingUpRuntime}
@@ -279,7 +284,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         >
                           {isSettingUpRuntime ? "Installing..." : runtimeAlreadyInstalled ? "Reinstall Runtime" : "Install Runtime"}
                         </button>
-                        
+
                         {!runtimeAlreadyInstalled && (
                           <p className="text-xs text-red-400 font-bold">
                             ⚠ Installation required before proceeding to next step
@@ -295,7 +300,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         Linux Compatibility
                       </h2>
                       <p className="text-lg mb-6 text-white/80">Choose your preferred compatibility layer</p>
-                      
+
                       {runners.length === 0 ? (
                         <div className="p-4 bg-yellow-500/20 border-2 border-yellow-500/50">
                           <p className="text-yellow-400">No compatible runners found. Please install Wine or Proton.</p>
@@ -306,11 +311,10 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                             <button
                               key={runner.id}
                               onClick={() => handleRunnerSelect(runner.id)}
-                              className={`w-full p-4 text-left border-2 transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${
-                                selectedRunner === runner.id
-                                  ? "bg-white/20 border-white"
-                                  : "bg-black/50 border-white/20"
-                              }`}
+                              className={`w-full p-4 text-left border-2 transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${selectedRunner === runner.id
+                                ? "bg-white/20 border-white"
+                                : "bg-black/50 border-white/20"
+                                }`}
                             >
                               <p className="font-bold text-white">{runner.name}</p>
                               <p className="text-xs text-white/60 mt-1">{runner.type}</p>
@@ -318,7 +322,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                           ))}
                         </div>
                       )}
-                      
+
                       <p className="text-xs mt-4 text-white/60">You can change this later in settings</p>
                     </div>
                   )}
@@ -330,7 +334,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                       </h2>
                       <p className="text-lg mb-6 text-white/80">Everything is ready to go!</p>
                       <div className="text-green-400 font-bold">✓ Native compatibility</div>
-                      
+
                       <div className="mt-6 p-4 bg-green-600/20 border-2 border-green-400 rounded-lg">
                         <p className="text-green-400 font-bold mb-2">✓ Windows Native Support</p>
                         <p className="text-xs text-white/80">Emerald Legacy runs natively on Windows without additional requirements.</p>
@@ -344,7 +348,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         Customize Your Experience
                       </h2>
                       <p className="text-lg mb-8 text-white/80">Choose your preferred launcher settings</p>
-                      
+
                       <div className="space-y-4 max-w-md mx-auto">
                         <div className="bg-black/50 border-2 border-white/20 p-4">
                           <div className="flex items-center justify-between">
@@ -438,7 +442,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <p className="text-xs mt-6 text-white/60">You can change these later in settings</p>
                     </div>
                   )}
@@ -448,7 +452,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                       <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
                         Setup Complete!
                       </h2>
-                      
+
                       <div className="space-y-4 mb-8">
                         <div className="text-left bg-black/50 border-2 border-white/20 p-4">
                           <p className="text-white">Username: <span className="font-bold text-green-400">{tempUsername}</span></p>
@@ -473,7 +477,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <p className="text-white/80">Emerald Legacy is now configured and ready to use!</p>
                     </div>
                   )}
@@ -490,7 +494,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                     Back
                   </button>
                 )}
-                
+
                 <button
                   onClick={handleNext}
                   disabled={!canProceed()}

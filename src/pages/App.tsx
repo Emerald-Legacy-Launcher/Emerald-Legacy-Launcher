@@ -43,6 +43,14 @@ export default function App() {
   const selectedEdition = game.editions.find((e: any) => e.id === config.profile);
   const selectedVersionName = selectedEdition?.name || "";
 
+  const titleImage = (() => {
+    if (config.profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
+    if (config.profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
+    if (config.profile === "vanilla_tu24") return "/images/minecraft_title_tu24.png";
+    if (config.profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
+    return "/images/MenuTitle.png";
+  })();
+
   useEffect(() => {
     if (config.isLoaded) {
       // Check localStorage directly to ensure accurate setup state
@@ -165,7 +173,7 @@ export default function App() {
               layoutId="mainLogo"
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
-              src="/images/MenuTitle.png"
+              src={titleImage}
               className="w-3/4 max-w-3xl"
               style={{ imageRendering: "pixelated" }}
             />
@@ -242,7 +250,7 @@ export default function App() {
               <div className="relative w-full max-w-135 flex justify-center">
                 <motion.img
                   layoutId="mainLogo"
-                  src="/images/MenuTitle.png"
+                  src={titleImage}
                   transition={{
                     type: "spring",
                     stiffness: 300,
@@ -270,7 +278,7 @@ export default function App() {
                             : audio.splashes[audio.splashIndex]}
                         </div>
                       </motion.div>
-                      {activeView === "main" && (
+                      {activeView === "main" && titleImage === "/images/MenuTitle.png" && (
                         <motion.div
                           key="tu-subtitle"
                           {...uiFade}
