@@ -33,31 +33,32 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const [splashIndex, setSplashIndex] = useState(-1);
   const musicPausedRef = useRef<{ at: number; track: number } | null>(null);
+  const fadeIntervalRef = useRef<any>(null);
 
   const playSfx = useCallback((file: string) => {
     const a = new Audio(`/sounds/${file}`);
     a.volume = sfxVol / 100;
-    a.play().catch(() => {});
+    a.play().catch(() => { });
   }, [sfxVol]);
 
   const playClickSound = useCallback(() => playSfx("click.wav"), [playSfx]);
   const playBackSound = useCallback(() => playSfx("back.ogg"), [playSfx]);
   const playSplashSound = useCallback(() => playSfx("orb.ogg"), [playSfx]);
 
-  const fadeOut = useCallback((audio: HTMLAudioElement, duration: number = 2000) => {
+  const fadeOut = useCallback((audio: HTMLAudioElement, duration: number = 500) => {
     return new Promise<void>((resolve) => {
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       const initialVolume = audio.volume;
-      const steps = 30;
+      const steps = 5;
       const stepDuration = duration / steps;
       let currentStep = 0;
-
-      const interval = setInterval(() => {
+      fadeIntervalRef.current = setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
         audio.volume = initialVolume * (1 - progress);
-
         if (currentStep >= steps) {
-          clearInterval(interval);
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          fadeIntervalRef.current = null;
           audio.pause();
           audio.volume = initialVolume;
           resolve();
@@ -66,25 +67,25 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
     });
   }, []);
 
-  const fadeIn = useCallback((audio: HTMLAudioElement, targetVolume: number, duration: number = 2000) => {
+  const fadeIn = useCallback((audio: HTMLAudioElement, targetVolume: number, duration: number = 500) => {
     return new Promise<void>((resolve) => {
+      if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
       audio.volume = 0;
       const playPromise = audio.play();
       if (playPromise !== undefined) {
-        playPromise.catch(() => {});
+        playPromise.catch(() => { });
       }
 
-      const steps = 30;
+      const steps = 5;
       const stepDuration = duration / steps;
       let currentStep = 0;
-
-      const interval = setInterval(() => {
+      fadeIntervalRef.current = setInterval(() => {
         currentStep++;
         const progress = currentStep / steps;
         audio.volume = targetVolume * progress;
-
         if (currentStep >= steps) {
-          clearInterval(interval);
+          if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+          fadeIntervalRef.current = null;
           audio.volume = targetVolume;
           resolve();
         }
@@ -104,18 +105,18 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
   useEffect(() => {
     if (showIntro) return;
     if (audioElement) return;
-    
+
     const audio = new Audio(TRACKS[currentTrack]);
     audio.volume = musicVol / 100;
     const handleEnded = () => setCurrentTrack((prev) => (prev + 1) % TRACKS.length);
     audio.addEventListener("ended", handleEnded);
-    
+
     const playPromise = audio.play();
     if (playPromise !== undefined) {
       playPromise.catch(() => {
         console.log("Autoplay prevented, waiting for user interaction");
         const startMusic = () => {
-          audio.play().catch(() => {});
+          audio.play().catch(() => { });
           document.removeEventListener("click", startMusic);
           document.removeEventListener("keydown", startMusic);
         };
@@ -123,7 +124,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
         document.addEventListener("keydown", startMusic, { once: true });
       });
     }
-    
+
     setAudioElement(audio);
     return () => {
       audio.removeEventListener("ended", handleEnded);
@@ -134,7 +135,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
   useEffect(() => {
     if (!audioElement) return;
     audioElement.src = TRACKS[currentTrack];
-    audioElement.play().catch(() => {});
+    audioElement.play().catch(() => { });
   }, [currentTrack]);
 
   useEffect(() => {
@@ -142,12 +143,14 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
     const shouldPause = isGameRunning || !isWindowVisible;
 
     if (shouldPause) {
-      if (!audioElement.paused) {
-        musicPausedRef.current = {
-          at: audioElement.currentTime,
-          track: currentTrack,
-        };
-        fadeOut(audioElement, 2000);
+      if (!audioElement.paused || fadeIntervalRef.current) {
+        if (!musicPausedRef.current) {
+          musicPausedRef.current = {
+            at: audioElement.currentTime,
+            track: currentTrack,
+          };
+        }
+        fadeOut(audioElement, 500);
       }
     } else if (musicPausedRef.current) {
       const { at, track } = musicPausedRef.current;
@@ -155,7 +158,7 @@ export function useAudioController({ musicVol, sfxVol, showIntro, isGameRunning,
       if (track === currentTrack) {
         audioElement.currentTime = at;
       }
-      fadeIn(audioElement, musicVol / 100, 2000);
+      fadeIn(audioElement, musicVol / 100, 500);
     }
   }, [isGameRunning, isWindowVisible, audioElement, currentTrack, musicVol, fadeOut, fadeIn]);
 
