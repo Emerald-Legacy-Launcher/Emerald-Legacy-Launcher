@@ -22,6 +22,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   })();
 
   const [currentStep, setCurrentStep] = useState(0);
+  const [focusIndex, setFocusIndex] = useState(0);
   const [tempUsername, setTempUsername] = useState(username);
   const [runners, setRunners] = useState<Runner[]>([]);
   const [selectedRunner, setSelectedRunner] = useState<string>("");
@@ -98,10 +99,13 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
     if (currentStep === 0) {
       setUsername(tempUsername);
       setCurrentStep(1);
+      setFocusIndex(0);
     } else if (currentStep === 1) {
       setCurrentStep(2);
+      setFocusIndex(0);
     } else if (currentStep === 2) {
       setCurrentStep(3);
+      setFocusIndex(0);
     } else if (currentStep === 3) {
       playSfx("levelup.ogg");
       setHasCompletedSetup(true);
@@ -113,8 +117,62 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
     playClickSound();
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      setFocusIndex(0);
     }
   };
+
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      // Elements count per step
+      let count = 0;
+      if (currentStep === 0) count = 2; // Input, Next
+      else if (currentStep === 1) {
+        if (isLinux) count = runners.length + 2; // Runners, Back, Next
+        else if (isMac) count = 3; // Install, Back, Next
+        else count = 2; // Back, Next
+      } else if (currentStep === 2) count = 6; // 4 Toggles, Back, Next
+      else if (currentStep === 3) count = 2; // Back, Finish
+
+      if (e.key === "ArrowDown" || e.key === "Tab") {
+        e.preventDefault();
+        setFocusIndex((prev) => (prev + 1) % count);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusIndex((prev) => (prev - 1 + count) % count);
+      } else if (e.key === "Enter") {
+        // Handle enter based on focusIndex and step
+        if (currentStep === 0) {
+          if (focusIndex === 0) handleNext(); // For input field
+          else if (focusIndex === 1) handleNext(); // Next button
+        } else if (currentStep === 1) {
+          if (isLinux) {
+            if (focusIndex < runners.length) handleRunnerSelect(runners[focusIndex].id);
+            else if (focusIndex === runners.length) handleBack();
+            else if (focusIndex === runners.length + 1) handleNext();
+          } else if (isMac) {
+            if (focusIndex === 0) handleMacosSetup();
+            else if (focusIndex === 1) handleBack();
+            else if (focusIndex === 2) handleNext();
+          } else {
+            if (focusIndex === 0) handleBack();
+            else if (focusIndex === 1) handleNext();
+          }
+        } else if (currentStep === 2) {
+          if (focusIndex === 0) { setEnableTrayIcon(!enableTrayIcon); playClickSound(); }
+          else if (focusIndex === 1) { setEnableVfx(!enableVfx); playClickSound(); }
+          else if (focusIndex === 2) { setEnableDiscordRPC(!enableDiscordRPC); playClickSound(); }
+          else if (focusIndex === 3) { setKeepLauncherOpen(!keepLauncherOpen); playClickSound(); }
+          else if (focusIndex === 4) handleBack();
+          else if (focusIndex === 5) handleNext();
+        } else if (currentStep === 3) {
+          if (focusIndex === 0) handleBack();
+          else if (focusIndex === 1) handleNext();
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [currentStep, focusIndex, runners, enableTrayIcon, enableVfx, enableDiscordRPC, keepLauncherOpen, isLinux, isMac, tempUsername]);
 
   const handleMacosSetup = async () => {
     playClickSound();
@@ -171,16 +229,18 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="max-w-2xl mx-auto"
+            className="max-w-2xl w-full mx-auto flex flex-col"
           >
-            <div className="relative p-8"
+            <div className="relative p-8 flex flex-col"
               style={{
                 backgroundImage: "url('/images/frame_background.png')",
                 backgroundSize: "100% 100%",
                 backgroundRepeat: "no-repeat",
                 imageRendering: "pixelated",
-                transformOrigin: "center center"
+                transformOrigin: "center center",
+                maxHeight: "85vh",
               }}>
+              <div className="overflow-y-auto flex-1" style={{ scrollbarWidth: "thin", scrollbarColor: "#555 transparent" }}>
               <div className="flex justify-center space-x-2 mb-8">
                 {Array.from({ length: totalSteps }, (_, i) => (
                   <motion.div
@@ -216,9 +276,11 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                             type="text"
                             value={tempUsername}
                             onChange={(e) => setTempUsername(e.target.value)}
-                            className="w-full px-4 py-3 bg-black/50 border-2 border-white text-white font-bold focus:outline-none focus:border-green-400"
+                            onFocus={() => setFocusIndex(0)}
+                            className={`w-full px-4 py-3 bg-black/50 border-2 font-bold focus:outline-none transition-colors ${focusIndex === 0 ? "border-yellow-400" : "border-white"}`}
                             placeholder="Enter your username"
                             maxLength={16}
+                            autoFocus
                           />
                         </label>
                       </div>
@@ -271,8 +333,9 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
 
                         <button
                           onClick={handleMacosSetup}
+                          onMouseEnter={() => setFocusIndex(0)}
                           disabled={isSettingUpRuntime}
-                          className="px-6 py-3 text-white font-bold bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 border-4 border-green-400"
+                          className={`px-6 py-3 text-white font-bold bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 border-4 ${focusIndex === 0 ? "border-yellow-400" : "border-green-400"}`}
                           style={{
                             fontFamily: "'Mojangles', monospace",
                             imageRendering: "pixelated",
@@ -307,14 +370,15 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          {runners.map((runner) => (
+                          {runners.map((runner, idx) => (
                             <button
                               key={runner.id}
                               onClick={() => handleRunnerSelect(runner.id)}
-                              className={`w-full p-4 text-left border-2 transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${selectedRunner === runner.id
+                              onMouseEnter={() => setFocusIndex(idx)}
+                              className={`w-full p-4 text-left border-2 transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${selectedRunner === runner.id || focusIndex === idx
                                 ? "bg-white/20 border-white"
                                 : "bg-black/50 border-white/20"
-                                }`}
+                                } ${focusIndex === idx ? "border-yellow-400" : ""}`}
                             >
                               <p className="font-bold text-white">{runner.name}</p>
                               <p className="text-xs text-white/60 mt-1">{runner.type}</p>
@@ -361,7 +425,8 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                                 playClickSound();
                                 setEnableTrayIcon(!enableTrayIcon);
                               }}
-                              className="w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)]"
+                              onMouseEnter={() => setFocusIndex(0)}
+                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 0 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
                               style={{ imageRendering: "pixelated" }}
                             >
                               <img
@@ -384,7 +449,8 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                                 playClickSound();
                                 setEnableVfx(!enableVfx);
                               }}
-                              className="w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)]"
+                              onMouseEnter={() => setFocusIndex(1)}
+                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 1 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
                               style={{ imageRendering: "pixelated" }}
                             >
                               <img
@@ -407,7 +473,8 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                                 playClickSound();
                                 setEnableDiscordRPC(!enableDiscordRPC);
                               }}
-                              className="w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)]"
+                              onMouseEnter={() => setFocusIndex(2)}
+                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 2 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
                               style={{ imageRendering: "pixelated" }}
                             >
                               <img
@@ -430,7 +497,8 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                                 playClickSound();
                                 setKeepLauncherOpen(!keepLauncherOpen);
                               }}
-                              className="w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)]"
+                              onMouseEnter={() => setFocusIndex(3)}
+                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 3 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
                               style={{ imageRendering: "pixelated" }}
                             >
                               <img
@@ -483,13 +551,25 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                   )}
                 </motion.div>
               </AnimatePresence>
+              </div>
 
-              <div className="flex justify-between mt-8">
+              <div className="flex justify-between mt-4">
                 {currentStep > 0 && (
                   <button
                     onClick={handleBack}
+                    onMouseEnter={() => {
+                      if (currentStep === 0) setFocusIndex(1);
+                      else if (currentStep === 1) setFocusIndex(isLinux ? runners.length : (isMac ? 1 : 0));
+                      else if (currentStep === 2) setFocusIndex(4);
+                      else if (currentStep === 3) setFocusIndex(0);
+                    }}
                     disabled={currentStep === 0}
-                    className="mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)]"
+                    className={`mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${
+                      (currentStep === 1 && ((isLinux && focusIndex === runners.length) || (isMac && focusIndex === 1) || (!isLinux && !isMac && focusIndex === 0))) ||
+                      (currentStep === 2 && focusIndex === 4) ||
+                      (currentStep === 3 && focusIndex === 0)
+                      ? "border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]" : ""
+                    }`}
                   >
                     Back
                   </button>
@@ -497,8 +577,20 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
 
                 <button
                   onClick={handleNext}
+                  onMouseEnter={() => {
+                    if (currentStep === 0) setFocusIndex(1);
+                    else if (currentStep === 1) setFocusIndex(isLinux ? runners.length + 1 : (isMac ? 2 : 1));
+                    else if (currentStep === 2) setFocusIndex(5);
+                    else if (currentStep === 3) setFocusIndex(1);
+                  }}
                   disabled={!canProceed()}
-                  className={`${currentStep > 0 ? '' : 'ml-auto'} mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)]`}
+                  className={`${currentStep > 0 ? '' : 'ml-auto'} mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${
+                    (currentStep === 0 && focusIndex === 1) ||
+                    (currentStep === 1 && ((isLinux && focusIndex === runners.length + 1) || (isMac && focusIndex === 2) || (!isLinux && !isMac && focusIndex === 1))) ||
+                    (currentStep === 2 && focusIndex === 5) ||
+                    (currentStep === 3 && focusIndex === 1)
+                    ? "border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]" : ""
+                  }`}
                 >
                   {currentStep === totalSteps - 1 ? "Finish" : "Next"}
                 </button>

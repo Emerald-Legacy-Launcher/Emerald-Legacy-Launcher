@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function CustomTUModal({
   isOpen,
@@ -7,12 +7,42 @@ export default function CustomTUModal({
   onImport,
   playSfx,
 }: any) {
-  if (!isOpen) return null;
-
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
+  const [focusIndex, setFocusIndex] = useState(0);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setFocusIndex(0);
+      return;
+    }
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        playSfx("close_click.wav");
+        onClose();
+      } else if (e.key === "Enter") {
+        if (focusIndex === 3) {
+          playSfx("close_click.wav");
+          onClose();
+        } else if (focusIndex === 4 || e.ctrlKey) {
+          playSfx("save_click.wav");
+          handleImport();
+        }
+      } else if (e.key === "ArrowDown" || e.key === "Tab") {
+        e.preventDefault();
+        setFocusIndex((prev) => (prev + 1) % 5);
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        setFocusIndex((prev) => (prev - 1 + 5) % 5);
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, focusIndex, name, desc, url]);
+
+  if (!isOpen) return null;
 
   const handleImport = () => {
     if (!name || !url) {
@@ -57,10 +87,12 @@ export default function CustomTUModal({
             </label>
             <input
               type="text"
+              autoFocus
               value={name}
               onChange={(e) => setName(e.target.value)}
+              onFocus={() => setFocusIndex(0)}
               placeholder="e.g. My Awesome Mod"
-              className="w-full h-12 px-4 bg-black/40 border-2 border-[#373737] text-white text-lg focus:border-[#FFFF55] transition-colors outline-none font-['Mojangles']"
+              className={`w-full h-12 px-4 bg-black/40 border-2 text-white text-lg transition-colors outline-none font-['Mojangles'] ${focusIndex === 0 ? "border-[#FFFF55]" : "border-[#373737]"}`}
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -73,8 +105,9 @@ export default function CustomTUModal({
               type="text"
               value={desc}
               onChange={(e) => setDesc(e.target.value)}
+              onFocus={() => setFocusIndex(1)}
               placeholder="A brief description..."
-              className="w-full h-12 px-4 bg-black/40 border-2 border-[#373737] text-white text-lg focus:border-[#FFFF55] transition-colors outline-none font-['Mojangles']"
+              className={`w-full h-12 px-4 bg-black/40 border-2 text-white text-lg transition-colors outline-none font-['Mojangles'] ${focusIndex === 1 ? "border-[#FFFF55]" : "border-[#373737]"}`}
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -87,8 +120,9 @@ export default function CustomTUModal({
               type="text"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
+              onFocus={() => setFocusIndex(2)}
               placeholder="https://example.com/mod.zip"
-              className="w-full h-12 px-4 bg-black/40 border-2 border-[#373737] text-white text-lg focus:border-[#FFFF55] transition-colors outline-none font-['Mojangles']"
+              className={`w-full h-12 px-4 bg-black/40 border-2 text-white text-lg transition-colors outline-none font-['Mojangles'] ${focusIndex === 2 ? "border-[#FFFF55]" : "border-[#373737]"}`}
               style={{ imageRendering: "pixelated" }}
             />
           </div>
@@ -102,46 +136,32 @@ export default function CustomTUModal({
 
         <div className="flex gap-4 mt-8 w-full">
           <button
+            onMouseEnter={() => setFocusIndex(3)}
             onClick={() => {
               playSfx("close_click.wav");
               onClose();
             }}
-            className="flex-1 h-12 flex items-center justify-center text-white text-xl mc-text-shadow transition-all outline-none border-none bg-transparent hover:text-[#FFFF55]"
+            className={`flex-1 h-12 flex items-center justify-center text-xl mc-text-shadow transition-all outline-none border-none bg-transparent ${focusIndex === 3 ? "text-[#FFFF55]" : "text-white"}`}
             style={{
-              backgroundImage: "url('/images/Button_Background.png')",
+              backgroundImage: focusIndex === 3 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')",
               backgroundSize: "100% 100%",
               imageRendering: "pixelated",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundImage =
-                "url('/images/button_highlighted.png')")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundImage =
-                "url('/images/Button_Background.png')")
-            }
           >
             Cancel
           </button>
           <button
+            onMouseEnter={() => setFocusIndex(4)}
             onClick={() => {
               playSfx("save_click.wav");
               handleImport();
             }}
-            className="flex-1 h-12 flex items-center justify-center text-white text-xl mc-text-shadow transition-all outline-none border-none bg-transparent hover:text-[#FFFF55]"
+            className={`flex-1 h-12 flex items-center justify-center text-xl mc-text-shadow transition-all outline-none border-none bg-transparent ${focusIndex === 4 ? "text-[#FFFF55]" : "text-white"}`}
             style={{
-              backgroundImage: "url('/images/Button_Background.png')",
+              backgroundImage: focusIndex === 4 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')",
               backgroundSize: "100% 100%",
               imageRendering: "pixelated",
             }}
-            onMouseEnter={(e) =>
-              (e.currentTarget.style.backgroundImage =
-                "url('/images/button_highlighted.png')")
-            }
-            onMouseLeave={(e) =>
-              (e.currentTarget.style.backgroundImage =
-                "url('/images/Button_Background.png')")
-            }
           >
             Import
           </button>

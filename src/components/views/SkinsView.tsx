@@ -47,6 +47,7 @@ const SkinsView = memo(function SkinsView() {
   const [activeSkinId, setActiveSkinId] = useState<string | null>(null);
 
   const [showImportModal, setShowImportModal] = useState(false);
+  const [modalFocusIndex, setModalFocusIndex] = useState(0);
   const [importMode, setImportMode] = useState<'file' | 'username' | null>(null);
   const [importUsername, setImportUsername] = useState('');
   const [isImporting, setIsImporting] = useState(false);
@@ -105,10 +106,40 @@ const SkinsView = memo(function SkinsView() {
       if (showImportModal) {
         if (e.key === 'Escape') {
           playBackSound();
-          setShowImportModal(false);
-          setImportMode(null);
-          setImportUsername('');
-          setImportError('');
+          if (importMode) {
+            setImportMode(null);
+            setImportUsername('');
+            setImportError('');
+            setModalFocusIndex(0);
+          } else {
+            setShowImportModal(false);
+            setModalFocusIndex(0);
+          }
+        } else if (e.key === 'ArrowDown' || e.key === 'Tab') {
+          e.preventDefault();
+          setModalFocusIndex(prev => (prev + 1) % 3);
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          setModalFocusIndex(prev => (prev - 1 + 3) % 3);
+        } else if (e.key === 'Enter') {
+          if (!importMode) {
+            if (modalFocusIndex === 0) { playClickSound(); fileInputRef.current?.click(); }
+            else if (modalFocusIndex === 1) { playClickSound(); setImportMode('username'); setModalFocusIndex(0); }
+            else if (modalFocusIndex === 2) {
+              playBackSound();
+              setShowImportModal(false);
+              setModalFocusIndex(0);
+            }
+          } else {
+            if (modalFocusIndex === 0 || modalFocusIndex === 1) handleFetchUsername();
+            else if (modalFocusIndex === 2) {
+              playBackSound();
+              setImportMode(null);
+              setImportUsername('');
+              setImportError('');
+              setModalFocusIndex(0);
+            }
+          }
         }
         return;
       }
@@ -153,7 +184,7 @@ const SkinsView = memo(function SkinsView() {
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [focusIndex, savedSkins.length, playBackSound, setActiveView, playClickSound, showImportModal]);
+  }, [focusIndex, savedSkins.length, playBackSound, setActiveView, playClickSound, showImportModal, importMode, modalFocusIndex, importUsername]);
 
   useEffect(() => {
     if (focusIndex !== null) {
@@ -165,6 +196,7 @@ const SkinsView = memo(function SkinsView() {
   const handleImportClick = () => {
     playClickSound();
     setShowImportModal(true);
+    setModalFocusIndex(0);
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -304,16 +336,18 @@ const SkinsView = memo(function SkinsView() {
             {!importMode ? (
               <div className="flex flex-col gap-4 w-full px-4 mb-2">
                 <button
+                  onMouseEnter={() => setModalFocusIndex(0)}
                   onClick={() => { playClickSound(); fileInputRef.current?.click(); }}
-                  className="w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white hover:text-[#FFFF55] outline-none"
-                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                  className={`w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow outline-none ${modalFocusIndex === 0 ? 'text-[#FFFF55]' : 'text-white'}`}
+                  style={{ backgroundImage: modalFocusIndex === 0 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
                 >
                   From File
                 </button>
                 <button
-                  onClick={() => { playClickSound(); setImportMode('username'); }}
-                  className="w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white hover:text-[#FFFF55] outline-none"
-                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                  onMouseEnter={() => setModalFocusIndex(1)}
+                  onClick={() => { playClickSound(); setImportMode('username'); setModalFocusIndex(0); }}
+                  className={`w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow outline-none ${modalFocusIndex === 1 ? 'text-[#FFFF55]' : 'text-white'}`}
+                  style={{ backgroundImage: modalFocusIndex === 1 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
                 >
                   From Username
                 </button>
@@ -325,19 +359,20 @@ const SkinsView = memo(function SkinsView() {
                   placeholder="Minecraft Username"
                   value={importUsername}
                   onChange={(e) => setImportUsername(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === 'Enter') handleFetchUsername(); }}
+                  onFocus={() => setModalFocusIndex(0)}
                   autoFocus
                   spellCheck={false}
-                  className="w-full h-12 bg-black/50 border-2 border-[#373737] text-white px-4 text-xl outline-none focus:border-[#FFFF55] transition-colors"
+                  className={`w-full h-12 bg-black/50 border-2 text-white px-4 text-xl outline-none transition-colors ${modalFocusIndex === 0 ? 'border-[#FFFF55]' : 'border-[#373737]'}`}
                 />
 
                 {importError && <span className="text-red-400 text-sm text-center mc-text-shadow">{importError}</span>}
 
                 <button
+                  onMouseEnter={() => setModalFocusIndex(1)}
                   onClick={handleFetchUsername}
                   disabled={isImporting}
-                  className={`w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow text-white outline-none ${isImporting ? 'opacity-50' : 'hover:text-[#FFFF55]'}`}
-                  style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+                  className={`w-full h-12 flex items-center justify-center transition-colors text-xl mc-text-shadow outline-none ${isImporting ? 'opacity-50' : (modalFocusIndex === 1 ? 'text-[#FFFF55]' : 'text-white')}`}
+                  style={{ backgroundImage: modalFocusIndex === 1 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
                 >
                   {isImporting ? 'Fetching...' : 'Fetch Skin'}
                 </button>
@@ -345,15 +380,17 @@ const SkinsView = memo(function SkinsView() {
             )}
 
             <button
+              onMouseEnter={() => setModalFocusIndex(2)}
               onClick={() => {
                 playBackSound();
                 setShowImportModal(false);
                 setImportMode(null);
                 setImportUsername('');
                 setImportError('');
+                setModalFocusIndex(0);
               }}
-              className="w-40 h-10 flex items-center justify-center transition-colors text-lg mc-text-shadow mt-6 text-white hover:text-[#FFFF55] outline-none"
-              style={{ backgroundImage: "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
+              className={`w-40 h-10 flex items-center justify-center transition-colors text-lg mc-text-shadow mt-6 outline-none ${modalFocusIndex === 2 ? 'text-[#FFFF55]' : 'text-white'}`}
+              style={{ backgroundImage: modalFocusIndex === 2 ? "url('/images/button_highlighted.png')" : "url('/images/Button_Background.png')", backgroundSize: '100% 100%', imageRendering: 'pixelated' }}
             >
               Cancel
             </button>
