@@ -237,7 +237,7 @@ fn import_theme(app: AppHandle) -> Result<String, String> {
 #[tauri::command]
 fn get_available_runners(app: AppHandle) -> Vec<Runner> {
     let mut runners = Vec::new();
-    let mut seen_paths = std::collections::HashSet::new();
+    let mut seen_paths: std::collections::HashSet<String> = std::collections::HashSet::new();
 
     #[cfg(target_os = "linux")]
     {
@@ -817,7 +817,7 @@ fn ensure_server_list(instance_dir: &PathBuf, servers: Vec<McServer>) {
     }
 
     let mut unique_servers = Vec::new();
-    let mut seen = std::collections::HashSet::new();
+    let mut seen: std::collections::HashSet<(String, u16)> = std::collections::HashSet::new();
     for s in all_servers {
         let key = (s.ip.clone(), s.port);
         if seen.insert(key) {
@@ -1099,7 +1099,7 @@ async fn launch_game(app: AppHandle, state: State<'_, GameState>, instance_id: S
             #[cfg(unix)]
             cmd.process_group(0);
             cmd.current_dir(&instance_dir);
-            let mut child = cmd.spawn().map_err(|e| e.to_string())?;
+            let child = cmd.spawn().map_err(|e| e.to_string())?;
             {
                 let mut lock = state.child.lock().await;
                 *lock = Some(child);
@@ -1143,7 +1143,7 @@ fn kill_process_tree(app: &AppHandle, instance_id: &str) {
 }
 
 #[tauri::command]
-async fn stop_game(app: AppHandle, instance_id: String, state: State<'_, GameState>) -> Result<(), String> {
+async fn stop_game(#[allow(unused_variables)] app: AppHandle, #[allow(unused_variables)] instance_id: String, state: State<'_, GameState>) -> Result<(), String> {
     let mut lock = state.child.lock().await;
     if let Some(mut child) = lock.take() {
         #[cfg(unix)] kill_process_tree(&app, &instance_id);
