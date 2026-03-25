@@ -237,29 +237,37 @@ fn import_theme(app: AppHandle) -> Result<String, String> {
 #[tauri::command]
 fn get_available_runners(app: AppHandle) -> Vec<Runner> {
     let mut runners = Vec::new();
+    let mut seen_paths = std::collections::HashSet::new();
+
     #[cfg(target_os = "linux")]
     {
         if let Ok(output) = Command::new("which").arg("wine").output() {
             if output.status.success() {
                 let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                runners.push(Runner {
-                    id: "wine".to_string(),
-                    name: "System Wine".to_string(),
-                    path,
-                    r#type: "wine".to_string(),
-                });
+                if !seen_paths.contains(&path) {
+                    seen_paths.insert(path.clone());
+                    runners.push(Runner {
+                        id: "wine".to_string(),
+                        name: "System Wine".to_string(),
+                        path,
+                        r#type: "wine".to_string(),
+                    });
+                }
             }
         }
 
         if let Ok(output) = Command::new("ls").arg("/usr/share/emerald-legacy-launcher/wine/bin/wine").output() {
             if output.status.success() {
                 let path = String::from_utf8_lossy(&output.stdout).trim().to_string();
-                runners.push(Runner {
-                    id: "flatpaksucks".to_string(),
-                    name: "Default for Flatpak".to_string(),
-                    path,
-                    r#type: "wine".to_string(),
-                });
+                if !seen_paths.contains(&path) {
+                    seen_paths.insert(path.clone());
+                    runners.push(Runner {
+                        id: "flatpaksucks".to_string(),
+                        name: "Default for Flatpak".to_string(),
+                        path,
+                        r#type: "wine".to_string(),
+                    });
+                }
             }
         }
 
@@ -276,12 +284,16 @@ fn get_available_runners(app: AppHandle) -> Vec<Runner> {
                     if path.is_dir() {
                         let name = entry.file_name().to_string_lossy().to_string();
                         if name.starts_with("Proton") {
-                            runners.push(Runner {
-                                id: format!("proton_{}", name),
-                                name: name,
-                                path: path.to_string_lossy().to_string(),
-                                r#type: "proton".to_string(),
-                            });
+                            let path_str = path.to_string_lossy().to_string();
+                            if !seen_paths.contains(&path_str) {
+                                seen_paths.insert(path_str.clone());
+                                runners.push(Runner {
+                                    id: format!("proton_{}", name),
+                                    name: name,
+                                    path: path_str,
+                                    r#type: "proton".to_string(),
+                                });
+                            }
                         }
                     }
                 }
@@ -298,19 +310,27 @@ fn get_available_runners(app: AppHandle) -> Vec<Runner> {
                     let wine_bin = path.join("bin").join("wine");
                     let proton_bin = path.join("proton");
                     if proton_bin.exists() {
-                        runners.push(Runner {
-                            id: format!("downloaded_{}", dir_name),
-                            name: format!("{} (downloaded)", dir_name),
-                            path: path.to_string_lossy().to_string(),
-                            r#type: "proton".to_string(),
-                        });
+                        let path_str = path.to_string_lossy().to_string();
+                        if !seen_paths.contains(&path_str) {
+                            seen_paths.insert(path_str.clone());
+                            runners.push(Runner {
+                                id: format!("downloaded_{}", dir_name),
+                                name: format!("{} (downloaded)", dir_name),
+                                path: path_str,
+                                r#type: "proton".to_string(),
+                            });
+                        }
                     } else if wine_bin.exists() {
-                        runners.push(Runner {
-                            id: format!("downloaded_{}", dir_name),
-                            name: format!("{} (downloaded)", dir_name),
-                            path: wine_bin.to_string_lossy().to_string(),
-                            r#type: "wine".to_string(),
-                        });
+                        let path_str = wine_bin.to_string_lossy().to_string();
+                        if !seen_paths.contains(&path_str) {
+                            seen_paths.insert(path_str.clone());
+                            runners.push(Runner {
+                                id: format!("downloaded_{}", dir_name),
+                                name: format!("{} (downloaded)", dir_name),
+                                path: path_str,
+                                r#type: "wine".to_string(),
+                            });
+                        }
                     }
                 }
             }

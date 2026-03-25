@@ -10,7 +10,21 @@ interface SetupViewProps {
 
 const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const { isLinux, isMac } = usePlatform();
-  const { username, setUsername, setHasCompletedSetup, profile } = useConfig();
+  const {
+    username, setUsername,
+    setHasCompletedSetup,
+    profile,
+    setEnableTrayIcon: setConfigTray,
+    setVfxEnabled: setConfigVfx,
+    setRpcEnabled: setConfigRpc,
+    setKeepLauncherOpen: setConfigKeepOpen,
+    setLinuxRunner,
+    linuxRunner: configLinuxRunner,
+    vfxEnabled: configVfx,
+    enableTrayIcon: configTray,
+    rpcEnabled: configRpc,
+    keepLauncherOpen: configKeepOpen
+  } = useConfig();
   const { playClickSound, playSfx } = useAudio();
 
   const titleImage = (() => {
@@ -30,16 +44,21 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const [setupProgress, setSetupProgress] = useState<{ stage: string; message: string; percent?: number } | null>(null);
   const [runtimeAlreadyInstalled, setRuntimeAlreadyInstalled] = useState(false);
 
-  const [enableTrayIcon, setEnableTrayIcon] = useState(true);
-  const [enableVfx, setEnableVfx] = useState(true);
-  const [enableDiscordRPC, setEnableDiscordRPC] = useState(true);
-  const [keepLauncherOpen, setKeepLauncherOpen] = useState(true);
+  const [enableTrayIcon, setEnableTrayIcon] = useState(configTray);
+  const [enableVfx, setEnableVfx] = useState(configVfx);
+  const [enableDiscordRPC, setEnableDiscordRPC] = useState(configRpc);
+  const [keepLauncherOpen, setKeepLauncherOpen] = useState(configKeepOpen);
 
   const totalSteps = isLinux ? 4 : 4;
 
   useEffect(() => {
     if (isLinux || isMac) {
-      TauriService.getAvailableRunners().then(setRunners);
+      TauriService.getAvailableRunners().then(availableRunners => {
+        setRunners(availableRunners);
+        if (configLinuxRunner && availableRunners.find(r => r.id === configLinuxRunner)) {
+          setSelectedRunner(configLinuxRunner);
+        }
+      });
     }
 
     if (isMac) {
@@ -101,9 +120,17 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
       setCurrentStep(1);
       setFocusIndex(0);
     } else if (currentStep === 1) {
+      if (isLinux && selectedRunner) {
+        setLinuxRunner(selectedRunner);
+      }
       setCurrentStep(2);
       setFocusIndex(0);
     } else if (currentStep === 2) {
+      setConfigTray(enableTrayIcon);
+      setConfigVfx(enableVfx);
+      setConfigRpc(enableDiscordRPC);
+      setConfigKeepOpen(keepLauncherOpen);
+
       setCurrentStep(3);
       setFocusIndex(0);
     } else if (currentStep === 3) {
@@ -241,316 +268,316 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                 maxHeight: "85vh",
               }}>
               <div className="overflow-y-auto flex-1" style={{ scrollbarWidth: "thin", scrollbarColor: "#555 transparent" }}>
-              <div className="flex justify-center space-x-2 mb-8">
-                {Array.from({ length: totalSteps }, (_, i) => (
+                <div className="flex justify-center space-x-2 mb-8">
+                  {Array.from({ length: totalSteps }, (_, i) => (
+                    <motion.div
+                      key={i}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      transition={{ delay: useConfig().animationsEnabled ? i * 0.05 : 0 }}
+                      className={`h-2 w-16 transition-all ${i <= currentStep ? "bg-white" : "bg-white/20"
+                        }`}
+                    />
+                  ))}
+                </div>
+
+                <AnimatePresence mode="wait">
                   <motion.div
-                    key={i}
-                    initial={{ opacity: 0, scale: 0.8 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: useConfig().animationsEnabled ? i * 0.05 : 0 }}
-                    className={`h-2 w-16 transition-all ${i <= currentStep ? "bg-white" : "bg-white/20"
-                      }`}
-                  />
-                ))}
-              </div>
+                    key={`content-${currentStep}`}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0, delay: useConfig().animationsEnabled ? 0.1 : 0 }}
+                  >
+                    {currentStep === 0 && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          Welcome to Emerald Legacy
+                        </h2>
+                        <p className="text-lg mb-8 text-white/80">Let's configure your launcher</p>
 
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={`content-${currentStep}`}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0, delay: useConfig().animationsEnabled ? 0.1 : 0 }}
-                >
-                  {currentStep === 0 && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        Welcome to Emerald Legacy
-                      </h2>
-                      <p className="text-lg mb-8 text-white/80">Let's configure your launcher</p>
-
-                      <div className="space-y-4">
-                        <label className="block text-left">
-                          <span className="text-white font-bold mb-2 block">Username</span>
-                          <input
-                            type="text"
-                            value={tempUsername}
-                            onChange={(e) => setTempUsername(e.target.value)}
-                            onFocus={() => setFocusIndex(0)}
-                            className={`w-full px-4 py-3 bg-black/50 border-2 font-bold focus:outline-none transition-colors ${focusIndex === 0 ? "border-yellow-400" : "border-white"}`}
-                            placeholder="Enter your username"
-                            maxLength={16}
-                            autoFocus
-                          />
-                        </label>
+                        <div className="space-y-4">
+                          <label className="block text-left">
+                            <span className="text-white font-bold mb-2 block">Username</span>
+                            <input
+                              type="text"
+                              value={tempUsername}
+                              onChange={(e) => setTempUsername(e.target.value)}
+                              onFocus={() => setFocusIndex(0)}
+                              className={`w-full px-4 py-3 bg-black/50 border-2 font-bold focus:outline-none transition-colors ${focusIndex === 0 ? "border-yellow-400" : "border-white"}`}
+                              placeholder="Enter your username"
+                              maxLength={16}
+                              autoFocus
+                            />
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
 
-                  {currentStep === 1 && isMac && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        macOS Compatibility
-                      </h2>
-                      <p className="text-lg mb-6 text-white/80">
-                        {runtimeAlreadyInstalled
-                          ? "Emerald Legacy compatibility runtime is already installed"
-                          : "Emerald Legacy needs compatibility runtime for macOS"
-                        }
-                      </p>
+                    {currentStep === 1 && isMac && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          macOS Compatibility
+                        </h2>
+                        <p className="text-lg mb-6 text-white/80">
+                          {runtimeAlreadyInstalled
+                            ? "Emerald Legacy compatibility runtime is already installed"
+                            : "Emerald Legacy needs compatibility runtime for macOS"
+                          }
+                        </p>
 
-                      {setupProgress && (
-                        <div className="mb-4 p-4 bg-black/50 border border-white/20 rounded">
-                          <p className="text-sm font-bold text-yellow-400 mb-2">{setupProgress.stage.toUpperCase()}</p>
-                          <p className="text-xs opacity-80">{setupProgress.message}</p>
-                          {setupProgress.percent !== undefined && (
-                            <div className="w-full bg-white/20 h-2 rounded-full mt-3">
-                              <div
-                                className="h-full bg-green-500 rounded-full transition-all duration-300"
-                                style={{ width: `${setupProgress.percent}%` }}
-                              />
-                            </div>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="space-y-4">
-                        <div className={`p-4 rounded-lg ${runtimeAlreadyInstalled
-                          ? "bg-green-600/20 border-2 border-green-400"
-                          : "bg-yellow-600/20 border-2 border-yellow-400"
-                          }`}>
-                          <p className={`font-bold mb-2 ${runtimeAlreadyInstalled ? "text-green-400" : "text-yellow-400"
-                            }`}>
-                            {runtimeAlreadyInstalled ? "✓ Runtime Detected" : "⚠ Runtime Not Detected"}
-                          </p>
-                          <p className="text-xs text-white/80">
-                            {runtimeAlreadyInstalled
-                              ? "The compatibility runtime is properly installed and ready to use."
-                              : "You must install the compatibility runtime before proceeding to the next step."
-                            }
-                          </p>
-                        </div>
-
-                        <button
-                          onClick={handleMacosSetup}
-                          onMouseEnter={() => setFocusIndex(0)}
-                          disabled={isSettingUpRuntime}
-                          className={`px-6 py-3 text-white font-bold bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 border-4 ${focusIndex === 0 ? "border-yellow-400" : "border-green-400"}`}
-                          style={{
-                            fontFamily: "'Mojangles', monospace",
-                            imageRendering: "pixelated",
-                            textShadow: "2px 2px 0px rgba(0,0,0,0.8)",
-                            boxShadow: "4px 4px 0px rgba(0,0,0,0.3)",
-                            fontSize: "16px",
-                            letterSpacing: "1px"
-                          }}
-                        >
-                          {isSettingUpRuntime ? "Installing..." : runtimeAlreadyInstalled ? "Reinstall Runtime" : "Install Runtime"}
-                        </button>
-
-                        {!runtimeAlreadyInstalled && (
-                          <p className="text-xs text-red-400 font-bold">
-                            ⚠ Installation required before proceeding to next step
-                          </p>
+                        {setupProgress && (
+                          <div className="mb-4 p-4 bg-black/50 border border-white/20 rounded">
+                            <p className="text-sm font-bold text-yellow-400 mb-2">{setupProgress.stage.toUpperCase()}</p>
+                            <p className="text-xs opacity-80">{setupProgress.message}</p>
+                            {setupProgress.percent !== undefined && (
+                              <div className="w-full bg-white/20 h-2 rounded-full mt-3">
+                                <div
+                                  className="h-full bg-green-500 rounded-full transition-all duration-300"
+                                  style={{ width: `${setupProgress.percent}%` }}
+                                />
+                              </div>
+                            )}
+                          </div>
                         )}
-                      </div>
-                    </div>
-                  )}
 
-                  {currentStep === 1 && isLinux && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        Linux Compatibility
-                      </h2>
-                      <p className="text-lg mb-6 text-white/80">Choose your preferred compatibility layer</p>
-
-                      {runners.length === 0 ? (
-                        <div className="p-4 bg-yellow-500/20 border-2 border-yellow-500/50">
-                          <p className="text-yellow-400">No compatible runners found. Please install Wine or Proton.</p>
-                        </div>
-                      ) : (
-                        <div className="space-y-3">
-                          {runners.map((runner, idx) => (
-                            <button
-                              key={runner.id}
-                              onClick={() => handleRunnerSelect(runner.id)}
-                              onMouseEnter={() => setFocusIndex(idx)}
-                              className={`w-full p-4 text-left border-2 transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${selectedRunner === runner.id || focusIndex === idx
-                                ? "bg-white/20 border-white"
-                                : "bg-black/50 border-white/20"
-                                } ${focusIndex === idx ? "border-yellow-400" : ""}`}
-                            >
-                              <p className="font-bold text-white">{runner.name}</p>
-                              <p className="text-xs text-white/60 mt-1">{runner.type}</p>
-                            </button>
-                          ))}
-                        </div>
-                      )}
-
-                      <p className="text-xs mt-4 text-white/60">You can change this later in settings</p>
-                    </div>
-                  )}
-
-                  {currentStep === 1 && !isMac && !isLinux && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        Windows Setup
-                      </h2>
-                      <p className="text-lg mb-6 text-white/80">Everything is ready to go!</p>
-                      <div className="text-green-400 font-bold">✓ Native compatibility</div>
-
-                      <div className="mt-6 p-4 bg-green-600/20 border-2 border-green-400 rounded-lg">
-                        <p className="text-green-400 font-bold mb-2">✓ Windows Native Support</p>
-                        <p className="text-xs text-white/80">Emerald Legacy runs natively on Windows without additional requirements.</p>
-                      </div>
-                    </div>
-                  )}
-
-                  {currentStep === 2 && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        Customize Your Experience
-                      </h2>
-                      <p className="text-lg mb-8 text-white/80">Choose your preferred launcher settings</p>
-
-                      <div className="space-y-4 max-w-md mx-auto">
-                        <div className="bg-black/50 border-2 border-white/20 p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-left">
-                              <p className="text-white font-bold">System Tray Icon</p>
-                              <p className="text-xs text-white/60">Keep launcher accessible in system tray</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                playClickSound();
-                                setEnableTrayIcon(!enableTrayIcon);
-                              }}
-                              onMouseEnter={() => setFocusIndex(0)}
-                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 0 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
-                              style={{ imageRendering: "pixelated" }}
-                            >
-                              <img
-                                src={enableTrayIcon ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
-                                alt="Toggle"
-                                className="w-full h-full object-contain"
-                              />
-                            </button>
+                        <div className="space-y-4">
+                          <div className={`p-4 rounded-lg ${runtimeAlreadyInstalled
+                            ? "bg-green-600/20 border-2 border-green-400"
+                            : "bg-yellow-600/20 border-2 border-yellow-400"
+                            }`}>
+                            <p className={`font-bold mb-2 ${runtimeAlreadyInstalled ? "text-green-400" : "text-yellow-400"
+                              }`}>
+                              {runtimeAlreadyInstalled ? "✓ Runtime Detected" : "⚠ Runtime Not Detected"}
+                            </p>
+                            <p className="text-xs text-white/80">
+                              {runtimeAlreadyInstalled
+                                ? "The compatibility runtime is properly installed and ready to use."
+                                : "You must install the compatibility runtime before proceeding to the next step."
+                              }
+                            </p>
                           </div>
-                        </div>
 
-                        <div className="bg-black/50 border-2 border-white/20 p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-left">
-                              <p className="text-white font-bold">Visual Effects</p>
-                              <p className="text-xs text-white/60">Click particles and animations</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                playClickSound();
-                                setEnableVfx(!enableVfx);
-                              }}
-                              onMouseEnter={() => setFocusIndex(1)}
-                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 1 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
-                              style={{ imageRendering: "pixelated" }}
-                            >
-                              <img
-                                src={enableVfx ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
-                                alt="Toggle"
-                                className="w-full h-full object-contain"
-                              />
-                            </button>
-                          </div>
-                        </div>
+                          <button
+                            onClick={handleMacosSetup}
+                            onMouseEnter={() => setFocusIndex(0)}
+                            disabled={isSettingUpRuntime}
+                            className={`px-6 py-3 text-white font-bold bg-green-600 hover:bg-green-500 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105 active:scale-95 border-4 ${focusIndex === 0 ? "border-yellow-400" : "border-green-400"}`}
+                            style={{
+                              fontFamily: "'Mojangles', monospace",
+                              imageRendering: "pixelated",
+                              textShadow: "2px 2px 0px rgba(0,0,0,0.8)",
+                              boxShadow: "4px 4px 0px rgba(0,0,0,0.3)",
+                              fontSize: "16px",
+                              letterSpacing: "1px"
+                            }}
+                          >
+                            {isSettingUpRuntime ? "Installing..." : runtimeAlreadyInstalled ? "Reinstall Runtime" : "Install Runtime"}
+                          </button>
 
-                        <div className="bg-black/50 border-2 border-white/20 p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-left">
-                              <p className="text-white font-bold">Discord Rich Presence</p>
-                              <p className="text-xs text-white/60">Show your Emerald Legacy status on Discord</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                playClickSound();
-                                setEnableDiscordRPC(!enableDiscordRPC);
-                              }}
-                              onMouseEnter={() => setFocusIndex(2)}
-                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 2 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
-                              style={{ imageRendering: "pixelated" }}
-                            >
-                              <img
-                                src={enableDiscordRPC ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
-                                alt="Toggle"
-                                className="w-full h-full object-contain"
-                              />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="bg-black/50 border-2 border-white/20 p-4">
-                          <div className="flex items-center justify-between">
-                            <div className="text-left">
-                              <p className="text-white font-bold">Keep Launcher Open</p>
-                              <p className="text-xs text-white/60">Keep launcher running after game launch</p>
-                            </div>
-                            <button
-                              onClick={() => {
-                                playClickSound();
-                                setKeepLauncherOpen(!keepLauncherOpen);
-                              }}
-                              onMouseEnter={() => setFocusIndex(3)}
-                              className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 3 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
-                              style={{ imageRendering: "pixelated" }}
-                            >
-                              <img
-                                src={keepLauncherOpen ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
-                                alt="Toggle"
-                                className="w-full h-full object-contain"
-                              />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-
-                      <p className="text-xs mt-6 text-white/60">You can change these later in settings</p>
-                    </div>
-                  )}
-
-                  {currentStep === 3 && (
-                    <div className="text-center">
-                      <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
-                        Setup Complete!
-                      </h2>
-
-                      <div className="space-y-4 mb-8">
-                        <div className="text-left bg-black/50 border-2 border-white/20 p-4">
-                          <p className="text-white">Username: <span className="font-bold text-green-400">{tempUsername}</span></p>
-                          {isMac && (
-                            <p className="text-white">
-                              Runtime: <span className="font-bold text-green-400">Ready</span>
+                          {!runtimeAlreadyInstalled && (
+                            <p className="text-xs text-red-400 font-bold">
+                              ⚠ Installation required before proceeding to next step
                             </p>
                           )}
-                          {isLinux && selectedRunner && (
-                            <p className="text-white">
-                              Runner: <span className="font-bold text-green-400">{runners.find(r => r.id === selectedRunner)?.name}</span>
-                            </p>
-                          )}
-                          <div className="mt-2 pt-2 border-t border-white/20">
-                            <p className="text-white text-sm">Customization:</p>
-                            <div className="flex flex-wrap gap-2 mt-1">
-                              {enableTrayIcon && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Tray Icon</span>}
-                              {enableVfx && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Visual Effects</span>}
-                              {enableDiscordRPC && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Discord RPC</span>}
-                              {keepLauncherOpen && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Keep Open</span>}
+                        </div>
+                      </div>
+                    )}
+
+                    {currentStep === 1 && isLinux && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          Linux Compatibility
+                        </h2>
+                        <p className="text-lg mb-6 text-white/80">Choose your preferred compatibility layer</p>
+
+                        {runners.length === 0 ? (
+                          <div className="p-4 bg-yellow-500/20 border-2 border-yellow-500/50">
+                            <p className="text-yellow-400">No compatible runners found. Please install Wine or Proton.</p>
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            {runners.map((runner, idx) => (
+                              <button
+                                key={runner.id}
+                                onClick={() => handleRunnerSelect(runner.id)}
+                                onMouseEnter={() => setFocusIndex(idx)}
+                                className={`w-full p-4 text-left border-2 transition-all duration-200 ${selectedRunner === runner.id
+                                  ? "bg-white/20 border-white shadow-[0_0_15px_rgba(255,255,255,0.2)]"
+                                  : "bg-black/50 border-white/20"
+                                  } ${focusIndex === idx ? "border-yellow-400" : ""}`}
+                              >
+                                <p className="font-bold text-white">{runner.name}</p>
+                                <p className="text-xs text-white/60 mt-1">{runner.type}</p>
+                              </button>
+                            ))}
+                          </div>
+                        )}
+
+                        <p className="text-xs mt-4 text-white/60">You can change this later in settings</p>
+                      </div>
+                    )}
+
+                    {currentStep === 1 && !isMac && !isLinux && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          Windows Setup
+                        </h2>
+                        <p className="text-lg mb-6 text-white/80">Everything is ready to go!</p>
+                        <div className="text-green-400 font-bold">✓ Native compatibility</div>
+
+                        <div className="mt-6 p-4 bg-green-600/20 border-2 border-green-400 rounded-lg">
+                          <p className="text-green-400 font-bold mb-2">✓ Windows Native Support</p>
+                          <p className="text-xs text-white/80">Emerald Legacy runs natively on Windows without additional requirements.</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {currentStep === 2 && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          Customize Your Experience
+                        </h2>
+                        <p className="text-lg mb-8 text-white/80">Choose your preferred launcher settings</p>
+
+                        <div className="space-y-4 max-w-md mx-auto">
+                          <div className="bg-black/50 border-2 border-white/20 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <p className="text-white font-bold">System Tray Icon</p>
+                                <p className="text-xs text-white/60">Keep launcher accessible in system tray</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  playClickSound();
+                                  setEnableTrayIcon(!enableTrayIcon);
+                                }}
+                                onMouseEnter={() => setFocusIndex(0)}
+                                className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 0 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <img
+                                  src={enableTrayIcon ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
+                                  alt="Toggle"
+                                  className="w-full h-full object-contain"
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-black/50 border-2 border-white/20 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <p className="text-white font-bold">Visual Effects</p>
+                                <p className="text-xs text-white/60">Click particles and animations</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  playClickSound();
+                                  setEnableVfx(!enableVfx);
+                                }}
+                                onMouseEnter={() => setFocusIndex(1)}
+                                className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 1 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <img
+                                  src={enableVfx ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
+                                  alt="Toggle"
+                                  className="w-full h-full object-contain"
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-black/50 border-2 border-white/20 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <p className="text-white font-bold">Discord Rich Presence</p>
+                                <p className="text-xs text-white/60">Show your Emerald Legacy status on Discord</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  playClickSound();
+                                  setEnableDiscordRPC(!enableDiscordRPC);
+                                }}
+                                onMouseEnter={() => setFocusIndex(2)}
+                                className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 2 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <img
+                                  src={enableDiscordRPC ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
+                                  alt="Toggle"
+                                  className="w-full h-full object-contain"
+                                />
+                              </button>
+                            </div>
+                          </div>
+
+                          <div className="bg-black/50 border-2 border-white/20 p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="text-left">
+                                <p className="text-white font-bold">Keep Launcher Open</p>
+                                <p className="text-xs text-white/60">Keep launcher running after game launch</p>
+                              </div>
+                              <button
+                                onClick={() => {
+                                  playClickSound();
+                                  setKeepLauncherOpen(!keepLauncherOpen);
+                                }}
+                                onMouseEnter={() => setFocusIndex(3)}
+                                className={`w-12 h-6 outline-none border-none bg-transparent transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_8px_rgba(250,204,21,0.3)] ${focusIndex === 3 ? "scale-110 shadow-[0_0_8px_rgba(250,204,21,0.6)]" : ""}`}
+                                style={{ imageRendering: "pixelated" }}
+                              >
+                                <img
+                                  src={keepLauncherOpen ? "/images/Toggle_Switch_On.png" : "/images/Toggle_Switch_Off.png"}
+                                  alt="Toggle"
+                                  className="w-full h-full object-contain"
+                                />
+                              </button>
                             </div>
                           </div>
                         </div>
-                      </div>
 
-                      <p className="text-white/80">Emerald Legacy is now configured and ready to use!</p>
-                    </div>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                        <p className="text-xs mt-6 text-white/60">You can change these later in settings</p>
+                      </div>
+                    )}
+
+                    {currentStep === 3 && (
+                      <div className="text-center">
+                        <h2 className="text-3xl font-bold mb-6 text-white" style={{ textShadow: "2px 2px 0px rgba(0,0,0,0.8)" }}>
+                          Setup Complete!
+                        </h2>
+
+                        <div className="space-y-4 mb-8">
+                          <div className="text-left bg-black/50 border-2 border-white/20 p-4">
+                            <p className="text-white">Username: <span className="font-bold text-green-400">{tempUsername}</span></p>
+                            {isMac && (
+                              <p className="text-white">
+                                Runtime: <span className="font-bold text-green-400">Ready</span>
+                              </p>
+                            )}
+                            {isLinux && selectedRunner && (
+                              <p className="text-white">
+                                Runner: <span className="font-bold text-green-400">{runners.find(r => r.id === selectedRunner)?.name}</span>
+                              </p>
+                            )}
+                            <div className="mt-2 pt-2 border-t border-white/20">
+                              <p className="text-white text-sm">Customization:</p>
+                              <div className="flex flex-wrap gap-2 mt-1">
+                                {enableTrayIcon && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Tray Icon</span>}
+                                {enableVfx && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Visual Effects</span>}
+                                {enableDiscordRPC && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Discord RPC</span>}
+                                {keepLauncherOpen && <span className="text-xs bg-green-600/30 px-2 py-1 border border-green-400">Keep Open</span>}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <p className="text-white/80">Emerald Legacy is now configured and ready to use!</p>
+                      </div>
+                    )}
+                  </motion.div>
+                </AnimatePresence>
               </div>
 
               <div className="flex justify-between mt-4">
@@ -564,12 +591,11 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                       else if (currentStep === 3) setFocusIndex(0);
                     }}
                     disabled={currentStep === 0}
-                    className={`mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${
-                      (currentStep === 1 && ((isLinux && focusIndex === runners.length) || (isMac && focusIndex === 1) || (!isLinux && !isMac && focusIndex === 0))) ||
+                    className={`mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${(currentStep === 1 && ((isLinux && focusIndex === runners.length) || (isMac && focusIndex === 1) || (!isLinux && !isMac && focusIndex === 0))) ||
                       (currentStep === 2 && focusIndex === 4) ||
                       (currentStep === 3 && focusIndex === 0)
                       ? "border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]" : ""
-                    }`}
+                      }`}
                   >
                     Back
                   </button>
@@ -584,13 +610,12 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                     else if (currentStep === 3) setFocusIndex(1);
                   }}
                   disabled={!canProceed()}
-                  className={`${currentStep > 0 ? '' : 'ml-auto'} mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${
-                    (currentStep === 0 && focusIndex === 1) ||
+                  className={`${currentStep > 0 ? '' : 'ml-auto'} mc-setup-nav-btn px-6 py-3 text-white font-bold disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:border-yellow-400 hover:shadow-[0_0_10px_rgba(250,204,21,0.3)] ${(currentStep === 0 && focusIndex === 1) ||
                     (currentStep === 1 && ((isLinux && focusIndex === runners.length + 1) || (isMac && focusIndex === 2) || (!isLinux && !isMac && focusIndex === 1))) ||
                     (currentStep === 2 && focusIndex === 5) ||
                     (currentStep === 3 && focusIndex === 1)
                     ? "border-yellow-400 shadow-[0_0_10px_rgba(250,204,21,0.3)]" : ""
-                  }`}
+                    }`}
                 >
                   {currentStep === totalSteps - 1 ? "Finish" : "Next"}
                 </button>
