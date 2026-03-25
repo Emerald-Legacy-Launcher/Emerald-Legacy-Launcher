@@ -53,6 +53,7 @@ pub struct AppConfig {
     pub profile: Option<String>,
     pub keep_launcher_open: Option<bool>,
     pub enable_tray_icon: Option<bool>,
+    pub animations_enabled: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -185,6 +186,7 @@ fn load_config(app: AppHandle) -> AppConfig {
         profile: Some("legacy_evolved".into()),
         keep_launcher_open: None,
         enable_tray_icon: Some(true),
+        animations_enabled: Some(true),
     }
 }
 

@@ -261,7 +261,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       initial={{ opacity: 0, x: -20 }}
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0 }}
       className={`absolute ${legacyMode ? 'left-[calc(50vw-340px)]' : 'left-16'} ${legacyMode ? 'top-1/2' : 'top-[40%]'} -translate-y-1/2 flex flex-col items-center gap-1 outline-none z-10`}
     >
       {!legacyMode && (

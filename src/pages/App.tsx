@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import HomeView from "../components/views/HomeView";
 import SettingsView from "../components/views/SettingsView";
 import VersionsView from "../components/views/VersionsView";
@@ -82,22 +82,23 @@ export default function App() {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: 0.5 }
+    transition: { duration: config.animationsEnabled ? 0.5 : 0 }
   };
 
   const backgroundFade = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: 0.8 }
+    transition: { duration: config.animationsEnabled ? 0.8 : 0 }
   };
 
   return (
-    <div
-      data-tauri-drag-region
-      className="w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none"
-    >
-      <style>{`
+    <MotionConfig transition={config.animationsEnabled ? {} : { duration: 0 }}>
+      <div
+        data-tauri-drag-region
+        className={`w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none ${!config.animationsEnabled ? 'no-animations' : ''}`}
+      >
+        <style>{`
         @keyframes splashPulse { 0% { transform: scale(0.95) rotate(-20deg); } 100% { transform: scale(1.08) rotate(-20deg); } }
         .mc-splash { animation: splashPulse 0.45s ease-in-out infinite alternate; transform-origin: center; }
         .mc-slider-custom { -webkit-appearance: none; appearance: none; background: transparent; height: 100%; outline: none; border: none; margin: 0; padding: 0; }
@@ -359,6 +360,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+      </div>
+    </MotionConfig>
   );
 }

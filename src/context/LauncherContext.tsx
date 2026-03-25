@@ -67,7 +67,8 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     configRaw.username, configRaw.theme, configRaw.layout, configRaw.vfxEnabled,
     configRaw.rpcEnabled, configRaw.musicVol, configRaw.sfxVol, configRaw.isDayTime,
     configRaw.profile, configRaw.linuxRunner, configRaw.perfBoost, configRaw.customEditions,
-    configRaw.legacyMode, configRaw.keepLauncherOpen, configRaw.enableTrayIcon
+    configRaw.legacyMode, configRaw.keepLauncherOpen, configRaw.enableTrayIcon,
+    configRaw.animationsEnabled
   ]);
 
   const game = useMemo(() => gameRaw, [

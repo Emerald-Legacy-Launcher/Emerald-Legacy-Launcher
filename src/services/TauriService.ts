@@ -32,6 +32,7 @@ export interface AppConfig {
   profile?: string;
   keepLauncherOpen?: boolean;
   enableTrayIcon?: boolean;
+  animationsEnabled?: boolean;
 }
 
 export interface ThemePalette {

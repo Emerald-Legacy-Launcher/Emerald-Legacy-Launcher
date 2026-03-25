@@ -228,7 +228,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            transition={{ duration: useConfig().animationsEnabled ? 0.2 : 0 }}
             className="max-w-2xl w-full mx-auto flex flex-col"
           >
             <div className="relative p-8 flex flex-col"
@@ -247,7 +247,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                     key={i}
                     initial={{ opacity: 0, scale: 0.8 }}
                     animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: useConfig().animationsEnabled ? i * 0.05 : 0 }}
                     className={`h-2 w-16 transition-all ${i <= currentStep ? "bg-white" : "bg-white/20"
                       }`}
                   />
@@ -260,7 +260,7 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  transition={{ duration: 0.3, delay: 0.1 }}
+                  transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0, delay: useConfig().animationsEnabled ? 0.1 : 0 }}
                 >
                   {currentStep === 0 && (
                     <div className="text-center">

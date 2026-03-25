@@ -1,6 +1,6 @@
 import { useState, useEffect, memo } from 'react';
 import { motion } from 'framer-motion';
-import { useUI, useAudio } from '../../context/LauncherContext';
+import { useUI, useAudio, useConfig } from '../../context/LauncherContext';
 
 const WorkshopView = memo(function WorkshopView() {
   const { setActiveView } = useUI();
@@ -19,7 +19,7 @@ const WorkshopView = memo(function WorkshopView() {
   }, [playBackSound, setActiveView]);
 
   return (
-    <motion.div tabIndex={0} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex flex-col items-center w-full max-w-4xl outline-none"
+    <motion.div tabIndex={0} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0 }} className="flex flex-col items-center w-full max-w-4xl outline-none"
     >
       <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[60%] max-w-[300px] text-center tracking-widest uppercase opacity-80">Workshop</h2>
       

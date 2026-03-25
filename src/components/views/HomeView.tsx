@@ -78,7 +78,7 @@ const HomeView = memo(function HomeView() {
       initial={{ opacity: 0, y: 10 }}
       animate={{ opacity: isFocusedSection ? 1 : 0.5, y: 0 }}
       exit={{ opacity: 0, y: 10 }}
-      transition={{ duration: 0.3 }}
+      transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0 }}
       className="w-full max-w-[540px] flex flex-col space-y-3 outline-none"
     >
       {buttons.map((btn: any, i: number) => (

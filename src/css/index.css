@@ -98,3 +98,8 @@ body {
   image-rendering: pixelated;
   cursor: pointer;
 }
+
+.no-animations * {
+  transition: none !important;
+  animation: none !important;
+}

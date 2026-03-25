@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useLocalStorage } from '../../hooks/useLocalStorage';
 import { TauriService } from '../../services/TauriService';
-import { useUI, useAudio, useSkin } from '../../context/LauncherContext';
+import { useUI, useAudio, useSkin, useConfig } from '../../context/LauncherContext';
 
 interface SavedSkin {
   id: string;
@@ -241,7 +241,7 @@ const SkinsView = memo(function SkinsView() {
   const isActiveDefault = isDefaultSkin(activeSkinId) || (!activeSkinId && skinUrl === '/images/Default.png');
 
   return (
-    <motion.div ref={containerRef} tabIndex={-1} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} className="flex flex-col items-center w-full max-w-3xl outline-none">
+    <motion.div ref={containerRef} tabIndex={-1} initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }} transition={{ duration: useConfig().animationsEnabled ? 0.3 : 0 }} className="flex flex-col items-center w-full max-w-3xl outline-none">
       <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[60%] max-w-75 text-center tracking-widest uppercase opacity-80 font-bold">Skin Library</h2>
 
       <div className="w-full max-w-160 h-85 mb-4 p-5 shadow-2xl flex flex-col relative" style={{ backgroundImage: "url('/images/frame_background.png')", backgroundSize: "100% 100%", imageRendering: "pixelated" }}>

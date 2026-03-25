@@ -7,6 +7,7 @@ export function useAppConfig() {
   const [theme, setTheme] = useLocalStorage("lce-theme", "Modern");
   const [layout, setLayout] = useLocalStorage("lce-layout", "KBM");
   const [vfxEnabled, setVfxEnabled] = useLocalStorage("lce-vfx", true);
+  const [animationsEnabled, setAnimationsEnabled] = useLocalStorage("lce-animations", true);
   const [rpcEnabled, setRpcEnabled] = useLocalStorage("discord-rpc", true);
   const [musicVol, setMusicVol] = useLocalStorage("lce-music", 50);
   const [sfxVol, setSfxVol] = useLocalStorage("lce-sfx", 100);
@@ -54,8 +55,9 @@ export function useAppConfig() {
       customEditions,
       keepLauncherOpen,
       enableTrayIcon,
+      animationsEnabled,
     }).catch(console.error);
-  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen, enableTrayIcon]);
+  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen, enableTrayIcon, animationsEnabled]);
 
   return {
     username,
@@ -66,6 +68,8 @@ export function useAppConfig() {
     setLayout,
     vfxEnabled,
     setVfxEnabled,
+    animationsEnabled,
+    setAnimationsEnabled,
     rpcEnabled,
     setRpcEnabled,
     musicVol,
