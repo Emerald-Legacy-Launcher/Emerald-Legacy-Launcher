@@ -12,12 +12,6 @@ const BASE_EDITIONS = [
     url: "https://github.com/piebotc/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
   },
   {
-    id: "vanilla_tu24",
-    name: "Title Update 24",
-    desc: "Based on TU19, but with the features of TU24.",
-    url: "https://huggingface.co/datasets/KayJann/emerald-legacy-assets/resolve/main/emerald_tu24_vanilla.zip",
-  },
-  {
     id: "vanilla_tu19",
     name: "Title Update 19",
     desc: "Leaked 4J Studios build. (smartcmd)",
