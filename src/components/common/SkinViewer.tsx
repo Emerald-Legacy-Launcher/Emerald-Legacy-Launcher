@@ -28,12 +28,12 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
   useEffect(() => {
     if (!mountRef.current) return;
 
-    const width = 220;
-    const height = 380;
+    const width = 260;
+    const height = 450;
 
     const scene = new THREE.Scene();
     const camera = new THREE.PerspectiveCamera(35, width / height, 0.1, 1000);
-    camera.position.set(0, 0, 70);
+    camera.position.set(0, 0, 68);
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
@@ -60,39 +60,36 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       const img = texture.image;
       const isLegacy = img.height === 32;
 
-      const createFaceMaterial = (x: number, y: number, w: number, h: number, flipX = false) => {
+      const createFaceMaterial = (x: number, y: number, w: number, h: number, flipX = false, flipY = false) => {
         const matTex = texture.clone();
-        matTex.repeat.set((flipX ? -w : w) / 64, h / img.height);
-        matTex.offset.set((flipX ? x + w : x) / 64, 1 - (y + h) / img.height);
+        matTex.repeat.set((flipX ? -w : w) / 64, (flipY ? -h : h) / img.height);
+        matTex.offset.set((flipX ? (x + w) : x) / 64, 1 - (flipY ? y : (y + h)) / img.height);
         matTex.needsUpdate = true;
         return new THREE.MeshLambertMaterial({ map: matTex, transparent: true, alphaTest: 0.5, side: THREE.FrontSide });
       };
 
-      const createPart = (w: number, h: number, d: number, uv: any, overlayUv?: any) => {
+      const createPart = (w: number, h: number, d: number, uv: any, overlayUv?: any, swapMats = false, isLegacyMirror = false) => {
         const group = new THREE.Group();
         const geo = new THREE.BoxGeometry(w, h, d);
-        const mats = [
-          createFaceMaterial(uv.right[0], uv.right[1], uv.right[2], uv.right[3], true),
-          createFaceMaterial(uv.left[0], uv.left[1], uv.left[2], uv.left[3], true),
-          createFaceMaterial(uv.top[0], uv.top[1], uv.top[2], uv.top[3]),
-          createFaceMaterial(uv.bottom[0], uv.bottom[1], uv.bottom[2], uv.bottom[3]),
-          createFaceMaterial(uv.front[0], uv.front[1], uv.front[2], uv.front[3]),
-          createFaceMaterial(uv.back[0], uv.back[1], uv.back[2], uv.back[3], true)
-        ];
-        const mesh = new THREE.Mesh(geo, mats);
+        
+        const getMats = (uvSet: any) => {
+          const flipX = isLegacyMirror;
+          return [
+            createFaceMaterial(swapMats ? uvSet.right[0] : uvSet.left[0], uvSet.left[1], uvSet.left[2], uvSet.left[3], flipX),     // +x (L)
+            createFaceMaterial(swapMats ? uvSet.left[0] : uvSet.right[0], uvSet.right[1], uvSet.right[2], uvSet.right[3], flipX),   // -x (R)
+            createFaceMaterial(uvSet.top[0], uvSet.top[1], uvSet.top[2], uvSet.top[3], flipX, true),                           // +y (T)
+            createFaceMaterial(uvSet.bottom[0], uvSet.bottom[1], uvSet.bottom[2], uvSet.bottom[3], flipX, true),                        // -y (B)
+            createFaceMaterial(uvSet.front[0], uvSet.front[1], uvSet.front[2], uvSet.front[3], flipX),                        // +z (F)
+            createFaceMaterial(uvSet.back[0], uvSet.back[1], uvSet.back[2], uvSet.back[3], !flipX)                           // -z (B)
+          ];
+        };
+
+        const mesh = new THREE.Mesh(geo, getMats(uv));
         group.add(mesh);
 
         if (overlayUv) {
           const oGeo = new THREE.BoxGeometry(w + 0.5, h + 0.5, d + 0.5);
-          const oMats = [
-            createFaceMaterial(overlayUv.right[0], overlayUv.right[1], overlayUv.right[2], overlayUv.right[3], true),
-            createFaceMaterial(overlayUv.left[0], overlayUv.left[1], overlayUv.left[2], overlayUv.left[3], true),
-            createFaceMaterial(overlayUv.top[0], overlayUv.top[1], overlayUv.top[2], overlayUv.top[3]),
-            createFaceMaterial(overlayUv.bottom[0], overlayUv.bottom[1], overlayUv.bottom[2], overlayUv.bottom[3]),
-            createFaceMaterial(overlayUv.front[0], overlayUv.front[1], overlayUv.front[2], overlayUv.front[3]),
-            createFaceMaterial(overlayUv.back[0], overlayUv.back[1], overlayUv.back[2], overlayUv.back[3], true)
-          ];
-          const oMesh = new THREE.Mesh(oGeo, oMats);
+          const oMesh = new THREE.Mesh(oGeo, getMats(overlayUv));
           oMesh.visible = showLayers;
           overlaysRef.current.push(oMesh);
           group.add(oMesh);
@@ -100,11 +97,22 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
         return group;
       };
 
-      const limbUv = (x: number, y: number) => ({
-        top: [x + 4, y, 4, 4], bottom: [x + 8, y, 4, 4],
-        right: [x, y + 4, 4, 12], front: [x + 4, y + 4, 4, 12],
-        left: [x + 8, y + 4, 4, 12], back: [x + 12, y + 4, 4, 12]
+      const limbUv = (x: number, y: number, w = 4) => ({
+        top: [x + 4, y, w, 4], bottom: [x + 4 + w, y, w, 4],
+        right: [x, y + 4, 4, 12], front: [x + 4, y + 4, w, 12],
+        left: [x + 4 + w, y + 4, 4, 12], back: [x + 8 + w, y + 4, w, 12]
       });
+
+      const isSlim = !isLegacy && (() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width; canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return false;
+        ctx.drawImage(img, 0, 0);
+        const data = ctx.getImageData(42, 48, 1, 1).data;
+        return data[3] === 0;
+      })();
+      const armW = isSlim ? 3 : 4;
 
       const headUv = { top: [8, 0, 8, 8], bottom: [16, 0, 8, 8], right: [0, 8, 8, 8], left: [16, 8, 8, 8], front: [8, 8, 8, 8], back: [24, 8, 8, 8] };
       const hatUv = { top: [40, 0, 8, 8], bottom: [48, 0, 8, 8], right: [32, 8, 8, 8], left: [48, 8, 8, 8], front: [40, 8, 8, 8], back: [56, 8, 8, 8] };
@@ -116,19 +124,19 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       const jacketUv = { top: [20, 32, 8, 4], bottom: [28, 32, 8, 4], right: [16, 36, 4, 12], left: [28, 36, 4, 12], front: [20, 36, 8, 12], back: [32, 36, 8, 12] };
       playerGroup.add(createPart(8, 12, 4, bodyUv, isLegacy ? undefined : jacketUv));
 
-      const rightArm = createPart(4, 12, 4, limbUv(40, 16), isLegacy ? undefined : limbUv(40, 32));
-      rightArm.position.set(-6, 0, 0);
+      const rightArm = createPart(armW, 12, 4, limbUv(40, 16, armW), isLegacy ? undefined : limbUv(40, 32, armW));
+      rightArm.position.set(isSlim ? -5.5 : -6, 0, 0);
       playerGroup.add(rightArm);
 
-      const leftArm = createPart(4, 12, 4, isLegacy ? limbUv(40, 16) : limbUv(32, 48), isLegacy ? undefined : limbUv(48, 48));
-      leftArm.position.set(6, 0, 0);
+      const leftArm = createPart(armW, 12, 4, isLegacy ? limbUv(40, 16, armW) : limbUv(32, 48, armW), isLegacy ? undefined : limbUv(48, 48, armW), true, isLegacy);
+      leftArm.position.set(isSlim ? 5.5 : 6, 0, 0);
       playerGroup.add(leftArm);
 
       const rightLeg = createPart(4, 12, 4, limbUv(0, 16), isLegacy ? undefined : limbUv(0, 32));
       rightLeg.position.set(-2, -12, 0);
       playerGroup.add(rightLeg);
 
-      const leftLeg = createPart(4, 12, 4, isLegacy ? limbUv(0, 16) : limbUv(16, 48), isLegacy ? undefined : limbUv(0, 48));
+      const leftLeg = createPart(4, 12, 4, isLegacy ? limbUv(0, 16) : limbUv(16, 48), isLegacy ? undefined : limbUv(0, 48), true, isLegacy);
       leftLeg.position.set(2, -12, 0);
       playerGroup.add(leftLeg);
 
@@ -254,7 +262,7 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -20 }}
       transition={{ duration: 0.3 }}
-      className={`absolute ${legacyMode ? 'left-[calc(50vw-340px)]' : 'left-16'} ${legacyMode ? 'top-1/2' : 'top-[42%]'} -translate-y-1/2 flex flex-col items-center gap-1 outline-none z-10`}
+      className={`absolute ${legacyMode ? 'left-[calc(50vw-340px)]' : 'left-16'} ${legacyMode ? 'top-1/2' : 'top-[40%]'} -translate-y-1/2 flex flex-col items-center gap-1 outline-none z-10`}
     >
       {!legacyMode && (
         <div className={`bg-black/20 flex justify-center items-center ${legacyMode ? 'mb-0' : 'mb-2'} px-2 py-1 rounded-sm border-2 transition-colors ${isFocusedSection && focusIndex === 0 ? 'border-[#FFFF55]' : 'border-transparent'}`} data-focus="0" tabIndex={0}>
@@ -273,7 +281,9 @@ const SkinViewer = memo(function SkinViewer({ username, setUsername, playClickSo
         </div>
       )}
       {!legacyMode && (
-        <div ref={mountRef} className="drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] cursor-ew-resize outline-none w-[220px] h-[380px]" />
+        <div className="w-[220px] h-[380px] relative flex items-center justify-center">
+          <div ref={mountRef} className="absolute drop-shadow-[0_8px_8px_rgba(0,0,0,0.8)] cursor-ew-resize outline-none w-[260px] h-[450px] -translate-y-6" />
+        </div>
       )}
       <div className={`flex ${legacyMode ? 'flex-col gap-2 mt-0' : 'flex-row gap-4 mt-2'} items-center`}>
         <button
