@@ -10,18 +10,21 @@ const BASE_EDITIONS = [
     name: "Legacy Evolved",
     desc: "Backporting the newer title updates back to the LCE",
     url: "https://github.com/SHAD0WW11/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
+    titleImage: "/images/minecraft_title_LegacyEvolved.png",
   },
   {
     id: "vanilla_tu19",
     name: "Title Update 19",
     desc: "Leaked 4J Studios build. (smartcmd)",
     url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
+    titleImage: "/images/minecraft_title_tu19.png",
   },
   {
     id: "360revived",
     name: "360 Revived",
     desc: "PC port of Xbox 360 Edition TU19",
     url: "https://github.com/BluTac10/360Revived/releases/download/nightly/LCEWindows64.zip",
+    titleImage: "/images/minecraft_title_360revived.png",
   },
 ];
 
@@ -146,7 +149,7 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
 
   const addCustomEdition = useCallback((edition: { name: string; desc: string; url: string }) => {
     const id = `custom_${Date.now()}`;
-    const newEdition = { ...edition, id };
+    const newEdition = { ...edition, id, titleImage: "/images/minecraft_title_tucustom.png" };
     setCustomEditions([...customEditions, newEdition]);
     return id;
   }, [customEditions, setCustomEditions]);

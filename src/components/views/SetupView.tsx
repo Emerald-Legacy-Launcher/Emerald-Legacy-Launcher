@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { TauriService, Runner } from "../../services/TauriService";
 import { usePlatform } from "../../hooks/usePlatform";
-import { useConfig, useAudio } from "../../context/LauncherContext";
+import { useConfig, useAudio, useGame } from "../../context/LauncherContext";
 
 interface SetupViewProps {
   onComplete: () => void;
@@ -27,13 +27,8 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   } = useConfig();
   const { playClickSound, playSfx } = useAudio();
 
-  const titleImage = (() => {
-    if (profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
-    if (profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
-    if (profile === "360revived") return "/images/minecraft_title_360revived.png";
-    if (profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
-    return "/images/MenuTitle.png";
-  })();
+  const { editions } = useGame();
+  const titleImage = editions.find(e => e.id === profile)?.titleImage || "/images/MenuTitle.png";
 
   const [currentStep, setCurrentStep] = useState(0);
   const [focusIndex, setFocusIndex] = useState(0);
