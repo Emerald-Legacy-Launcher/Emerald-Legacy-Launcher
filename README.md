@@ -38,7 +38,7 @@ Emerald Legacy Launcher started as a solo project to create a better way to play
   <tr>
     <td style="padding: 20px; border: 1px solid #333;">
       <b>EASY SETUP</b><br>
-      An automated installation process for TU19 and Legacy Evolved, with more versions coming in future updates.
+      An automated installation process for TU19, Legacy Evolved and 360Revived, with more versions coming in future updates.
     </td>
     <td style="padding: 20px; border: 1px solid #333;">
       <b>RUST BACKEND</b><br>

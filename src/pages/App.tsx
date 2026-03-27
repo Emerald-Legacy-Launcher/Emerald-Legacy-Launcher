@@ -46,6 +46,7 @@ export default function App() {
   const titleImage = (() => {
     if (config.profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
     if (config.profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
+    if (config.profile === "360revived") return "/images/minecraft_title_360revived.png";
     if (config.profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
     return "/images/MenuTitle.png";
   })();
