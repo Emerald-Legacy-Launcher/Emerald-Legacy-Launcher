@@ -16,12 +16,13 @@
 ---
 
 > [!IMPORTANT]
-> **Emerald Legacy Launcher is currently in Alpha.**
-> Expect bugs, frequent updates, and features that are still being polished as we work toward a stable release.
+> **Emerald Legacy Launcher is currently in Beta.**
+> Expect minor bugs, frequent updates, and features that are still being polished as we work toward a stable release.
 
 ---
 
-<img width="1355" height="922" alt="image" src="https://github.com/user-attachments/assets/6798dd00-4c7c-4b57-9116-7648ce90ae93" />
+<img width="1680" height="960" alt="Screenshot" src="https://github.com/user-attachments/assets/a5dd6aa1-2200-4f08-84e5-e75a8052ba79" />
+
 
 
 ### PROJECT OVERVIEW
@@ -37,7 +38,7 @@ Emerald Legacy Launcher started as a solo project to create a better way to play
   <tr>
     <td style="padding: 20px; border: 1px solid #333;">
       <b>EASY SETUP</b><br>
-      An automated installation process for TU19 and TU24, with more versions coming in future updates.
+      An automated installation process for TU19, Legacy Evolved and 360Revived, with more versions coming in future updates.
     </td>
     <td style="padding: 20px; border: 1px solid #333;">
       <b>RUST BACKEND</b><br>
@@ -67,6 +68,7 @@ Click the heading above to track progress, view active tasks, and see upcoming l
 > * <sub style="color: grey;">**The Emerald Team:** Technical development and maintenance.</sub>
 > * <sub style="color: grey;">**4J Studios & Mojang:** Original creators of Legacy Console Edition.</sub>
 > * <sub style="color: grey;">**smartcmd & The LCE Community:** Research and foundations for Legacy Console Edition on PC.</sub>
+> * <sub style="color: grey;">**LegacyEvolved:** Backporting TUs into smartcmd</sub>
 > * <sub style="color: grey;">**Tauri & Rust:** Core technologies.</sub>
 
 ---

@@ -15,3 +15,9 @@
 pnpm install  # or npm
 pnpm tauri build  # or npm
 ```
+
+## Flatpak
+
+```sh
+pnpm flatpak  # or npm
+```
