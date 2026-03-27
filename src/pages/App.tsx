@@ -46,7 +46,6 @@ export default function App() {
   const titleImage = (() => {
     if (config.profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
     if (config.profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
-    if (config.profile === "vanilla_tu24") return "/images/minecraft_title_tu24.png";
     if (config.profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
     return "/images/MenuTitle.png";
   })();
@@ -109,257 +108,257 @@ export default function App() {
         .mc-sq-btn:hover { background: url('/images/Button_Square_Highlighted.png') no-repeat center; background-size: 100% 100%; }
       `}</style>
 
-      <div className="absolute inset-0">
-        <AnimatePresence>
-          <motion.div
-            key={displayIsDay ? 'day' : 'night'}
-            className="absolute inset-0"
-            {...backgroundFade}
-          >
-            <PanoramaBackground profile={config.profile} isDay={displayIsDay} />
-          </motion.div>
-        </AnimatePresence>
-      </div>
-      {config.vfxEnabled && <ClickParticles />}
-
-      <AnimatePresence>
-        {showCredits && (
-          <TeamModal
-            isOpen={showCredits}
-            onClose={() => setShowCredits(false)}
-            playClickSound={audio.playClickSound}
-            playSfx={audio.playSfx}
-          />
-        )}
-      </AnimatePresence>
-
-      <AnimatePresence>
-        <DownloadOverlay
-          downloadProgress={game.downloadProgress}
-          downloadingId={game.downloadingId}
-          editions={game.editions}
-        />
-      </AnimatePresence>
-
-      <AchievementToast
-        message={game.error}
-        onClose={() => game.setError(null)}
-      />
-
-      <AchievementToast
-        message={updateMessage}
-        onClose={clearUpdateMessage}
-        onClick={() => TauriService.openUrl("https://emerald-legacy-launcher.github.io/")}
-        title="Update Available!"
-        variant="update"
-      />
-
-      <AnimatePresence>
-        {showSetup ? (
-          <SetupView
-            key="setup"
-            onComplete={() => {
-              setShowSetup(false);
-              setShowIntro(true);
-            }}
-          />
-        ) : showIntro ? (
-          <motion.div
-            key="intro"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-1 items-center justify-center z-10 pointer-events-none"
-          >
-            <motion.img
-              layoutId="mainLogo"
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              src={titleImage}
-              className="w-3/4 max-w-3xl"
-              style={{ imageRendering: "pixelated" }}
-            />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="flex flex-col h-full z-10 w-full relative"
-          >
-            <AnimatePresence>
-              {logoAnimDone && <AppHeader playClickSound={audio.playClickSound} uiFade={uiFade} />}
-            </AnimatePresence>
-
-            <AnimatePresence>
-              {logoAnimDone && (
-                <>
-                  {!config.legacyMode && (
-                    <motion.div
-                      key="hideBtn"
-                      {...uiFade}
-                      className="absolute top-14 left-8 z-50"
-                    >
-                      <button
-                        onClick={() => {
-                          audio.playClickSound();
-                          setIsUiHidden(!isUiHidden);
-                        }}
-                        className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
-                      >
-                        <img
-                          src={isUiHidden ? "/images/Unhide_UI_Button.png" : "/images/Hide_UI_Button.png"}
-                          className="w-10 h-10 cursor-pointer object-contain"
-                          style={{ imageRendering: "pixelated" }}
-                        />
-                      </button>
-                    </motion.div>
-                  )}
-
-                  {!config.legacyMode && (
-                    <motion.div
-                      key="dayToggle"
-                      {...uiFade}
-                      className="absolute bottom-6 right-8 z-50 flex items-center gap-3"
-                    >
-                      <span className="text-[#E0E0E0] text-[10px] mc-text-shadow tracking-widest uppercase opacity-70 mt-1">
-                        {displayIsDay ? "Day" : "Night"}
-                      </span>
-                      <button
-                        onClick={() => {
-                          audio.playClickSound();
-                          config.setIsDayTime(!config.isDayTime);
-                        }}
-                        className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
-                      >
-                        <img
-                          src={displayIsDay ? "/images/Day_Toggle.png" : "/images/Night_Toggle.png"}
-                          alt="Toggle Time"
-                          className="w-12 h-12 cursor-pointer block object-contain"
-                          style={{ imageRendering: "pixelated" }}
-                        />
-                      </button>
-                    </motion.div>
-                  )}
-                </>
-              )}
-            </AnimatePresence>
-
-            <div
-              data-tauri-drag-region
-              className="shrink-0 flex justify-center py-4 relative w-full pt-12"
+        <div className="absolute inset-0">
+          <AnimatePresence>
+            <motion.div
+              key={displayIsDay ? 'day' : 'night'}
+              className="absolute inset-0"
+              {...backgroundFade}
             >
-              <div className="relative w-full max-w-135 flex justify-center">
-                <motion.img
-                  layoutId="mainLogo"
-                  src={titleImage}
-                  transition={{
-                    type: "spring",
-                    stiffness: 300,
-                    damping: 25,
-                  }}
-                  className="w-full drop-shadow-[0_8px_6px_rgba(0,0,0,0.8)] pointer-events-none"
-                  style={{ imageRendering: "pixelated" }}
-                />
-                <AnimatePresence>
-                  {logoAnimDone && (
-                    <>
+              <PanoramaBackground profile={config.profile} isDay={displayIsDay} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+        {config.vfxEnabled && <ClickParticles />}
+
+        <AnimatePresence>
+          {showCredits && (
+            <TeamModal
+              isOpen={showCredits}
+              onClose={() => setShowCredits(false)}
+              playClickSound={audio.playClickSound}
+              playSfx={audio.playSfx}
+            />
+          )}
+        </AnimatePresence>
+
+        <AnimatePresence>
+          <DownloadOverlay
+            downloadProgress={game.downloadProgress}
+            downloadingId={game.downloadingId}
+            editions={game.editions}
+          />
+        </AnimatePresence>
+
+        <AchievementToast
+          message={game.error}
+          onClose={() => game.setError(null)}
+        />
+
+        <AchievementToast
+          message={updateMessage}
+          onClose={clearUpdateMessage}
+          onClick={() => TauriService.openUrl("https://emerald-legacy-launcher.github.io/")}
+          title="Update Available!"
+          variant="update"
+        />
+
+        <AnimatePresence>
+          {showSetup ? (
+            <SetupView
+              key="setup"
+              onComplete={() => {
+                setShowSetup(false);
+                setShowIntro(true);
+              }}
+            />
+          ) : showIntro ? (
+            <motion.div
+              key="intro"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-1 items-center justify-center z-10 pointer-events-none"
+            >
+              <motion.img
+                layoutId="mainLogo"
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                src={titleImage}
+                className="w-3/4 max-w-3xl"
+                style={{ imageRendering: "pixelated" }}
+              />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="dashboard"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="flex flex-col h-full z-10 w-full relative"
+            >
+              <AnimatePresence>
+                {logoAnimDone && <AppHeader playClickSound={audio.playClickSound} uiFade={uiFade} />}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {logoAnimDone && (
+                  <>
+                    {!config.legacyMode && (
                       <motion.div
-                        key="splash"
+                        key="hideBtn"
                         {...uiFade}
-                        className="absolute bottom-[20%] right-[5%] w-0 h-0 flex items-center justify-center"
+                        className="absolute top-14 left-8 z-50"
                       >
-                        <div
-                          onClick={audio.cycleSplash}
-                          data-tauri-no-drag
-                          className="mc-splash text-[#FFFF55] text-[28px] z-100 cursor-pointer whitespace-nowrap"
-                          style={{ textShadow: "2px 2px 0px #3F3F00" }}
+                        <button
+                          onClick={() => {
+                            audio.playClickSound();
+                            setIsUiHidden(!isUiHidden);
+                          }}
+                          className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
                         >
-                          {audio.splashIndex === -1
-                            ? `Welcome ${config.username}!`
-                            : audio.splashes[audio.splashIndex]}
-                        </div>
+                          <img
+                            src={isUiHidden ? "/images/Unhide_UI_Button.png" : "/images/Hide_UI_Button.png"}
+                            className="w-10 h-10 cursor-pointer object-contain"
+                            style={{ imageRendering: "pixelated" }}
+                          />
+                        </button>
                       </motion.div>
-                      {activeView === "main" && titleImage === "/images/MenuTitle.png" && (
-                        <motion.div
-                          key="tu-subtitle"
-                          {...uiFade}
-                          className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
+                    )}
+
+                    {!config.legacyMode && (
+                      <motion.div
+                        key="dayToggle"
+                        {...uiFade}
+                        className="absolute bottom-6 right-8 z-50 flex items-center gap-3"
+                      >
+                        <span className="text-[#E0E0E0] text-[10px] mc-text-shadow tracking-widest uppercase opacity-70 mt-1">
+                          {displayIsDay ? "Day" : "Night"}
+                        </span>
+                        <button
+                          onClick={() => {
+                            audio.playClickSound();
+                            config.setIsDayTime(!config.isDayTime);
+                          }}
+                          className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
                         >
-                          {selectedVersionName}
-                        </motion.div>
-                      )}
-                    </>
-                  )}
-                </AnimatePresence>
-              </div>
-            </div>
+                          <img
+                            src={displayIsDay ? "/images/Day_Toggle.png" : "/images/Night_Toggle.png"}
+                            alt="Toggle Time"
+                            className="w-12 h-12 cursor-pointer block object-contain"
+                            style={{ imageRendering: "pixelated" }}
+                          />
+                        </button>
+                      </motion.div>
+                    )}
+                  </>
+                )}
+              </AnimatePresence>
 
-            <main className="flex-1 w-full relative">
               <div
-                className={`w-full h-full flex flex-col items-center justify-center ${!logoAnimDone || isUiHidden ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+                data-tauri-drag-region
+                className="shrink-0 flex justify-center py-4 relative w-full pt-12"
               >
-                <AnimatePresence mode="wait">
-                  {activeView === "main" && (
-                    <SkinViewer
-                      key="skin-viewer"
-                      username={config.username}
-                      setUsername={config.setUsername}
-                      playClickSound={audio.playClickSound}
-                      skinUrl={skinUrl}
-                      setSkinUrl={setSkinUrl}
-                      setActiveView={setActiveView}
-                      isFocusedSection={focusSection === "skin"}
-                      onNavigateRight={onNavigateToMenu}
-                    />
-                  )}
-                </AnimatePresence>
-
-                <div className="w-full max-w-4xl relative flex justify-center items-center">
-                  <AnimatePresence mode="wait">
-                    {activeView === "main" && (
-                      <HomeView key="main-view" />
-                    )}
-                    {activeView === "settings" && (
-                      <SettingsView key="settings-view" />
-                    )}
-                    {activeView === "versions" && (
-                      <VersionsView key="versions-view" />
-                    )}
-                    {activeView === "workshop" && (
-                      <WorkshopView key="workshop-view" />
-                    )}
-                    {activeView === "themes" && (
-                      <ThemesView key="themes-view" />
-                    )}
-                    {activeView === "skins" && (
-                      <SkinsView key="skins-view" />
+                <div className="relative w-full max-w-135 flex justify-center">
+                  <motion.img
+                    layoutId="mainLogo"
+                    src={titleImage}
+                    transition={{
+                      type: "spring",
+                      stiffness: 300,
+                      damping: 25,
+                    }}
+                    className="w-full drop-shadow-[0_8px_6px_rgba(0,0,0,0.8)] pointer-events-none"
+                    style={{ imageRendering: "pixelated" }}
+                  />
+                  <AnimatePresence>
+                    {logoAnimDone && (
+                      <>
+                        <motion.div
+                          key="splash"
+                          {...uiFade}
+                          className="absolute bottom-[20%] right-[5%] w-0 h-0 flex items-center justify-center"
+                        >
+                          <div
+                            onClick={audio.cycleSplash}
+                            data-tauri-no-drag
+                            className="mc-splash text-[#FFFF55] text-[28px] z-100 cursor-pointer whitespace-nowrap"
+                            style={{ textShadow: "2px 2px 0px #3F3F00" }}
+                          >
+                            {audio.splashIndex === -1
+                              ? `Welcome ${config.username}!`
+                              : audio.splashes[audio.splashIndex]}
+                          </div>
+                        </motion.div>
+                        {activeView === "main" && titleImage === "/images/MenuTitle.png" && (
+                          <motion.div
+                            key="tu-subtitle"
+                            {...uiFade}
+                            className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
+                          >
+                            {selectedVersionName}
+                          </motion.div>
+                        )}
+                      </>
                     )}
                   </AnimatePresence>
                 </div>
               </div>
-            </main>
 
-            <AnimatePresence>
-              {logoAnimDone && (
-                <motion.footer
-                  key="footer"
-                  {...uiFade}
-                  className="shrink-0 p-4 flex justify-between items-end text-[10px] text-[#A0A0A0] mc-text-shadow bg-gradient-to-t from-black/80 to-transparent uppercase tracking-widest opacity-60 font-['Mojangles']"
-                  style={{ fontWeight: "normal" }}
+              <main className="flex-1 w-full relative">
+                <div
+                  className={`w-full h-full flex flex-col items-center justify-center ${!logoAnimDone || isUiHidden ? "opacity-0 pointer-events-none" : "opacity-100"}`}
                 >
-                  <div className="flex-1 text-left whitespace-nowrap">Version: 1.0.0</div>
-                  <div className="flex-[2] text-center whitespace-nowrap">
-                    Not affiliated with Mojang AB or Microsoft. "Minecraft" is a trademark of Mojang Synergies AB.
+                  <AnimatePresence mode="wait">
+                    {activeView === "main" && (
+                      <SkinViewer
+                        key="skin-viewer"
+                        username={config.username}
+                        setUsername={config.setUsername}
+                        playClickSound={audio.playClickSound}
+                        skinUrl={skinUrl}
+                        setSkinUrl={setSkinUrl}
+                        setActiveView={setActiveView}
+                        isFocusedSection={focusSection === "skin"}
+                        onNavigateRight={onNavigateToMenu}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <div className="w-full max-w-4xl relative flex justify-center items-center">
+                    <AnimatePresence mode="wait">
+                      {activeView === "main" && (
+                        <HomeView key="main-view" />
+                      )}
+                      {activeView === "settings" && (
+                        <SettingsView key="settings-view" />
+                      )}
+                      {activeView === "versions" && (
+                        <VersionsView key="versions-view" />
+                      )}
+                      {activeView === "workshop" && (
+                        <WorkshopView key="workshop-view" />
+                      )}
+                      {activeView === "themes" && (
+                        <ThemesView key="themes-view" />
+                      )}
+                      {activeView === "skins" && (
+                        <SkinsView key="skins-view" />
+                      )}
+                    </AnimatePresence>
                   </div>
-                  <div className="flex-1 text-right whitespace-nowrap">
-                    {useUI().connected && "CONTROLLER CONNECTED"}
-                  </div>
-                </motion.footer>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
-      </AnimatePresence>
+                </div>
+              </main>
+
+              <AnimatePresence>
+                {logoAnimDone && (
+                  <motion.footer
+                    key="footer"
+                    {...uiFade}
+                    className="shrink-0 p-4 flex justify-between items-end text-[10px] text-[#A0A0A0] mc-text-shadow bg-gradient-to-t from-black/80 to-transparent uppercase tracking-widest opacity-60 font-['Mojangles']"
+                    style={{ fontWeight: "normal" }}
+                  >
+                    <div className="flex-1 text-left whitespace-nowrap">Version: 1.0.0</div>
+                    <div className="flex-[2] text-center whitespace-nowrap">
+                      Not affiliated with Mojang AB or Microsoft. "Minecraft" is a trademark of Mojang Synergies AB.
+                    </div>
+                    <div className="flex-1 text-right whitespace-nowrap">
+                      {useUI().connected && "CONTROLLER CONNECTED"}
+                    </div>
+                  </motion.footer>
+                )}
+              </AnimatePresence>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </MotionConfig>
   );

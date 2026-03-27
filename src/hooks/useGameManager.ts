@@ -9,13 +9,19 @@ const BASE_EDITIONS = [
     id: "legacy_evolved",
     name: "Legacy Evolved",
     desc: "Backporting the newer title updates back to the LCE",
-    url: "https://github.com/piebotc/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
+    url: "https://github.com/SHAD0WW11/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
   },
   {
     id: "vanilla_tu19",
     name: "Title Update 19",
     desc: "Leaked 4J Studios build. (smartcmd)",
     url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
+  },
+  {
+    id: "360revived",
+    name: "360 Revived",
+    desc: "PC port of Xbox 360 Edition TU19",
+    url: "https://github.com/BluTac10/360Revived/releases/download/nightly/LCEWindows64.zip",
   },
 ];
 

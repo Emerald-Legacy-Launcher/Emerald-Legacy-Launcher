@@ -30,7 +30,6 @@ const SetupView: React.FC<SetupViewProps> = ({ onComplete }) => {
   const titleImage = (() => {
     if (profile === "legacy_evolved") return "/images/minecraft_title_LegacyEvolved.png";
     if (profile === "vanilla_tu19") return "/images/minecraft_title_tu19.png";
-    if (profile === "vanilla_tu24") return "/images/minecraft_title_tu24.png";
     if (profile?.startsWith("custom_")) return "/images/minecraft_title_tucustom.png";
     return "/images/MenuTitle.png";
   })();
