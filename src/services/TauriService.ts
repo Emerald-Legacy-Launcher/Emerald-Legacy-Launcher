@@ -33,6 +33,11 @@ export interface AppConfig {
   keepLauncherOpen?: boolean;
   enableTrayIcon?: boolean;
   animationsEnabled?: boolean;
+  vfxEnabled?: boolean;
+  rpcEnabled?: boolean;
+  musicVol?: number;
+  sfxVol?: number;
+  legacyMode?: boolean;
 }
 
 export interface ThemePalette {

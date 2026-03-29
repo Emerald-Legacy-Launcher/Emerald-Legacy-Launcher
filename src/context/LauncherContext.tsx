@@ -115,7 +115,12 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     if (config.isLoaded) {
       config.saveConfig(skinSync.skinBase64);
     }
-  }, [config.username, skinSync.skinBase64, config.theme, config.linuxRunner, config.perfBoost, config.customEditions, config.profile, config.keepLauncherOpen, config.enableTrayIcon, config.isLoaded]);
+  }, [
+    config.username, skinSync.skinBase64, config.theme, config.linuxRunner,
+    config.perfBoost, config.customEditions, config.profile, config.keepLauncherOpen,
+    config.enableTrayIcon, config.vfxEnabled, config.animationsEnabled,
+    config.rpcEnabled, config.musicVol, config.sfxVol, config.legacyMode, config.isLoaded
+  ]);
 
   useEffect(() => {
     const setupVisibilityDetection = async () => {

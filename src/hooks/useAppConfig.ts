@@ -34,6 +34,12 @@ export function useAppConfig() {
       if (config.profile) setProfile(config.profile);
       if (config.keepLauncherOpen !== undefined) setKeepLauncherOpen(config.keepLauncherOpen);
       if (config.enableTrayIcon !== undefined) setEnableTrayIcon(config.enableTrayIcon);
+      if (config.vfxEnabled !== undefined) setVfxEnabled(config.vfxEnabled);
+      if (config.animationsEnabled !== undefined) setAnimationsEnabled(config.animationsEnabled);
+      if (config.rpcEnabled !== undefined) setRpcEnabled(config.rpcEnabled);
+      if (config.musicVol !== undefined) setMusicVol(config.musicVol);
+      if (config.sfxVol !== undefined) setSfxVol(config.sfxVol);
+      if (config.legacyMode !== undefined) setLegacyMode(config.legacyMode);
       setIsLoaded(true);
     });
   }, []);
@@ -56,8 +62,13 @@ export function useAppConfig() {
       keepLauncherOpen,
       enableTrayIcon,
       animationsEnabled,
+      vfxEnabled,
+      rpcEnabled,
+      musicVol,
+      sfxVol,
+      legacyMode,
     }).catch(console.error);
-  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen, enableTrayIcon, animationsEnabled]);
+  }, [username, theme, linuxRunner, perfBoost, profile, customEditions, keepLauncherOpen, enableTrayIcon, animationsEnabled, vfxEnabled, rpcEnabled, musicVol, sfxVol, legacyMode]);
 
   return {
     username,

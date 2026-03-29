@@ -11,6 +11,7 @@ const SettingsView = memo(function SettingsView() {
   const { isGameRunning, stopGame, isRunnerDownloading, runnerDownloadProgress, downloadRunner } = useGame();
   const { isLinux, isMac } = usePlatform();
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
+  const [currentSubMenu, setCurrentSubMenu] = useState<"main" | "audio" | "video" | "controls" | "launcher">("main");
   const [runners, setRunners] = useState<Runner[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -51,7 +52,7 @@ const SettingsView = memo(function SettingsView() {
     playClickSound();
     setLegacyMode(!legacyMode);
   };
-  
+
   const handleKeepOpenToggle = () => {
     playClickSound();
     setKeepLauncherOpen(!keepLauncherOpen);
@@ -77,7 +78,7 @@ const SettingsView = memo(function SettingsView() {
 
   const handleResetSetup = () => {
     playClickSound();
-    
+
     // Create styled confirmation dialog
     const dialog = document.createElement('div');
     dialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
@@ -91,28 +92,28 @@ const SettingsView = memo(function SettingsView() {
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(dialog);
-    
+
     const handleYes = () => {
       document.body.removeChild(dialog);
       showSecondConfirmation();
     };
-    
+
     const handleNo = () => {
       document.body.removeChild(dialog);
     };
-    
+
     dialog.querySelector('#reset-yes')?.addEventListener('click', handleYes);
     dialog.querySelector('#reset-no')?.addEventListener('click', handleNo);
-    
+
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) {
         document.body.removeChild(dialog);
       }
     });
   };
-  
+
   const showSecondConfirmation = () => {
     const dialog = document.createElement('div');
     dialog.className = 'fixed inset-0 bg-black/80 flex items-center justify-center z-50';
@@ -135,21 +136,21 @@ const SettingsView = memo(function SettingsView() {
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(dialog);
-    
+
     const handleFinalYes = () => {
       document.body.removeChild(dialog);
       performReset();
     };
-    
+
     const handleFinalNo = () => {
       document.body.removeChild(dialog);
     };
-    
+
     dialog.querySelector('#reset-final-yes')?.addEventListener('click', handleFinalYes);
     dialog.querySelector('#reset-final-no')?.addEventListener('click', handleFinalNo);
-    
+
     dialog.addEventListener('click', (e) => {
       if (e.target === dialog) {
         document.body.removeChild(dialog);
@@ -160,10 +161,10 @@ const SettingsView = memo(function SettingsView() {
   const performReset = () => {
     // Clear all localStorage data
     localStorage.clear();
-    
+
     // Set setup as not completed
     localStorage.setItem('lce-setup-completed', 'false');
-    
+
     // Force reload to show setup screen
     window.location.reload();
   };
@@ -201,109 +202,140 @@ const SettingsView = memo(function SettingsView() {
     };
 
   const settingsItems = useMemo<SettingsItem[]>(() => {
-    const items: SettingsItem[] = [
-      {
+    const items: SettingsItem[] = [];
+
+    if (currentSubMenu === "main") {
+      items.push({
+        id: "audio_menu",
+        label: "Audio Settings",
+        type: "button",
+        onClick: () => { playClickSound(); setCurrentSubMenu("audio"); setFocusIndex(0); },
+      });
+      items.push({
+        id: "video_menu",
+        label: "Video Settings",
+        type: "button",
+        onClick: () => { playClickSound(); setCurrentSubMenu("video"); setFocusIndex(0); },
+      });
+      items.push({
+        id: "controls_menu",
+        label: "Controls",
+        type: "button",
+        onClick: () => { playClickSound(); setCurrentSubMenu("controls"); setFocusIndex(0); },
+      });
+      items.push({
+        id: "launcher_menu",
+        label: "Launcher Settings",
+        type: "button",
+        onClick: () => { playClickSound(); setCurrentSubMenu("launcher"); setFocusIndex(0); },
+      });
+    } else if (currentSubMenu === "audio") {
+      items.push({
         id: "music",
         label: `Music: ${musicVolume}%`,
         type: "slider",
         value: musicVolume,
         onChange: setMusicVolume,
-      },
-      {
+      });
+      items.push({
         id: "sfx",
         label: `SFX: ${sfxVolume}%`,
         type: "slider",
         value: sfxVolume,
         onChange: setSfxVolume,
-      },
-      {
+      });
+      items.push({
         id: "track",
         label: `${trackName} - C418`,
         type: "button",
         onClick: handleTrackToggle,
-      },
-    ];
-
-    items.push({
-      id: "vfx",
-      label: `VFX: ${vfxEnabled ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleVfxToggle,
-    });
-
-    items.push({
-      id: "rpc",
-      label: `Discord RPC: ${rpcEnabled ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleRpcToggle,
-    });
-
-    items.push({
-      id: "legacy",
-      label: `Legacy Mode: ${legacyMode ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleLegacyToggle,
-    });
-
-    items.push({
-      id: "animations",
-      label: `Animations: ${animationsEnabled ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleAnimationsToggle,
-    });
- 
-    items.push({
-      id: "keep_open",
-      label: `Keep Launcher Open: ${keepLauncherOpen ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleKeepOpenToggle,
-    });
-
-    items.push({
-      id: "tray_icon",
-      label: `Tray Icon: ${enableTrayIcon ? "ON" : "OFF"}`,
-      type: "button",
-      onClick: handleTrayToggle,
-    });
-
-    items.push({
-      id: "layout",
-      label: `Layout: ${layout}`,
-      type: "button",
-      onClick: handleLayoutToggle,
-    });
-
-    if (isLinux) {
-      items.push({
-        id: "runner",
-        label: `Runner: ${selectedRunnerName}`,
-        type: "button",
-        onClick: handleRunnerToggle,
       });
-
-      if (runners.length === 0 || runners.every(r => r.type !== 'proton')) {
+    } else if (currentSubMenu === "video") {
+      items.push({
+        id: "vfx",
+        label: `VFX: ${vfxEnabled ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleVfxToggle,
+      });
+      items.push({
+        id: "animations",
+        label: `Animations: ${animationsEnabled ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleAnimationsToggle,
+      });
+      if (isMac) {
         items.push({
-          id: "download_runner",
-          label: isRunnerDownloading
-            ? `Downloading Runner... ${Math.floor(runnerDownloadProgress || 0)}%`
-            : "Download GE-Proton (Recommended)",
+          id: "perf",
+          label: `M1/M2 Boost: ${perfBoost ? "Enabled" : "Disabled"}`,
           type: "button",
-          onClick: () => {
-            if (!isRunnerDownloading) {
-              downloadRunner("GE-Proton9-25", "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-25/GE-Proton9-25.tar.gz");
-            }
-          },
-          small: true,
+          onClick: handlePerfToggle,
         });
       }
-    }
-
-    if (isMac) {
+    } else if (currentSubMenu === "controls") {
       items.push({
-        id: "perf",
-        label: `M1/M2 Boost: ${perfBoost ? "Enabled" : "Disabled"}`,
+        id: "layout",
+        label: `Layout: ${layout}`,
         type: "button",
-        onClick: handlePerfToggle,
+        onClick: handleLayoutToggle,
+      });
+    } else if (currentSubMenu === "launcher") {
+      items.push({
+        id: "rpc",
+        label: `Discord RPC: ${rpcEnabled ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleRpcToggle,
+      });
+      items.push({
+        id: "legacy",
+        label: `Legacy Mode: ${legacyMode ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleLegacyToggle,
+      });
+      items.push({
+        id: "keep_open",
+        label: `Keep Launcher Open: ${keepLauncherOpen ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleKeepOpenToggle,
+      });
+      items.push({
+        id: "tray_icon",
+        label: `Tray Icon: ${enableTrayIcon ? "ON" : "OFF"}`,
+        type: "button",
+        onClick: handleTrayToggle,
+      });
+
+      if (isLinux) {
+        items.push({
+          id: "runner",
+          label: `Runner: ${selectedRunnerName}`,
+          type: "button",
+          onClick: handleRunnerToggle,
+        });
+
+        if (runners.length === 0 || runners.every(r => r.type !== 'proton')) {
+          items.push({
+            id: "download_runner",
+            label: isRunnerDownloading
+              ? `Downloading Runner... ${Math.floor(runnerDownloadProgress || 0)}%`
+              : "Download GE-Proton (Recommended)",
+            type: "button",
+            onClick: () => {
+              if (!isRunnerDownloading) {
+                downloadRunner("GE-Proton9-25", "https://github.com/GloriousEggroll/proton-ge-custom/releases/download/GE-Proton9-25/GE-Proton9-25.tar.gz");
+              }
+            },
+            small: true,
+          });
+        }
+      }
+
+      items.push({
+        id: "reset_setup",
+        label: "Reset Setup",
+        type: "button",
+        onClick: handleResetSetup,
+        color: "orange",
+        small: true,
       });
     }
 
@@ -318,56 +350,69 @@ const SettingsView = memo(function SettingsView() {
     }
 
     items.push({
-      id: "reset_setup",
-      label: "Reset Setup",
-      type: "button",
-      onClick: handleResetSetup,
-      color: "orange",
-      small: true,
-    });
-
-    items.push({
       id: "back",
-      label: "Back",
+      label: currentSubMenu === "main" ? "Done" : "Back",
       type: "button",
       onClick: () => {
         playBackSound();
-        setActiveView("main");
+        if (currentSubMenu === "main") {
+          setActiveView("main");
+        } else {
+          setCurrentSubMenu("main");
+          setFocusIndex(0);
+        }
       },
     });
 
     return items;
   }, [
+    currentSubMenu,
     musicVolume,
+    sfxVolume,
+    trackName,
+    vfxEnabled,
+    rpcEnabled,
+    legacyMode,
+    animationsEnabled,
+    keepLauncherOpen,
+    enableTrayIcon,
+    layout,
+    isLinux,
+    selectedRunnerName,
+    isRunnerDownloading,
+    runnerDownloadProgress,
+    isMac,
     perfBoost,
     isGameRunning,
-    legacyMode,
     handleTrackToggle,
     handleVfxToggle,
+    handleRpcToggle,
+    handleLegacyToggle,
+    handleAnimationsToggle,
+    handleKeepOpenToggle,
+    handleTrayToggle,
     handleLayoutToggle,
     handleRunnerToggle,
     handlePerfToggle,
-    handleRpcToggle,
-    handleLegacyToggle,
-    handleKeepOpenToggle,
-    handleTrayToggle,
+    handleResetSetup,
     stopGame,
+    downloadRunner,
+    playClickSound,
     playBackSound,
     setActiveView,
-    setMusicVolume,
-    setSfxVolume,
-    setVfxEnabled,
-    animationsEnabled,
-    handleAnimationsToggle,
-    keepLauncherOpen,
-    enableTrayIcon,
+    runners,
   ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape" || e.key === "Backspace") {
         playBackSound();
-        setActiveView("main");
+        if (currentSubMenu !== "main") {
+          setCurrentSubMenu("main");
+          setFocusIndex(0);
+        } else {
+          setActiveView("main");
+        }
         return;
       }
 
@@ -397,7 +442,7 @@ const SettingsView = memo(function SettingsView() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [focusIndex, settingsItems, playBackSound, setActiveView]);
+  }, [focusIndex, settingsItems, playBackSound, setActiveView, currentSubMenu]);
 
   useEffect(() => {
     if (focusIndex !== null) {
@@ -434,8 +479,8 @@ const SettingsView = memo(function SettingsView() {
       transition={{ duration: animationsEnabled ? 0.3 : 0 }}
       className="flex flex-col items-center w-full max-w-2xl outline-none"
     >
-      <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80">
-        Settings
+      <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80 font-bold whitespace-nowrap px-4">
+        {currentSubMenu === "main" ? "Settings" : currentSubMenu === "audio" ? "Audio Settings" : currentSubMenu === "video" ? "Video Settings" : currentSubMenu === "controls" ? "Controls" : "Launcher"}
       </h2>
 
       <div className="w-full max-w-[540px] space-y-2 mb-4 p-6 flex flex-col items-center overflow-y-auto max-h-[55vh]">

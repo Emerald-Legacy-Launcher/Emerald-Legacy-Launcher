@@ -54,6 +54,11 @@ pub struct AppConfig {
     pub keep_launcher_open: Option<bool>,
     pub enable_tray_icon: Option<bool>,
     pub animations_enabled: Option<bool>,
+    pub vfx_enabled: Option<bool>,
+    pub rpc_enabled: Option<bool>,
+    pub music_vol: Option<u32>,
+    pub sfx_vol: Option<u32>,
+    pub legacy_mode: Option<bool>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -187,6 +192,11 @@ fn load_config(app: AppHandle) -> AppConfig {
         keep_launcher_open: None,
         enable_tray_icon: Some(true),
         animations_enabled: Some(true),
+        vfx_enabled: Some(true),
+        rpc_enabled: Some(true),
+        music_vol: Some(50),
+        sfx_vol: Some(100),
+        legacy_mode: Some(false),
     }
 }
 
