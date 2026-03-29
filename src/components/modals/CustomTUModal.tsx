@@ -6,12 +6,26 @@ export default function CustomTUModal({
   onClose,
   onImport,
   playSfx,
+  editingEdition = null,
 }: any) {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [url, setUrl] = useState("");
   const [error, setError] = useState("");
   const [focusIndex, setFocusIndex] = useState(0);
+
+  useEffect(() => {
+    if (isOpen && editingEdition) {
+      setName(editingEdition.name);
+      setDesc(editingEdition.desc);
+      setUrl(editingEdition.url);
+    } else if (!isOpen) {
+      setName("");
+      setDesc("");
+      setUrl("");
+      setError("");
+    }
+  }, [editingEdition, isOpen]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -77,7 +91,7 @@ export default function CustomTUModal({
         }}
       >
         <h2 className="text-[#FFFF55] text-2xl mc-text-shadow mb-6 border-b-2 border-[#373737] pb-2 w-full text-center uppercase font-bold tracking-widest">
-          Import Custom TU
+          {editingEdition ? "Edit Custom TU" : "Import Custom TU"}
         </h2>
 
         <div className="flex flex-col gap-5 w-full">
@@ -163,7 +177,7 @@ export default function CustomTUModal({
               imageRendering: "pixelated",
             }}
           >
-            Import
+            {editingEdition ? "Save" : "Import"}
           </button>
         </div>
       </div>

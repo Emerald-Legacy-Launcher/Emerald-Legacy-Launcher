@@ -159,6 +159,10 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
     TauriService.deleteInstance(id).catch(console.error);
   }, [customEditions, setCustomEditions]);
 
+  const updateCustomEdition = useCallback((id: string, updated: { name: string; desc: string; url: string }) => {
+    setCustomEditions(customEditions.map((e) => e.id === id ? { ...e, ...updated } : e));
+  }, [customEditions, setCustomEditions]);
+
   return {
     installs,
     isGameRunning,
@@ -175,6 +179,7 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
     stopGame,
     addCustomEdition,
     deleteCustomEdition,
+    updateCustomEdition,
     downloadRunner,
     checkInstalls,
   };
