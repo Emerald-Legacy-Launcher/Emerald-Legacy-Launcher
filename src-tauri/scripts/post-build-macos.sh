@@ -7,9 +7,19 @@ set -e
 
 APP_NAME="Emerald Legacy Launcher"
 BUNDLE_ID="com.emerald.legacy"
-TARGET_DIR="src-tauri/target/release/bundle/macos"
+BASE_DIR="src-tauri/target"
 
 echo "Running macOS post-build fixes"
+
+# Find the correct target directory (handles both native and cross-compilation)
+TARGET_DIR=$(find "$BASE_DIR" -path "*/release/bundle/macos" -type d | head -n 1)
+
+if [ -z "$TARGET_DIR" ]; then
+    echo "❌ No macOS bundle directory found in $BASE_DIR"
+    exit 1
+fi
+
+echo "Using target directory: $TARGET_DIR"
 
 APP_PATH=$(find "$TARGET_DIR" -name "*.app" -type d | head -n 1)
 
