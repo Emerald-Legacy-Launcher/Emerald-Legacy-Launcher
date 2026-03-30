@@ -71,13 +71,19 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     configRaw.rpcEnabled, configRaw.musicVol, configRaw.sfxVol, configRaw.isDayTime,
     configRaw.profile, configRaw.linuxRunner, configRaw.perfBoost, configRaw.customEditions,
     configRaw.legacyMode, configRaw.keepLauncherOpen, configRaw.enableTrayIcon,
-    configRaw.animationsEnabled
+    configRaw.animationsEnabled, configRaw.saveConfig, configRaw.setUsername, configRaw.setTheme,
+    configRaw.setLayout, configRaw.setVfxEnabled, configRaw.setAnimationsEnabled,
+    configRaw.setRpcEnabled, configRaw.setMusicVol, configRaw.setSfxVol, configRaw.setIsDayTime,
+    configRaw.setProfile, configRaw.setLinuxRunner, configRaw.setPerfBoost, configRaw.setCustomEditions,
+    configRaw.isLoaded, configRaw.hasCompletedSetup, configRaw.setHasCompletedSetup
   ]);
 
   const game = useMemo(() => gameRaw, [
     gameRaw.installs, gameRaw.isGameRunning, gameRaw.downloadProgress,
     gameRaw.downloadingId, gameRaw.editions, gameRaw.isRunnerDownloading,
-    gameRaw.runnerDownloadProgress, gameRaw.error, gameRaw.updateCustomEdition, configRaw.profile
+    gameRaw.runnerDownloadProgress, gameRaw.error, gameRaw.updateCustomEdition, configRaw.profile,
+    gameRaw.handleLaunch, gameRaw.stopGame, gameRaw.toggleInstall, gameRaw.handleUninstall,
+    gameRaw.addCustomEdition, gameRaw.deleteCustomEdition, gameRaw.downloadRunner, gameRaw.checkInstalls
   ]);
 
   const audio = useMemo(() => audioRaw, [

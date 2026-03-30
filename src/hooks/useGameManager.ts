@@ -136,7 +136,7 @@ export function useGameManager({ profile, setProfile, customEditions, setCustomE
       await appWindow.unminimize();
       await appWindow.setFocus();
     }
-  }, [isGameRunning, profile]);
+  }, [isGameRunning, profile, keepLauncherOpen]);
 
   const stopGame = useCallback(async () => {
     try {
