@@ -52,6 +52,11 @@ jobs:
 
       - name: install frontend dependencies
         run: pnpm install
+      - name: build and fix macOS
+        if: matrix.platform == 'macos-latest'
+        run: |
+          pnpm tauri build --args ${{ matrix.args }}
+          pnpm run post-build:macos
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -74,6 +79,9 @@ jobs:
             
             1. Click the **"More info"** link under the main text.
             2. Click the **"Run anyway"** button that appears.
+            ---
+            # macOS "Damaged" Error Fix
+            The macOS builds now include automatic fixes for Gatekeeper quarantine issues. The app should launch without "application is damaged" errors.
           
           releaseDraft: false
           prerelease: true
