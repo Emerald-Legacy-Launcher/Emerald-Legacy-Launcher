@@ -52,7 +52,39 @@ jobs:
 
       - name: install frontend dependencies
         run: pnpm install
-      - uses: tauri-apps/tauri-action@v0
+
+      - name: Build and create DMG for macOS
+        if: matrix.platform == 'macos-latest'
+        run: |
+          npm run build
+          cd src-tauri
+          cargo build --release --target ${{ matrix.args }}
+          cd ..
+          
+          TARGET_ARCH=${{ matrix.args == '--target aarch64-apple-darwin' && 'aarch64-apple-darwin' || 'x86_64-apple-darwin' }}
+          
+          mkdir -p "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/MacOS"
+          mkdir -p "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/Resources"
+          
+          cp "src-tauri/target/$TARGET_ARCH/release/emerald-legacy-launcher" "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/MacOS/"
+          
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n    <key>CFBundleExecutable</key>\n    <string>emerald-legacy-launcher</string>\n    <key>CFBundleIdentifier</key>\n    <string>com.emerald.legacy</string>\n    <key>CFBundleName</key>\n    <string>Emerald Legacy Launcher</string>\n    <key>CFBundleVersion</key>\n    <string>1.0.0</string>\n    <key>CFBundleShortVersionString</key>\n    <string>1.0.0</string>\n    <key>CFBundlePackageType</key>\n    <string>APPL</string>\n    <key>NSHighResolutionCapable</key>\n    <true/>\n    <key>LSApplicationCategoryType</key>\n    <string>public.app-category.games</string>\n</dict>\n</plist>\n' > "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/Info.plist"
+          
+          if [ -f "src-tauri/icons/icon.icns" ]; then
+            cp src-tauri/icons/icon.icns "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/Resources/"
+          fi
+          
+          chmod +x "src-tauri/target/$TARGET_ARCH/release/bundle/macos/Emerald Legacy Launcher.app/Contents/MacOS/emerald-legacy-launcher"
+          
+          cd "src-tauri/target/$TARGET_ARCH/release/bundle/macos"
+          hdiutil create -volname "Emerald Legacy Launcher" -srcfolder "Emerald Legacy Launcher.app" -ov -format UDZO "Emerald Legacy Launcher.dmg"
+          
+          mkdir -p "src-tauri/target/release/bundle/dmg/"
+          mv "Emerald Legacy Launcher.dmg" "src-tauri/target/release/bundle/dmg/"
+
+      - name: Build with tauri-action for Windows and Linux
+        if: matrix.platform != 'macos-latest'
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -60,45 +92,156 @@ jobs:
           releaseName: 'Emerald Nightly'
           releaseBody: |
             # Emerald Legacy Launcher (Nightly)
+            
+            ## 📥 What to download?
+            
+            ### 🐧 GNU/Linux
+            - **RHEL/Fedora**: `Emerald.Legacy.Launcher-*.rpm`
+            - **Debian/Ubuntu**: `Emerald.Legacy.Launcher-*.deb`
+            - **Universal**: `Emerald.Legacy.Launcher-*.AppImage`
+            - **Flatpak**: `io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak`
+            
+            ### 🍎 macOS
+            - **Intel Mac**: `Emerald.Legacy.Launcher_*.x64.dmg`
+            - **M-series Mac**: `Emerald.Legacy.Launcher_*.aarch64.dmg`
+            
+            ### 🪟 Windows
+            - **Setup Installer**: `Emerald.Legacy.Launcher-*.exe`
+            - **MSI Installer**: `Emerald.Legacy.Launcher-*.msi`
+            
+            ---
+            
+            ## ⚠️ Windows SmartScreen
+            This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
+            
+            1. Click the **"More info"** link under the main text.
+            2. Click the **"Run anyway"** button that appears.
+            
+            ## 🍎 macOS Installation
+            Download the DMG file, open it, and drag the app to Applications folder.
+            If you see "app damaged" error, right-click the app → Open → confirm Open.
+            Or run: `xattr -cr "/Applications/Emerald Legacy Launcher.app"`
+          releaseDraft: false
+          prerelease: true
+          args: ${{ matrix.args }}
+
+      - name: Upload all artifacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/rpm/*.rpm
+            src-tauri/target/release/bundle/msi/*.msi
+            src-tauri/target/release/bundle/nsis/*.exe
+          tag_name: nightly
+          name: 'Emerald Nightly'
+          body: |
+            # Emerald Legacy Launcher (Nightly)
             # What to download?
             - `Emerald.Legacy.Launcher-*.rpm` for GNU/Linux (RHEL)
             - `Emerald.Legacy.Launcher-*.deb` for GNU/Linux (Debian+Ubuntu)
             - `Emerald.Legacy.Launcher-*.AppImage` for GNU/Linux (Universal)
-            - `Emerald.Legacy.Launcher-*_x64.dmg` for macOS (Intel)
-            - `Emerald.Legacy.Launcher-*_aarch64.dmg` for macOS (M-series)
+            - `Emerald Legacy Launcher*.dmg` for macOS (Intel + M-series)
             - `Emerald.Legacy.Launcher-*.exe` for Windows (Setup)
             - `Emerald.Legacy.Launcher-*.msi` for Windows (Setup)
+            - `io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak` for GNU/Linux (Flatpak)
             ---
             # Windows SmartScreen
             This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
             
             1. Click the **"More info"** link under the main text.
             2. Click the **"Run anyway"** button that appears.
-          
-          releaseDraft: false
+            ---
+            # macOS Installation
+            Download the DMG file, open it, and drag the app to Applications folder.
+            If you see "app damaged" error, right-click the app → Open → confirm Open.
+            Or run: `xattr -cr "/Applications/Emerald Legacy Launcher.app"`
+          draft: false
           prerelease: true
-          args: ${{ matrix.args }}
+
+      - name: Upload macOS DMGs to release
+        if: matrix.platform == 'macos-latest'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: src-tauri/target/release/bundle/dmg/*.dmg
+          tag_name: nightly
+          name: 'Emerald Nightly'
+          body: |
+            # Emerald Legacy Launcher (Nightly)
+            # What to download?
+            - `Emerald.Legacy.Launcher-*.rpm` for GNU/Linux (RHEL)
+            - `Emerald.Legacy.Launcher-*.deb` for GNU/Linux (Debian+Ubuntu)
+            - `Emerald.Legacy.Launcher-*.AppImage` for GNU/Linux (Universal)
+            - `Emerald Legacy Launcher*.dmg` for macOS (Intel + M-series)
+            - `Emerald.Legacy.Launcher-*.exe` for Windows (Setup)
+            - `Emerald.Legacy.Launcher-*.msi` for Windows (Setup)
+            - `io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak` for GNU/Linux (Flatpak)
+            ---
+            # Windows SmartScreen
+            This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
+            
+            1. Click the **"More info"** link under the main text.
+            2. Click the **"Run anyway"** button that appears.
+            ---
+            # macOS Installation
+            Download the DMG file, open it, and drag the app to Applications folder.
+            If you see "app damaged" error, right-click the app → Open → confirm Open.
+            Or run: `xattr -cr "/Applications/Emerald Legacy Launcher.app"`
+          draft: false
+          prerelease: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   nightly-flatpak:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: nightly-tauri  # Wait for Tauri release to be created
-    container:
-      image: bilelmoussaoui/flatpak-github-actions:freedesktop-23.08
-      options: --privileged
+    needs: nightly-tauri
     steps:
       - uses: actions/checkout@v4
+
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y flatpak flatpak-builder
+
+      - name: setup flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          submodules: true
-      - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+          bundle: com.emerald.legacy.Launcher.flatpak
           manifest-path: flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.yml
           cache-key: flatpak-builder-${{ github.sha }}
-      - uses: softprops/action-gh-release@v2
+          build-bundle: true
+
+      - name: Upload flatpak to release
+        uses: softprops/action-gh-release@v2
         with:
-          files: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
+          files: "*.flatpak"
           tag_name: nightly
+          name: 'Emerald Nightly'
+          body: |
+            # Emerald Legacy Launcher (Nightly)
+            # What to download?
+            - `Emerald.Legacy.Launcher-*.rpm` for GNU/Linux (RHEL)
+            - `Emerald.Legacy.Launcher-*.deb` for GNU/Linux (Debian+Ubuntu)
+            - `Emerald.Legacy.Launcher-*.AppImage` for GNU/Linux (Universal)
+            - `Emerald Legacy Launcher*.dmg` for macOS (Intel + M-series)
+            - `Emerald.Legacy.Launcher-*.exe` for Windows (Setup)
+            - `Emerald.Legacy.Launcher-*.msi` for Windows (Setup)
+            - `com.emerald.legacy.Launcher.flatpak` for GNU/Linux (Flatpak)
+            ---
+            # Windows SmartScreen
+            This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
+            
+            1. Click the **"More info"** link under the main text.
+            2. Click the **"Run anyway"** button that appears.
+            ---
+            # macOS Installation
+            Download the DMG file, open it, and drag the app to Applications folder.
+            If you see "app damaged" error, right-click the app → Open → confirm Open.
+            Or run: `xattr -cr "/Applications/Emerald Legacy Launcher.app"`
+          draft: false
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

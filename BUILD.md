@@ -16,6 +16,18 @@ pnpm install  # or npm
 pnpm tauri build  # or npm
 ```
 
+## macOS ARM Fix
+
+If you encounter "application is damaged" error on macOS ARM, the build process now includes automatic fixes. If manual intervention is needed:
+
+```sh
+# Remove quarantine attributes
+xattr -cr /path/to/Emerald\ Legacy\ Launcher.app
+
+# Apply ad-hoc signature
+codesign --force --deep --sign - "/path/to/Emerald\ Legacy\ Launcher.app"
+```
+
 ## Flatpak
 
 ```sh
