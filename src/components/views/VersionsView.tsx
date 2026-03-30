@@ -39,7 +39,7 @@ const VersionsView = memo(function VersionsView() {
           const isInstalled = installedVersions.includes(edition.id);
           const isCustom = edition.id.startsWith("custom_");
           const hasGithub = !isCustom && edition.githubUrl;
-          
+
           let maxCol = 0;
           if (hasGithub) maxCol = Math.max(maxCol, 0);
           if (!isInstalled) maxCol = Math.max(maxCol, 1);
@@ -106,11 +106,7 @@ const VersionsView = memo(function VersionsView() {
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [editions, focusRow, focusCol, downloadingId, installedVersions]);
-    onUninstall,
-    onDeleteEdition,
-    ITEM_COUNT,
-  ]);
+  }, [editions, focusRow, focusCol, downloadingId, installedVersions, onUninstall, onDeleteEdition, ITEM_COUNT]);
 
   useEffect(() => {
     const el = containerRef.current?.querySelector(
@@ -133,7 +129,7 @@ const VersionsView = memo(function VersionsView() {
       </h2>
 
       <div className="w-full max-w-[740px] h-[380px] overflow-y-auto mb-6 p-6 relative">
-        <div 
+        <div
           className="w-full p-6"
           style={{
             backgroundImage: "url('/images/frame_background.png')",
@@ -153,11 +149,10 @@ const VersionsView = memo(function VersionsView() {
               return (
                 <div
                   key={edition.id}
-                  className={`w-full p-4 flex items-center transition-all border-none outline-none overflow-hidden relative ${
-                    isSelected ? 'bg-[#FFFF55]/20 border-2 border-[#FFFF55]' : 
-                    isRowFocused ? 'bg-white/10 border-2 border-white/50' : 
-                    'bg-white/5 border-2 border-transparent hover:bg-white/10'
-                  }`}
+                  className={`w-full p-4 flex items-center transition-all border-none outline-none overflow-hidden relative ${isSelected ? 'bg-[#FFFF55]/20 border-2 border-[#FFFF55]' :
+                    isRowFocused ? 'bg-white/10 border-2 border-white/50' :
+                      'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                    }`}
                   onMouseEnter={() => {
                     setFocusRow(i);
                     setFocusCol(0);
@@ -184,7 +179,7 @@ const VersionsView = memo(function VersionsView() {
                         {edition.name}
                       </span>
                       {isCustom && (
-                        <span 
+                        <span
                           className="text-[10px] bg-[#FFFF55] text-black px-1 font-bold uppercase mc-text-shadow-none"
                           style={{ imageRendering: 'pixelated' }}
                         >
@@ -192,7 +187,7 @@ const VersionsView = memo(function VersionsView() {
                         </span>
                       )}
                       {!isCustom && edition.creators && (
-                        <span 
+                        <span
                           className="text-xs text-[#B0B0B0] mc-text-shadow"
                           style={{ imageRendering: 'pixelated' }}
                         >
@@ -200,14 +195,14 @@ const VersionsView = memo(function VersionsView() {
                         </span>
                       )}
                     </div>
-                    <div 
+                    <div
                       className="text-sm text-[#E0E0E0] mc-text-shadow"
                       style={{ imageRendering: 'pixelated' }}
                     >
                       {edition.desc}
                     </div>
                     {isInstalled && !isSelected && (
-                      <div 
+                      <div
                         className="text-xs text-[#90EE90] mc-text-shadow mt-1 font-medium"
                         style={{ imageRendering: 'pixelated' }}
                       >
@@ -258,7 +253,7 @@ const VersionsView = memo(function VersionsView() {
                         </svg>
                       </button>
                     )}
-                    
+
                     {!isInstalled ? (
                       <button
                         data-row={i}
