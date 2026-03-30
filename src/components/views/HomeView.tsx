@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { useUI, useConfig, useAudio, useGame } from "../../context/LauncherContext";
 
 const HomeView = memo(function HomeView() {
-  const { setActiveView, setShowCredits, focusSection, onNavigateToSkin } = useUI();
+  const { setActiveView, setShowCredits, setShowSpecialThanks, focusSection, onNavigateToSkin } = useUI();
   const { profile, legacyMode } = useConfig();
   const { playClickSound, playSfx } = useAudio();
   const { handleLaunch, isGameRunning, editions, installs, toggleInstall, downloadProgress, downloadingId } = useGame();
@@ -154,6 +154,17 @@ const HomeView = memo(function HomeView() {
             className={`text-white hover:text-[#FFFF55] text-xl mc-text-shadow tracking-widest transition-colors mt-1 bg-transparent border-none outline-none ${!isFocusedSection ? "cursor-default pointer-events-none" : ""}`}
           >
             EMERALD TEAM
+          </button>
+          <button
+            onClick={() => {
+              if (isFocusedSection) {
+                playSfx("orb.ogg");
+                setShowSpecialThanks(true);
+              }
+            }}
+            className={`text-white/60 hover:text-[#FFFF55] text-xs mc-text-shadow tracking-[0.2em] transition-colors bg-transparent border-none outline-none ${!isFocusedSection ? "cursor-default pointer-events-none" : ""}`}
+          >
+            SPECIAL THANKS
           </button>
         </div>
       )}

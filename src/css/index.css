@@ -21,7 +21,7 @@
   border: 4px solid transparent;
   border-image: url('/images/Button_Background.png') 4 stretch;
   image-rendering: pixelated;
-  background: rgba(0,0,0,0.6);
+  background: rgba(0, 0, 0, 0.6);
   transition: all 0.2s ease;
 }
 
@@ -102,4 +102,13 @@ body {
 .no-animations * {
   transition: none !important;
   animation: none !important;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

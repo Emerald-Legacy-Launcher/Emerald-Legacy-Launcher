@@ -9,6 +9,7 @@ import WorkshopView from "../components/views/WorkshopView";
 import SetupView from "../components/views/SetupView";
 import SkinViewer from "../components/common/SkinViewer";
 import TeamModal from "../components/modals/TeamModal";
+import SpecialThanksModal from "../components/modals/SpecialThanksModal";
 import PanoramaBackground from "../components/common/PanoramaBackground";
 import { ClickParticles } from "../components/common/ClickParticles";
 import { AppHeader } from "../components/layout/AppHeader";
@@ -24,7 +25,7 @@ export default function App() {
   const {
     showIntro, setShowIntro, logoAnimDone, setLogoAnimDone,
     activeView, setActiveView, isUiHidden, setIsUiHidden,
-    showCredits, setShowCredits, focusSection,
+    showCredits, setShowCredits, showSpecialThanks, setShowSpecialThanks, focusSection,
     onNavigateToMenu, updateMessage, clearUpdateMessage
   } = useUI();
 
@@ -121,6 +122,14 @@ export default function App() {
             <TeamModal
               isOpen={showCredits}
               onClose={() => setShowCredits(false)}
+              playClickSound={audio.playClickSound}
+              playSfx={audio.playSfx}
+            />
+          )}
+          {showSpecialThanks && (
+            <SpecialThanksModal
+              isOpen={showSpecialThanks}
+              onClose={() => setShowSpecialThanks(false)}
               playClickSound={audio.playClickSound}
               playSfx={audio.playSfx}
             />
