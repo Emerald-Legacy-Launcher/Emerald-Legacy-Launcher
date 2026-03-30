@@ -206,6 +206,11 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y flatpak flatpak-builder
 
+      - name: setup flathub
+        run: |
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak update --user
+
       - name: setup flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
@@ -213,6 +218,8 @@ jobs:
           manifest-path: flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.yml
           cache-key: flatpak-builder-${{ github.sha }}
           build-bundle: true
+          repository-url: https://flathub.org/repo/flathub.flatpakrepo
+          repository-name: flathub
 
       - name: Upload flatpak to release
         uses: softprops/action-gh-release@v2
