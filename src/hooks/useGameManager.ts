@@ -11,6 +11,8 @@ const BASE_EDITIONS = [
     desc: "Backporting the newer title updates back to the LCE",
     url: "https://codeberg.org/piebot/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_LegacyEvolved.png",
+    githubUrl: "https://codeberg.org/piebot/LegacyEvolved",
+    creators: "piebot",
   },
   {
     id: "vanilla_tu19",
@@ -18,6 +20,8 @@ const BASE_EDITIONS = [
     desc: "Leaked 4J Studios build. (smartcmd)",
     url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_tu19.png",
+    githubUrl: "https://github.com/smartcmd/MinecraftConsoles",
+    creators: "smartcmd",
   },
   {
     id: "360revived",
@@ -25,6 +29,8 @@ const BASE_EDITIONS = [
     desc: "PC port of Xbox 360 Edition TU19",
     url: "https://github.com/BluTac10/360Revived/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_360revived.png",
+    githubUrl: "https://github.com/BluTac10/360Revived",
+    creators: "BluTac10",
   },
 ];
 

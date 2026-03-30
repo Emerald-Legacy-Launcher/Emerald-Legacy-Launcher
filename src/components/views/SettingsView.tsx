@@ -207,13 +207,13 @@ const SettingsView = memo(function SettingsView() {
     if (currentSubMenu === "main") {
       items.push({
         id: "audio_menu",
-        label: "Audio Settings",
+        label: "Audio",
         type: "button",
         onClick: () => { playClickSound(); setCurrentSubMenu("audio"); setFocusIndex(0); },
       });
       items.push({
         id: "video_menu",
-        label: "Video Settings",
+        label: "User Interface",
         type: "button",
         onClick: () => { playClickSound(); setCurrentSubMenu("video"); setFocusIndex(0); },
       });
@@ -225,7 +225,7 @@ const SettingsView = memo(function SettingsView() {
       });
       items.push({
         id: "launcher_menu",
-        label: "Launcher Settings",
+        label: "Options",
         type: "button",
         onClick: () => { playClickSound(); setCurrentSubMenu("launcher"); setFocusIndex(0); },
       });
@@ -480,7 +480,7 @@ const SettingsView = memo(function SettingsView() {
       className="flex flex-col items-center w-full max-w-2xl outline-none"
     >
       <h2 className="text-2xl text-white mc-text-shadow mt-2 mb-4 border-b-2 border-[#373737] pb-2 w-[40%] max-w-[200px] text-center tracking-widest uppercase opacity-80 font-bold whitespace-nowrap px-4">
-        {currentSubMenu === "main" ? "Settings" : currentSubMenu === "audio" ? "Audio Settings" : currentSubMenu === "video" ? "Video Settings" : currentSubMenu === "controls" ? "Controls" : "Launcher"}
+        {currentSubMenu === "main" ? "Settings" : currentSubMenu === "audio" ? "Audio" : currentSubMenu === "video" ? "User Interface" : currentSubMenu === "controls" ? "Controls" : "Options"}
       </h2>
 
       <div className="w-full max-w-[540px] space-y-2 mb-4 p-6 flex flex-col items-center overflow-y-auto max-h-[55vh]">
