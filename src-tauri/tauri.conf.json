@@ -46,8 +46,8 @@
       "entitlements": null,
       "exceptionDomain": "",
       "frameworks": [],
-      "providerShortName": null,
-      "signingIdentity": null
+      "signingIdentity": null,
+      "providerShortName": "Emerald"
     }
   }
 }
