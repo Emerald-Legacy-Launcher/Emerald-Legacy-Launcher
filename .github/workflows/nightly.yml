@@ -55,7 +55,7 @@ jobs:
       - name: build and fix macOS
         if: matrix.platform == 'macos-latest'
         run: |
-          pnpm tauri build --args ${{ matrix.args }}
+          pnpm tauri build ${{ matrix.args }}
           pnpm run post-build:macos
       - uses: tauri-apps/tauri-action@v0
         env:
