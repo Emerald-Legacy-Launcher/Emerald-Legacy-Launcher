@@ -9,7 +9,7 @@ const BASE_EDITIONS = [
     id: "legacy_evolved",
     name: "Legacy Evolved",
     desc: "Backporting the newer title updates back to the LCE",
-    url: "https://github.com/SHAD0WW11/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
+    url: "https://codeberg.org/piebot/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_LegacyEvolved.png",
   },
   {
