@@ -259,8 +259,8 @@ jobs:
 
       - name: setup flathub
         run: |
-          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-          flatpak update --user
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak update
 
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
