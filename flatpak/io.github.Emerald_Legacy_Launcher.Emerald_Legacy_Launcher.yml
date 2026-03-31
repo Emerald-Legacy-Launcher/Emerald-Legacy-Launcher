@@ -17,12 +17,7 @@ finish-args:
   - --filesystem=xdg-run/pipewire-0
 
 modules:
-  - name: libayatana-appindicator
-    buildsystem: meson
-    sources:
-      - type: archive
-        url: https://github.com/AyatanaIndicators/libayatana-appindicator/archive/refs/tags/0.5.93.tar.gz
-        sha256: cbefed7a918a227bf71286246e237fcd3a9c8499b3eaac4897811a869409edf0
+  - shared-modules/libayatana-appindicator/libayatana-appindicator-gtk3.json
   - name: emerald-legacy-launcher
     buildsystem: simple
     build-options:
