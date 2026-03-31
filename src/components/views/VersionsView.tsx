@@ -52,7 +52,7 @@ const VersionsView = memo(function VersionsView() {
           const edition = editions[focusRow];
           const isCustom = edition.id.startsWith("custom_");
           const hasCredits = !isCustom && edition.credits;
-          
+
           if (hasCredits && focusCol > -1) {
             setFocusCol(-1);
           } else if (focusCol > 0) {
@@ -66,7 +66,6 @@ const VersionsView = memo(function VersionsView() {
           const edition = editions[focusRow];
           const isInstalled = installedVersions.includes(edition.id);
           const isCustom = edition.id.startsWith("custom_");
-          const hasCredits = !isCustom && edition.credits;
 
           if (focusCol === -1) {
             // Credits button
@@ -254,264 +253,264 @@ const VersionsView = memo(function VersionsView() {
 
                   {!isPlaceholder && (
                     <div className="flex items-center gap-2">
-                    {!isCustom && edition.credits && (
-                      <button
-                        data-row={i}
-                        data-col={-1}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          setFocusRow(i);
-                          setFocusCol(-1);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          playClickSound();
-                          window.open(edition.credits.url, '_blank');
-                        }}
-                        className={`mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all`}
-                        style={{
-                          backgroundImage:
-                            isRowFocused && focusCol === -1
-                              ? "url('/images/Button_Square_Highlighted.png')"
-                              : "url('/images/Button_Square.png')",
-                          backgroundSize: "100% 100%",
-                          imageRendering: "pixelated",
-                        }}
-                        title={`Credits: ${edition.credits.developer} (${edition.credits.platform})`}
-                      >
-                        {edition.credits?.platform === "codeberg" ? (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            className="text-white drop-shadow-md"
-                          >
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                          </svg>
-                        ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="text-white drop-shadow-md"
-                          >
-                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                          </svg>
-                        )}
-                      </button>
-                    )}
+                      {!isCustom && edition.credits && (
+                        <button
+                          data-row={i}
+                          data-col={-1}
+                          onMouseEnter={(e) => {
+                            e.stopPropagation();
+                            setFocusRow(i);
+                            setFocusCol(-1);
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            playClickSound();
+                            window.open(edition.credits.url, '_blank');
+                          }}
+                          className={`mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all`}
+                          style={{
+                            backgroundImage:
+                              isRowFocused && focusCol === -1
+                                ? "url('/images/Button_Square_Highlighted.png')"
+                                : "url('/images/Button_Square.png')",
+                            backgroundSize: "100% 100%",
+                            imageRendering: "pixelated",
+                          }}
+                          title={`Credits: ${edition.credits.developer} (${edition.credits.platform})`}
+                        >
+                          {edition.credits?.platform === "codeberg" ? (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="currentColor"
+                              className="text-white drop-shadow-md"
+                            >
+                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z" />
+                            </svg>
+                          ) : (
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="16"
+                              height="16"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              className="text-white drop-shadow-md"
+                            >
+                              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                            </svg>
+                          )}
+                        </button>
+                      )}
 
-                    {!isInstalled ? (
-                      <button
-                        data-row={i}
-                        data-col={1}
-                        onMouseEnter={(e) => {
-                          e.stopPropagation();
-                          setFocusRow(i);
-                          setFocusCol(1);
-                        }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (!downloadingId) {
-                            playClickSound();
-                            toggleInstall(edition.id);
-                          }
-                        }}
-                        className={`mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all ${downloadingId === edition.id ? "opacity-100" : downloadingId ? "opacity-50" : ""}`}
-                        style={{
-                          backgroundImage:
-                            isRowFocused && focusCol === 1
-                              ? "url('/images/Button_Square_Highlighted.png')"
-                              : "url('/images/Button_Square.png')",
-                          backgroundSize: "100% 100%",
-                          imageRendering: "pixelated",
-                        }}
-                      >
-                        {downloadingId === edition.id ? (
-                          <img
-                            src="/images/loading.gif"
-                            alt="Loading"
-                            className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
-                            style={{ imageRendering: "pixelated" }}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        ) : (
-                          <img
-                            src="/images/Download_Icon.png"
-                            alt="Download"
-                            className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
-                            style={{ imageRendering: "pixelated" }}
-                            loading="lazy"
-                            decoding="async"
-                          />
-                        )}
-                      </button>
-                    ) : (
-                      <>
+                      {!isInstalled ? (
                         <button
                           data-row={i}
-                          data-col={2}
+                          data-col={1}
                           onMouseEnter={(e) => {
                             e.stopPropagation();
                             setFocusRow(i);
-                            setFocusCol(2);
+                            setFocusCol(1);
                           }}
                           onClick={(e) => {
                             e.stopPropagation();
-                            playClickSound();
-                            TauriService.openInstanceFolder(edition.id);
+                            if (!downloadingId) {
+                              playClickSound();
+                              toggleInstall(edition.id);
+                            }
                           }}
-                          className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
+                          className={`mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all ${downloadingId === edition.id ? "opacity-100" : downloadingId ? "opacity-50" : ""}`}
                           style={{
                             backgroundImage:
-                              isRowFocused && focusCol === 2
+                              isRowFocused && focusCol === 1
                                 ? "url('/images/Button_Square_Highlighted.png')"
                                 : "url('/images/Button_Square.png')",
                             backgroundSize: "100% 100%",
                             imageRendering: "pixelated",
                           }}
                         >
-                          <img
-                            src="/images/Folder_Icon.png"
-                            alt="Folder"
-                            className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
-                            style={{ imageRendering: "pixelated" }}
-                            loading="lazy"
-                            decoding="async"
-                          />
+                          {downloadingId === edition.id ? (
+                            <img
+                              src="/images/loading.gif"
+                              alt="Loading"
+                              className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
+                              style={{ imageRendering: "pixelated" }}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          ) : (
+                            <img
+                              src="/images/Download_Icon.png"
+                              alt="Download"
+                              className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
+                              style={{ imageRendering: "pixelated" }}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          )}
                         </button>
-                        <button
-                          data-row={i}
-                          data-col={3}
-                          onMouseEnter={(e) => {
-                            e.stopPropagation();
-                            setFocusRow(i);
-                            setFocusCol(3);
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playBackSound();
-                            onUninstall(edition.id);
-                          }}
-                          className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
-                          style={{
-                            backgroundImage:
-                              isRowFocused && focusCol === 3
-                                ? "url('/images/Button_Square_Highlighted.png')"
-                                : "url('/images/Button_Square.png')",
-                            backgroundSize: "100% 100%",
-                            imageRendering: "pixelated",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="square"
-                            className="text-white drop-shadow-md"
+                      ) : (
+                        <>
+                          <button
+                            data-row={i}
+                            data-col={2}
+                            onMouseEnter={(e) => {
+                              e.stopPropagation();
+                              setFocusRow(i);
+                              setFocusCol(2);
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playClickSound();
+                              TauriService.openInstanceFolder(edition.id);
+                            }}
+                            className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
+                            style={{
+                              backgroundImage:
+                                isRowFocused && focusCol === 2
+                                  ? "url('/images/Button_Square_Highlighted.png')"
+                                  : "url('/images/Button_Square.png')",
+                              backgroundSize: "100% 100%",
+                              imageRendering: "pixelated",
+                            }}
                           >
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                            <line x1="10" y1="11" x2="10" y2="17"></line>
-                            <line x1="14" y1="11" x2="14" y2="17"></line>
-                          </svg>
-                        </button>
-                      </>
-                    )}
-                    {isCustom && (
-                      <>
-                        <button
-                          data-row={i}
-                          data-col={isInstalled ? 4 : 2}
-                          onMouseEnter={(e) => {
-                            e.stopPropagation();
-                            setFocusRow(i);
-                            setFocusCol(isInstalled ? 4 : 2);
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playClickSound();
-                            setEditingEdition(edition);
-                            setIsImportModalOpen(true);
-                          }}
-                          className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
-                          style={{
-                            backgroundImage:
-                              isRowFocused && focusCol === (isInstalled ? 4 : 2)
-                                ? "url('/images/Button_Square_Highlighted.png')"
-                                : "url('/images/Button_Square.png')",
-                            backgroundSize: "100% 100%",
-                            imageRendering: "pixelated",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="18"
-                            height="18"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2.5"
-                            strokeLinecap="square"
-                            className="text-white drop-shadow-md"
+                            <img
+                              src="/images/Folder_Icon.png"
+                              alt="Folder"
+                              className="w-6 h-6 object-contain pointer-events-none drop-shadow-md"
+                              style={{ imageRendering: "pixelated" }}
+                              loading="lazy"
+                              decoding="async"
+                            />
+                          </button>
+                          <button
+                            data-row={i}
+                            data-col={3}
+                            onMouseEnter={(e) => {
+                              e.stopPropagation();
+                              setFocusRow(i);
+                              setFocusCol(3);
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playBackSound();
+                              onUninstall(edition.id);
+                            }}
+                            className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
+                            style={{
+                              backgroundImage:
+                                isRowFocused && focusCol === 3
+                                  ? "url('/images/Button_Square_Highlighted.png')"
+                                  : "url('/images/Button_Square.png')",
+                              backgroundSize: "100% 100%",
+                              imageRendering: "pixelated",
+                            }}
                           >
-                            <path d="M12 20h9"></path>
-                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
-                          </svg>
-                        </button>
-                        <button
-                          data-row={i}
-                          data-col={isInstalled ? 5 : 3}
-                          onMouseEnter={(e) => {
-                            e.stopPropagation();
-                            setFocusRow(i);
-                            setFocusCol(isInstalled ? 5 : 3);
-                          }}
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            playBackSound();
-                            onDeleteEdition(edition.id);
-                          }}
-                          className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
-                          style={{
-                            backgroundImage:
-                              isRowFocused && focusCol === (isInstalled ? 5 : 3)
-                                ? "url('/images/Button_Square_Highlighted.png')"
-                                : "url('/images/Button_Square.png')",
-                            backgroundSize: "100% 100%",
-                            imageRendering: "pixelated",
-                          }}
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="20"
-                            height="20"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                            strokeLinecap="square"
-                            className="text-red-500 drop-shadow-md"
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="square"
+                              className="text-white drop-shadow-md"
+                            >
+                              <polyline points="3 6 5 6 21 6"></polyline>
+                              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                              <line x1="10" y1="11" x2="10" y2="17"></line>
+                              <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                      {isCustom && (
+                        <>
+                          <button
+                            data-row={i}
+                            data-col={isInstalled ? 4 : 2}
+                            onMouseEnter={(e) => {
+                              e.stopPropagation();
+                              setFocusRow(i);
+                              setFocusCol(isInstalled ? 4 : 2);
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playClickSound();
+                              setEditingEdition(edition);
+                              setIsImportModalOpen(true);
+                            }}
+                            className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
+                            style={{
+                              backgroundImage:
+                                isRowFocused && focusCol === (isInstalled ? 4 : 2)
+                                  ? "url('/images/Button_Square_Highlighted.png')"
+                                  : "url('/images/Button_Square.png')",
+                              backgroundSize: "100% 100%",
+                              imageRendering: "pixelated",
+                            }}
                           >
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                          </svg>
-                        </button>
-                      </>
-                    )}
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="18"
+                              height="18"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2.5"
+                              strokeLinecap="square"
+                              className="text-white drop-shadow-md"
+                            >
+                              <path d="M12 20h9"></path>
+                              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                            </svg>
+                          </button>
+                          <button
+                            data-row={i}
+                            data-col={isInstalled ? 5 : 3}
+                            onMouseEnter={(e) => {
+                              e.stopPropagation();
+                              setFocusRow(i);
+                              setFocusCol(isInstalled ? 5 : 3);
+                            }}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              playBackSound();
+                              onDeleteEdition(edition.id);
+                            }}
+                            className="mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all"
+                            style={{
+                              backgroundImage:
+                                isRowFocused && focusCol === (isInstalled ? 5 : 3)
+                                  ? "url('/images/Button_Square_Highlighted.png')"
+                                  : "url('/images/Button_Square.png')",
+                              backgroundSize: "100% 100%",
+                              imageRendering: "pixelated",
+                            }}
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="20"
+                              height="20"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="3"
+                              strokeLinecap="square"
+                              className="text-red-500 drop-shadow-md"
+                            >
+                              <line x1="18" y1="6" x2="6" y2="18"></line>
+                              <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
