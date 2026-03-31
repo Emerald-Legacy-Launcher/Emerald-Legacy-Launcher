@@ -82,7 +82,7 @@ jobs:
       - name: Build and create DMG for macOS
         if: matrix.platform == 'macos-latest'
         run: |
-          npm run build
+          pnpm build
           cd src-tauri
           cargo build --release --target ${{ matrix.args }}
           cd ..
@@ -105,8 +105,8 @@ jobs:
           cd "src-tauri/target/$TARGET_ARCH/release/bundle/macos"
           hdiutil create -volname "Emerald Legacy Launcher" -srcfolder "Emerald Legacy Launcher.app" -ov -format UDZO "Emerald Legacy Launcher.dmg"
           
-          mkdir -p "src-tauri/target/release/bundle/dmg/"
-          mv "Emerald Legacy Launcher.dmg" "src-tauri/target/release/bundle/dmg/"
+          mkdir -p "$GITHUB_WORKSPACE/src-tauri/target/release/bundle/dmg/"
+          mv "Emerald Legacy Launcher.dmg" "$GITHUB_WORKSPACE/src-tauri/target/release/bundle/dmg/"
 
       - name: Build with tauri-action for Windows and Linux
         if: matrix.platform != 'macos-latest'
