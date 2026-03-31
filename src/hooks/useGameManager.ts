@@ -6,31 +6,64 @@ const appWindow = getCurrentWindow();
 
 const BASE_EDITIONS = [
   {
-    id: "legacy_evolved",
-    name: "Legacy Evolved",
-    desc: "Backporting the newer title updates back to the LCE",
-    url: "https://codeberg.org/piebot/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
-    titleImage: "/images/minecraft_title_LegacyEvolved.png",
-    githubUrl: "https://codeberg.org/piebot/LegacyEvolved",
-    creators: "piebot",
-  },
-  {
-    id: "vanilla_tu19",
-    name: "Title Update 19",
-    desc: "Leaked 4J Studios build. (smartcmd)",
-    url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
-    titleImage: "/images/minecraft_title_tu19.png",
-    githubUrl: "https://github.com/smartcmd/MinecraftConsoles",
-    creators: "smartcmd",
+    id: "revelations_edition",
+    name: "Revelations",
+    desc: "Enhanced LCE with uncapped FPS, graphics fixes, hardcore hearts, and dedicated server security. Features LAN multiplayer, split-screen, and keyboard & mouse support.",
+    url: "https://github.com/itsRevela/MinecraftConsoles/releases/download/Nightly/LCREWindows64.zip",
+    titleImage: "/images/minecraft_title_revelations.png",
+    credits: {
+      developer: "itsRevela",
+      platform: "github",
+      url: "https://github.com/itsRevela"
+    }
   },
   {
     id: "360revived",
     name: "360 Revived",
-    desc: "PC port of Xbox 360 Edition TU19",
+    desc: "PC port of Xbox 360 Edition TU19 with desktop optimizations. Features keyboard & mouse, fullscreen, LAN multiplayer, dedicated server, and split-screen support.",
     url: "https://github.com/BluTac10/360Revived/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_360revived.png",
-    githubUrl: "https://github.com/BluTac10/360Revived",
-    creators: "BluTac10",
+    credits: {
+      developer: "BluTac10",
+      platform: "github",
+      url: "https://github.com/BluTac10"
+    }
+  },
+  {
+    id: "legacy_evolved",
+    name: "Legacy Evolved",
+    desc: "Backports newer title updates to LCE TU19 base. Currently porting TU25 (98% complete) and TU31 (76% complete).",
+    url: "https://codeberg.org/piebot/LegacyEvolved/releases/download/nightly/LCEWindows64.zip",
+    titleImage: "/images/minecraft_title_LegacyEvolved.png",
+    credits: {
+      developer: "piebot",
+      platform: "codeberg",
+      url: "https://codeberg.org/piebot"
+    }
+  },
+  {
+    id: "vanilla_tu19",
+    name: "Title Update 19",
+    desc: "Minecraft LCE v1.6.0560.0 with compilation fixes. Base version for modding with keyboard & mouse, fullscreen, LAN multiplayer, and dedicated server support.",
+    url: "https://github.com/smartcmd/MinecraftConsoles/releases/download/nightly/LCEWindows64.zip",
+    titleImage: "/images/minecraft_title_tu19.png",
+    credits: {
+      developer: "smartcmd",
+      platform: "github",
+      url: "https://github.com/smartcmd"
+    }
+  },
+  {
+    id: "lmrp_placeholder",
+    name: "LMRP (Coming Soon)",
+    desc: "Legacy Minecraft Restoration Project - Classic mini-games and nostalgic gameplay. Stay tuned for updates!",
+    url: "",
+    titleImage: "/images/minecraft_title_lmrp.png",
+    credits: {
+      developer: "LMRP Team",
+      platform: "github",
+      url: "https://github.com/LMRP-Project"
+    }
   },
 ];
 

@@ -38,28 +38,42 @@ const VersionsView = memo(function VersionsView() {
           const edition = editions[focusRow];
           const isInstalled = installedVersions.includes(edition.id);
           const isCustom = edition.id.startsWith("custom_");
-          const hasGithub = !isCustom && edition.githubUrl;
+          const hasCredits = !isCustom && edition.credits;
 
-          let maxCol = 0;
-          if (hasGithub) maxCol = Math.max(maxCol, 0);
-          if (!isInstalled) maxCol = Math.max(maxCol, 1);
-          if (isInstalled) maxCol = Math.max(maxCol, 3);
-          if (isCustom) maxCol = isInstalled ? 5 : 2;
+          let maxCol = 1;
+          if (isInstalled) maxCol = 3;
+          if (isCustom) maxCol = isInstalled ? 5 : 3;
+          if (hasCredits) maxCol = Math.max(maxCol, 0); // credits button is at col -1
 
           setFocusCol((prev) => (prev < maxCol ? prev + 1 : prev));
         }
       } else if (e.key === "ArrowLeft") {
-        setFocusCol((prev) => (prev > 0 ? prev - 1 : prev));
+        if (focusRow < editions.length) {
+          const edition = editions[focusRow];
+          const isCustom = edition.id.startsWith("custom_");
+          const hasCredits = !isCustom && edition.credits;
+          
+          if (hasCredits && focusCol > -1) {
+            setFocusCol(-1);
+          } else if (focusCol > 0) {
+            setFocusCol((prev) => prev - 1);
+          }
+        } else {
+          setFocusCol((prev) => (prev > 0 ? prev - 1 : prev));
+        }
       } else if (e.key === "Enter") {
         if (focusRow < editions.length) {
           const edition = editions[focusRow];
           const isInstalled = installedVersions.includes(edition.id);
           const isCustom = edition.id.startsWith("custom_");
-          const hasGithub = !isCustom && edition.githubUrl;
+          const hasCredits = !isCustom && edition.credits;
 
-          if (focusCol === 0 && hasGithub) {
-            playClickSound();
-            TauriService.openUrl(edition.githubUrl);
+          if (focusCol === -1) {
+            // Credits button
+            if (edition.credits) {
+              playClickSound();
+              window.open(edition.credits.url, '_blank');
+            }
           } else if (focusCol === 1) {
             if (!downloadingId) {
               playClickSound();
@@ -145,27 +159,30 @@ const VersionsView = memo(function VersionsView() {
               const isSelected = selectedProfile === edition.id;
               const isRowFocused = focusRow === i;
               const isCustom = edition.id.startsWith("custom_");
+              const isPlaceholder = edition.id === "lmrp_placeholder";
 
               return (
                 <div
                   key={edition.id}
-                  className={`w-full p-4 flex items-center transition-all border-none outline-none overflow-hidden relative ${isSelected ? 'bg-[#FFFF55]/20 border-2 border-[#FFFF55]' :
-                    isRowFocused ? 'bg-white/10 border-2 border-white/50' :
-                      'bg-white/5 border-2 border-transparent hover:bg-white/10'
+                  className={`w-full p-4 flex items-center transition-all border-none outline-none overflow-hidden relative ${isPlaceholder ? 'bg-gray-800/50 border-2 border-gray-600 opacity-50' : isSelected ? 'bg-[#50C878]/20 border-2 border-[#50C878]' :
+                    isRowFocused ? 'bg-white/5 border-2 border-white/50' :
+                      'bg-black/30 border-2 border-transparent hover:bg-white/5'
                     }`}
                   onMouseEnter={() => {
-                    setFocusRow(i);
-                    setFocusCol(0);
+                    if (!isPlaceholder) {
+                      setFocusRow(i);
+                      setFocusCol(0);
+                    }
                   }}
                   onClick={() => {
-                    if (isInstalled) {
+                    if (!isPlaceholder && isInstalled) {
                       playClickSound();
                       setSelectedProfile(edition.id);
                     }
                   }}
                   style={{
                     backdropFilter: 'blur(4px)',
-                    cursor: isInstalled ? 'pointer' : 'default',
+                    cursor: isPlaceholder ? 'not-allowed' : isInstalled ? 'pointer' : 'default',
                     imageRendering: 'pixelated',
                     borderRadius: '0'
                   }}
@@ -173,25 +190,57 @@ const VersionsView = memo(function VersionsView() {
                   <div className="flex flex-col flex-1">
                     <div className="flex items-center gap-3 mb-1">
                       <span
-                        className={`text-xl mc-text-shadow ${isSelected ? "text-[#FFFF55]" : "text-white"}`}
+                        className={`text-xl mc-text-shadow ${isSelected ? "text-[#50C878]" : "text-white"}`}
                         style={{ imageRendering: 'pixelated' }}
                       >
                         {edition.name}
                       </span>
                       {isCustom && (
                         <span
-                          className="text-[10px] bg-[#FFFF55] text-black px-1 font-bold uppercase mc-text-shadow-none"
+                          className="text-[10px] bg-[#50C878] text-black px-1 font-bold uppercase mc-text-shadow-none"
                           style={{ imageRendering: 'pixelated' }}
                         >
                           Custom
                         </span>
                       )}
-                      {!isCustom && edition.creators && (
+                      {edition.id === "revelations_edition" && (
+                        <>
+                          <span
+                            className="text-[10px] bg-[#50C878] text-white px-1 font-bold uppercase mc-text-shadow-none"
+                            style={{ imageRendering: 'pixelated' }}
+                          >
+                            New
+                          </span>
+                          <span
+                            className="text-[10px] bg-[#FFD700] text-black px-1 font-bold uppercase mc-text-shadow-none"
+                            style={{ imageRendering: 'pixelated' }}
+                          >
+                            Recommended
+                          </span>
+                        </>
+                      )}
+                      {edition.id === "360revived" && (
+                        <span
+                          className="text-[10px] bg-[#50C878] text-white px-1 font-bold uppercase mc-text-shadow-none"
+                          style={{ imageRendering: 'pixelated' }}
+                        >
+                          New
+                        </span>
+                      )}
+                      {edition.id === "lmrp_placeholder" && (
+                        <span
+                          className="text-[10px] bg-gray-500 text-white px-1 font-bold uppercase mc-text-shadow-none"
+                          style={{ imageRendering: 'pixelated' }}
+                        >
+                          Coming Soon
+                        </span>
+                      )}
+                      {!isCustom && edition.credits && (
                         <span
                           className="text-xs text-[#B0B0B0] mc-text-shadow"
                           style={{ imageRendering: 'pixelated' }}
                         >
-                          by {edition.creators}
+                          by {edition.credits.developer}
                         </span>
                       )}
                     </div>
@@ -201,56 +250,62 @@ const VersionsView = memo(function VersionsView() {
                     >
                       {edition.desc}
                     </div>
-                    {isInstalled && !isSelected && (
-                      <div
-                        className="text-xs text-[#90EE90] mc-text-shadow mt-1 font-medium"
-                        style={{ imageRendering: 'pixelated' }}
-                      >
-                        ✓ Installed - Click to select
-                      </div>
-                    )}
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    {!isCustom && edition.githubUrl && (
+                  {!isPlaceholder && (
+                    <div className="flex items-center gap-2">
+                    {!isCustom && edition.credits && (
                       <button
                         data-row={i}
-                        data-col={0}
+                        data-col={-1}
                         onMouseEnter={(e) => {
                           e.stopPropagation();
                           setFocusRow(i);
-                          setFocusCol(0);
+                          setFocusCol(-1);
                         }}
                         onClick={(e) => {
                           e.stopPropagation();
                           playClickSound();
-                          TauriService.openUrl(edition.githubUrl);
+                          window.open(edition.credits.url, '_blank');
                         }}
                         className={`mc-sq-btn w-8 h-8 flex items-center justify-center outline-none border-none transition-all`}
                         style={{
                           backgroundImage:
-                            isRowFocused && focusCol === 0
+                            isRowFocused && focusCol === -1
                               ? "url('/images/Button_Square_Highlighted.png')"
                               : "url('/images/Button_Square.png')",
                           backgroundSize: "100% 100%",
                           imageRendering: "pixelated",
                         }}
-                        title={edition.githubUrl.includes('codeberg.org') ? "View on Codeberg" : "View on GitHub"}
+                        title={`Credits: ${edition.credits.developer} (${edition.credits.platform})`}
                       >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="16"
-                          height="16"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-white drop-shadow-md"
-                        >
-                          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
-                        </svg>
+                        {edition.credits?.platform === "codeberg" ? (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="currentColor"
+                            className="text-white drop-shadow-md"
+                          >
+                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                          </svg>
+                        ) : (
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="16"
+                            height="16"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="text-white drop-shadow-md"
+                          >
+                            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                          </svg>
+                        )}
                       </button>
                     )}
 
@@ -457,7 +512,8 @@ const VersionsView = memo(function VersionsView() {
                         </button>
                       </>
                     )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -477,7 +533,7 @@ const VersionsView = memo(function VersionsView() {
             playClickSound();
             setIsImportModalOpen(true);
           }}
-          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length ? "text-[#FFFF55]" : "text-white"}`}
+          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length ? "text-[#50C878]" : "text-white"}`}
           style={{
             backgroundImage:
               focusRow === editions.length
@@ -501,7 +557,7 @@ const VersionsView = memo(function VersionsView() {
             playBackSound();
             setActiveView("main");
           }}
-          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length + 1 ? "text-[#FFFF55]" : "text-white"}`}
+          className={`w-72 h-14 flex items-center justify-center transition-colors text-2xl mc-text-shadow outline-none border-none ${focusRow === editions.length + 1 ? "text-[#50C878]" : "text-white"}`}
           style={{
             backgroundImage:
               focusRow === editions.length + 1
