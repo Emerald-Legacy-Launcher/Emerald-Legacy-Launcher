@@ -200,6 +200,8 @@ jobs:
     needs: nightly-tauri
     steps:
       - uses: actions/checkout@v4
+        with:
+          submodules: recursive
 
       - name: install dependencies
         run: |
@@ -215,7 +217,7 @@ jobs:
       - name: setup flatpak
         uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
-          bundle: com.emerald.legacy.Launcher.flatpak
+          bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
           manifest-path: flatpak/io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.yml
           cache-key: flatpak-builder-${{ github.sha }}
           build-bundle: true
@@ -237,7 +239,7 @@ jobs:
             - `Emerald Legacy Launcher*.dmg` for macOS (Intel + M-series)
             - `Emerald.Legacy.Launcher-*.exe` for Windows (Setup)
             - `Emerald.Legacy.Launcher-*.msi` for Windows (Setup)
-            - `com.emerald.legacy.Launcher.flatpak` for GNU/Linux (Flatpak)
+            - `io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak` for GNU/Linux (Flatpak)
             ---
             # Windows SmartScreen
             This software is completely safe. Because the launcher is unsigned, you will see a "Windows protected your PC" window. To proceed:
