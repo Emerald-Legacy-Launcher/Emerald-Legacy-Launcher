@@ -260,6 +260,7 @@ jobs:
       - name: setup flathub
         run: |
           sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub org.gnome.Sdk//48 org.gnome.Platform//48 org.freedesktop.Sdk.Extension.node20//24.08 org.freedesktop.Sdk.Extension.rust-stable//24.08
           sudo flatpak update
 
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
