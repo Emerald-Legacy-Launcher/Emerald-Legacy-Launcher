@@ -17,7 +17,7 @@ const BASE_EDITIONS = [
     name: "Legacy Revelations",
     desc: "Hardcore, QoL, and a lot of patches for LCE.",
     url: "https://github.com/itsRevela/MinecraftConsoles/releases/download/Nightly/LCREWindows64.zip",
-    titleImage: "/images/minecraft_title_tu19"
+    titleImage: "/images/minecraft_title_tu19.png"
   },
   {
     id: "vanilla_tu19",
