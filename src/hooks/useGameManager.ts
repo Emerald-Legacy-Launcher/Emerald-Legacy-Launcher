@@ -13,6 +13,13 @@ const BASE_EDITIONS = [
     titleImage: "/images/minecraft_title_LegacyEvolved.png",
   },
   {
+    id: "revelations",
+    name: "Legacy Revelations",
+    desc: "Hardcore, QoL, and a lot of patches for LCE.",
+    url: "https://github.com/itsRevela/MinecraftConsoles/releases/download/Nightly/LCREWindows64.zip",
+    titleImage: "/images/minecraft_title_tu19"
+  },
+  {
     id: "vanilla_tu19",
     name: "Title Update 19",
     desc: "Leaked 4J Studios build. (smartcmd)",
@@ -21,7 +28,7 @@ const BASE_EDITIONS = [
   },
   {
     id: "360revived",
-    name: "360 Revived",
+    name: "360Revived",
     desc: "PC port of Xbox 360 Edition TU19",
     url: "https://github.com/BluTac10/360Revived/releases/download/nightly/LCEWindows64.zip",
     titleImage: "/images/minecraft_title_360revived.png",
