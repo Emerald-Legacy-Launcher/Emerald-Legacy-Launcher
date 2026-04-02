@@ -190,7 +190,7 @@ const VersionsView = memo(function VersionsView() {
                         </span>
                       )}
                     </div>
-                    <span className="text-base text-[#E0E0E0] mc-text-shadow truncate w-full">
+                    <span className="inline-block max-w-[450px] break-words text-base text-[#E0E0E0] mc-text-shadow w-full">
                       {edition.desc}
                     </span>
                   </div>
