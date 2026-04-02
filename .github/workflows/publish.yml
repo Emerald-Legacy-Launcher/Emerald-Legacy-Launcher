@@ -120,7 +120,7 @@ jobs:
         with:
           submodules: true
       - name: sleep for 10 seconds
-      - run: sleep 10
+        run: sleep 10
       - uses: flatpak/flatpak-github-actions/flatpak-builder@v6
         with:
           bundle: io.github.Emerald_Legacy_Launcher.Emerald_Legacy_Launcher.flatpak
