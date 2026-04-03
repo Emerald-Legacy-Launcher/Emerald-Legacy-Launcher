@@ -8,12 +8,11 @@ fn main() {
         use std::process::{Command, Stdio, exit};
         use std::io::{BufReader, BufRead};
         use std::thread;
-
         let stage = env::var("EMERALD_LAUNCH_STAGE").unwrap_or_else(|_| "0".to_string());
-
         if stage == "0" {
             let mut child = Command::new(env::current_exe().unwrap())
                 .env("EMERALD_LAUNCH_STAGE", "1")
+                .env("LD_PRELOAD", "LD_PRELOAD=/usr/lib64/libwayland-client.so.0") //neo: hacky way to fix appimage on systems like gentoo
                 .stdout(Stdio::piped())
                 .stderr(Stdio::piped())
                 .spawn()
@@ -22,7 +21,6 @@ fn main() {
             let stdout = child.stdout.take().expect("failed to take stdout");
             let stderr = child.stderr.take().expect("failed to take stderr");
             let child_id = child.id();
-
             fn check_line(l: &str) -> bool {
                 let low = l.to_lowercase();
                 (low.contains("gbm") && low.contains("buffer")) || 
@@ -76,6 +74,7 @@ fn main() {
                     .env("EMERALD_LAUNCH_STAGE", "2")
                     .env("WEBKIT_DISABLE_DMABUF_RENDERER", "1")
                     .env("WEBKIT_DISABLE_COMPOSITING_MODE", "1")
+                    .env("LD_PRELOAD", "LD_PRELOAD=/usr/lib64/libwayland-client.so.0") //neo: hacky way to fix appimage on systems like gentoo
                     .spawn()
                     .expect("failed to spawn fallback child process");
 
