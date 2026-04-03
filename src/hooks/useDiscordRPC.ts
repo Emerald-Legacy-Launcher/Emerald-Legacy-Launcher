@@ -30,24 +30,28 @@ export function useDiscordRPC({
     const updateRPC = async () => {
       if (!rpcEnabled || showIntro || !username) return;
 
-      if (!isWindowVisible && !isGameRunning && downloadProgress === null) return;
+      if (!isWindowVisible && !isGameRunning && downloadProgress === null)
+        return;
 
       const version = editions.find((e) => e.id === profile);
       const versionName = version ? version.name : "Unknown Version";
       let details = "In Menus";
-      let state = isGameRunning ? `Playing as ${username}` : `Logged in as ${username}`;
+      let state = isGameRunning
+        ? `Playing as ${username}`
+        : `Logged in as ${username}`;
 
       if (isGameRunning) {
         details = `Playing ${versionName}`;
       } else if (downloadProgress !== null) {
-        const downloadingName = editions.find((e) => e.id === downloadingId)?.name || "Game Files";
+        const downloadingName =
+          editions.find((e) => e.id === downloadingId)?.name || "Game Files";
         details = `Downloading ${downloadingName} (${downloadProgress.toFixed(0)}%)`;
       } else {
         const tabNames: Record<string, string> = {
           main: "Main Menu",
           versions: "Selecting Version",
           settings: "In Settings",
-          themes: "Browsing Themes",
+          devtools: "Developing for LCE",
           skins: "Browsing Skins",
           workshop: "Browsing Workshop",
         };
@@ -58,5 +62,16 @@ export function useDiscordRPC({
     };
 
     updateRPC();
-  }, [rpcEnabled, showIntro, username, profile, activeView, isGameRunning, isWindowVisible, Math.floor(downloadProgress || 0), downloadingId, editions]);
+  }, [
+    rpcEnabled,
+    showIntro,
+    username,
+    profile,
+    activeView,
+    isGameRunning,
+    isWindowVisible,
+    Math.floor(downloadProgress || 0),
+    downloadingId,
+    editions,
+  ]);
 }

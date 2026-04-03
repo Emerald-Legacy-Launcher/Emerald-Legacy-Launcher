@@ -3,7 +3,7 @@ import { motion, AnimatePresence, MotionConfig } from "framer-motion";
 import HomeView from "../components/views/HomeView";
 import SettingsView from "../components/views/SettingsView";
 import VersionsView from "../components/views/VersionsView";
-import ThemesView from "../components/views/ThemesView";
+import DevtoolsView from "../components/views/DevtoolsView";
 import SkinsView from "../components/views/SkinsView";
 import WorkshopView from "../components/views/WorkshopView";
 import SetupView from "../components/views/SetupView";
@@ -14,7 +14,13 @@ import { ClickParticles } from "../components/common/ClickParticles";
 import { AppHeader } from "../components/layout/AppHeader";
 import { DownloadOverlay } from "../components/layout/DownloadOverlay";
 import { AchievementToast } from "../components/common/AchievementToast";
-import { useUI, useConfig, useAudio, useGame, useSkin } from "../context/LauncherContext";
+import {
+  useUI,
+  useConfig,
+  useAudio,
+  useGame,
+  useSkin,
+} from "../context/LauncherContext";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { TauriService } from "../services/TauriService";
 import pkg from "../../package.json";
@@ -22,10 +28,20 @@ const appWindow = getCurrentWindow();
 
 export default function App() {
   const {
-    showIntro, setShowIntro, logoAnimDone, setLogoAnimDone,
-    activeView, setActiveView, isUiHidden, setIsUiHidden,
-    showCredits, setShowCredits, focusSection,
-    onNavigateToMenu, updateMessage, clearUpdateMessage
+    showIntro,
+    setShowIntro,
+    logoAnimDone,
+    setLogoAnimDone,
+    activeView,
+    setActiveView,
+    isUiHidden,
+    setIsUiHidden,
+    showCredits,
+    setShowCredits,
+    focusSection,
+    onNavigateToMenu,
+    updateMessage,
+    clearUpdateMessage,
   } = useUI();
 
   const config = useConfig();
@@ -40,30 +56,25 @@ export default function App() {
     setDisplayIsDay(config.isDayTime);
   }, [config.isDayTime]);
 
-  const selectedEdition = game.editions.find((e: any) => e.id === config.profile);
+  const selectedEdition = game.editions.find(
+    (e: any) => e.id === config.profile,
+  );
   const selectedVersionName = selectedEdition?.name || "";
 
   const titleImage = selectedEdition?.titleImage || "/images/MenuTitle.png";
 
   useEffect(() => {
     if (config.isLoaded) {
-      // Check localStorage directly to ensure accurate setup state
-      const setupCompleted = localStorage.getItem('lce-setup-completed') === 'true';
+      const setupCompleted =
+        localStorage.getItem("lce-setup-completed") === "true";
       setShowSetup(!setupCompleted);
     }
   }, [config.isLoaded]);
 
   useEffect(() => {
     appWindow.show();
-    // Only start intro timing if setup is not shown
-    if (!showSetup) {
-      setTimeout(() => setShowIntro(false), 2400);
-      setTimeout(() => setLogoAnimDone(true), 3400);
-    } else if (showSetup) {
-      // Skip intro entirely if setup is shown
-      setShowIntro(false);
-      setLogoAnimDone(true);
-    }
+    setTimeout(() => setShowIntro(false), 2400);
+    setTimeout(() => setLogoAnimDone(true), 3400);
   }, [showSetup]);
 
   useEffect(() => {
@@ -76,21 +87,21 @@ export default function App() {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: config.animationsEnabled ? 0.5 : 0 }
+    transition: { duration: config.animationsEnabled ? 0.5 : 0 },
   };
 
   const backgroundFade = {
     initial: { opacity: 0 },
     animate: { opacity: 1 },
     exit: { opacity: 0 },
-    transition: { duration: config.animationsEnabled ? 0.8 : 0 }
+    transition: { duration: config.animationsEnabled ? 0.8 : 0 },
   };
 
   return (
     <MotionConfig transition={config.animationsEnabled ? {} : { duration: 0 }}>
       <div
         data-tauri-drag-region
-        className={`w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none ${!config.animationsEnabled ? 'no-animations' : ''}`}
+        className={`w-screen h-screen overflow-hidden select-none flex flex-col relative bg-black text-white font-['Mojangles'] outline-none focus:outline-none ${!config.animationsEnabled ? "no-animations" : ""}`}
       >
         <style>{`
         @keyframes splashPulse { 0% { transform: scale(0.95) rotate(-20deg); } 100% { transform: scale(1.08) rotate(-20deg); } }
@@ -106,11 +117,14 @@ export default function App() {
         <div className="absolute inset-0">
           <AnimatePresence>
             <motion.div
-              key={displayIsDay ? 'day' : 'night'}
+              key={displayIsDay ? "day" : "night"}
               className="absolute inset-0"
               {...backgroundFade}
             >
-              <PanoramaBackground profile={config.profile} isDay={displayIsDay} />
+              <PanoramaBackground
+                profile={config.profile}
+                isDay={displayIsDay}
+              />
             </motion.div>
           </AnimatePresence>
         </div>
@@ -143,7 +157,9 @@ export default function App() {
         <AchievementToast
           message={updateMessage}
           onClose={clearUpdateMessage}
-          onClick={() => TauriService.openUrl("https://emerald-legacy-launcher.github.io/")}
+          onClick={() =>
+            TauriService.openUrl("https://emerald-legacy-launcher.github.io/")
+          }
           title="Update Available!"
           variant="update"
         />
@@ -181,7 +197,12 @@ export default function App() {
               className="flex flex-col h-full z-10 w-full relative"
             >
               <AnimatePresence>
-                {logoAnimDone && <AppHeader playClickSound={audio.playClickSound} uiFade={uiFade} />}
+                {logoAnimDone && (
+                  <AppHeader
+                    playClickSound={audio.playClickSound}
+                    uiFade={uiFade}
+                  />
+                )}
               </AnimatePresence>
 
               <AnimatePresence>
@@ -201,7 +222,11 @@ export default function App() {
                           className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
                         >
                           <img
-                            src={isUiHidden ? "/images/Unhide_UI_Button.png" : "/images/Hide_UI_Button.png"}
+                            src={
+                              isUiHidden
+                                ? "/images/Unhide_UI_Button.png"
+                                : "/images/Hide_UI_Button.png"
+                            }
                             className="w-10 h-10 cursor-pointer object-contain"
                             style={{ imageRendering: "pixelated" }}
                           />
@@ -226,7 +251,11 @@ export default function App() {
                           className="hover:scale-110 active:scale-95 transition-transform outline-none bg-transparent border-none"
                         >
                           <img
-                            src={displayIsDay ? "/images/Day_Toggle.png" : "/images/Night_Toggle.png"}
+                            src={
+                              displayIsDay
+                                ? "/images/Day_Toggle.png"
+                                : "/images/Night_Toggle.png"
+                            }
                             alt="Toggle Time"
                             className="w-12 h-12 cursor-pointer block object-contain"
                             style={{ imageRendering: "pixelated" }}
@@ -273,15 +302,16 @@ export default function App() {
                               : audio.splashes[audio.splashIndex]}
                           </div>
                         </motion.div>
-                        {activeView === "main" && titleImage === "/images/MenuTitle.png" && (
-                          <motion.div
-                            key="tu-subtitle"
-                            {...uiFade}
-                            className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
-                          >
-                            {selectedVersionName}
-                          </motion.div>
-                        )}
+                        {activeView === "main" &&
+                          titleImage === "/images/MenuTitle.png" && (
+                            <motion.div
+                              key="tu-subtitle"
+                              {...uiFade}
+                              className="absolute -bottom-6 text-[#A0A0A0] text-sm mc-text-shadow tracking-widest uppercase opacity-80 font-['Mojangles']"
+                            >
+                              {selectedVersionName}
+                            </motion.div>
+                          )}
                       </>
                     )}
                   </AnimatePresence>
@@ -310,9 +340,7 @@ export default function App() {
 
                   <div className="w-full max-w-4xl relative flex justify-center items-center">
                     <AnimatePresence mode="wait">
-                      {activeView === "main" && (
-                        <HomeView key="main-view" />
-                      )}
+                      {activeView === "main" && <HomeView key="main-view" />}
                       {activeView === "settings" && (
                         <SettingsView key="settings-view" />
                       )}
@@ -322,12 +350,10 @@ export default function App() {
                       {activeView === "workshop" && (
                         <WorkshopView key="workshop-view" />
                       )}
-                      {activeView === "themes" && (
-                        <ThemesView key="themes-view" />
+                      {activeView === "devtools" && (
+                        <DevtoolsView key="devtools-view" />
                       )}
-                      {activeView === "skins" && (
-                        <SkinsView key="skins-view" />
-                      )}
+                      {activeView === "skins" && <SkinsView key="skins-view" />}
                     </AnimatePresence>
                   </div>
                 </div>
@@ -341,9 +367,12 @@ export default function App() {
                     className="shrink-0 p-4 flex justify-between items-end text-[10px] text-[#A0A0A0] mc-text-shadow bg-gradient-to-t from-black/80 to-transparent uppercase tracking-widest opacity-60 font-['Mojangles']"
                     style={{ fontWeight: "normal" }}
                   >
-                    <div className="flex-1 text-left whitespace-nowrap">Version: {pkg.version}</div>
+                    <div className="flex-1 text-left whitespace-nowrap">
+                      Version: {pkg.version}
+                    </div>
                     <div className="flex-[2] text-center whitespace-nowrap">
-                      Not affiliated with Mojang AB or Microsoft. "Minecraft" is a trademark of Mojang Synergies AB.
+                      Not affiliated with Mojang AB or Microsoft. "Minecraft" is
+                      a trademark of Mojang Synergies AB.
                     </div>
                     <div className="flex-1 text-right whitespace-nowrap">
                       {useUI().connected && "CONTROLLER CONNECTED"}

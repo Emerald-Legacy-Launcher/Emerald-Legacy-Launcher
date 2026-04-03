@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 
 export interface McServer {
   name: string;
@@ -50,7 +50,7 @@ export interface Runner {
   id: string;
   name: string;
   path: string;
-  type: 'wine' | 'proton';
+  type: "wine" | "proton";
 }
 
 export interface MacOSSetupProgress {
@@ -61,113 +61,114 @@ export interface MacOSSetupProgress {
 
 export class TauriService {
   static async saveConfig(config: AppConfig): Promise<void> {
-    return invoke('save_config', { config });
+    return invoke("save_config", { config });
   }
 
   static async loadConfig(): Promise<AppConfig> {
-    return invoke('load_config');
+    return invoke("load_config");
   }
 
   static async getExternalPalettes(): Promise<ThemePalette[]> {
-    return invoke('get_external_palettes');
+    return invoke("get_external_palettes");
   }
 
   static async importTheme(): Promise<string> {
-    return invoke('import_theme');
+    return invoke("import_theme");
   }
 
   static async getAvailableRunners(): Promise<Runner[]> {
-    return invoke('get_available_runners');
+    return invoke("get_available_runners");
   }
 
   static async downloadRunner(name: string, url: string): Promise<string> {
-    return invoke('download_runner', { name, url });
+    return invoke("download_runner", { name, url });
   }
 
   static async checkGameInstalled(instanceId: string): Promise<boolean> {
-    return invoke('check_game_installed', { instanceId });
+    return invoke("check_game_installed", { instanceId });
   }
 
   static async openInstanceFolder(instanceId: string): Promise<void> {
-    return invoke('open_instance_folder', { instanceId });
+    return invoke("open_instance_folder", { instanceId });
   }
 
   static async deleteInstance(instanceId: string): Promise<void> {
-    return invoke('delete_instance', { instanceId });
+    return invoke("delete_instance", { instanceId });
   }
 
   static async cancelDownload(): Promise<void> {
-    return invoke('cancel_download');
+    return invoke("cancel_download");
   }
 
   static async setupMacosRuntime(): Promise<void> {
-    return invoke('setup_macos_runtime');
+    return invoke("setup_macos_runtime");
   }
 
-  static async downloadAndInstall(url: string, instanceId: string): Promise<string> {
-    return invoke('download_and_install', { url, instanceId });
+  static async downloadAndInstall(
+    url: string,
+    instanceId: string,
+  ): Promise<string> {
+    return invoke("download_and_install", { url, instanceId });
   }
 
-  static async launchGame(instanceId: string, servers: McServer[]): Promise<void> {
-    return invoke('launch_game', { instanceId, servers });
+  static async launchGame(
+    instanceId: string,
+    servers: McServer[],
+  ): Promise<void> {
+    return invoke("launch_game", { instanceId, servers });
   }
 
   static async stopGame(instanceId: string): Promise<void> {
-    return invoke('stop_game', { instanceId });
+    return invoke("stop_game", { instanceId });
   }
 
   static async syncDlc(instanceId: string): Promise<void> {
-    return invoke('sync_dlc', { instanceId });
+    return invoke("sync_dlc", { instanceId });
   }
 
   static async updateTrayIcon(visible: boolean): Promise<void> {
-    return invoke('update_tray_icon', { visible });
+    return invoke("update_tray_icon", { visible });
   }
 
   static onDownloadProgress(callback: (percent: number) => void) {
-    return listen<number>('download-progress', (event) => callback(event.payload));
+    return listen<number>("download-progress", (event) =>
+      callback(event.payload),
+    );
   }
 
   static onRunnerDownloadProgress(callback: (percent: number) => void) {
-    return listen<number>('runner-download-progress', (event) => callback(event.payload));
+    return listen<number>("runner-download-progress", (event) =>
+      callback(event.payload),
+    );
   }
 
   static onMacosProgress(callback: (payload: MacOSSetupProgress) => void) {
-    return listen<MacOSSetupProgress>('macos-setup-progress', (event) => callback(event.payload));
+    return listen<MacOSSetupProgress>("macos-setup-progress", (event) =>
+      callback(event.payload),
+    );
   }
 
   static async openUrl(url: string): Promise<void> {
-    return invoke('plugin:opener|open_url', { url });
+    return invoke("plugin:opener|open_url", { url });
   }
 
   static async restartLauncher(): Promise<void> {
-    return invoke('restart_launcher');
+    return invoke("restart_launcher");
   }
 
   static async checkMacOSRuntimeInstalled(): Promise<boolean> {
-    return invoke('check_macos_runtime_installed');
+    return invoke("check_macos_runtime_installed");
   }
 
   static async checkMacOSRuntimeInstalledFast(): Promise<boolean> {
-    return invoke('check_macos_runtime_installed_fast');
+    return invoke("check_macos_runtime_installed_fast");
   }
 
   static async setupMacOSRuntimeOptimized(): Promise<void> {
-    return invoke('setup_macos_runtime_optimized');
+    return invoke("setup_macos_runtime_optimized");
   }
 
   static async fetchSkin(username: string): Promise<[string, string]> {
-    return invoke('fetch_skin', { username });
-  }
-
-  static async pathExists(_path: string): Promise<boolean> {
-    // Simple web implementation using fetch to check if path exists
-    try {
-      // This is a simplified check - in a real implementation you'd use the Tauri API
-      // For now, we'll just check common paths via heuristics
-      return false; // Placeholder - will be implemented properly if needed
-    } catch {
-      return false;
-    }
+    return invoke("fetch_skin", { username });
   }
 }

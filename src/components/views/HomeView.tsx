@@ -1,12 +1,26 @@
 import { useState, useEffect, useMemo, memo } from "react";
 import { motion } from "framer-motion";
-import { useUI, useConfig, useAudio, useGame } from "../../context/LauncherContext";
+import {
+  useUI,
+  useConfig,
+  useAudio,
+  useGame,
+} from "../../context/LauncherContext";
 
 const HomeView = memo(function HomeView() {
-  const { setActiveView, setShowCredits, focusSection, onNavigateToSkin } = useUI();
+  const { setActiveView, setShowCredits, focusSection, onNavigateToSkin } =
+    useUI();
   const { profile, legacyMode } = useConfig();
   const { playClickSound, playSfx } = useAudio();
-  const { handleLaunch, isGameRunning, editions, installs, toggleInstall, downloadProgress, downloadingId } = useGame();
+  const {
+    handleLaunch,
+    isGameRunning,
+    editions,
+    installs,
+    toggleInstall,
+    downloadProgress,
+    downloadingId,
+  } = useGame();
 
   const isFocusedSection = focusSection === "menu";
   const selectedEdition = editions.find((e: any) => e.id === profile);
@@ -32,7 +46,7 @@ const HomeView = memo(function HomeView() {
       { label: "Help & Options", action: () => setActiveView("settings") },
       { label: "Versions", action: () => setActiveView("versions") },
       { label: "Workshop", action: () => setActiveView("workshop") },
-      { label: "Themes & Tools", action: () => setActiveView("themes") },
+      { label: "Developer Tools", action: () => setActiveView("devtools") },
     ],
     [
       isGameRunning,

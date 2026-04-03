@@ -13,8 +13,8 @@ export function AchievementToast({
   message,
   onClose,
   onClick,
-  title = "Error Get!",
-  variant = "error"
+  title = "Error!",
+  variant = "error",
 }: AchievementToastProps) {
   useEffect(() => {
     if (message) {
@@ -69,10 +69,14 @@ export function AchievementToast({
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: 400, opacity: 0 }}
           transition={{ type: "spring", damping: 20, stiffness: 100 }}
-          onClick={onClick ? () => {
-            onClick();
-            onClose();
-          } : undefined}
+          onClick={
+            onClick
+              ? () => {
+                  onClick();
+                  onClose();
+                }
+              : undefined
+          }
           className={`fixed top-6 right-6 z-[9999] ${onClick ? "cursor-pointer" : ""}`}
         >
           <div
