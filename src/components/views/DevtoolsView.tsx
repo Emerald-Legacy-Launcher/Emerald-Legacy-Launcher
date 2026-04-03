@@ -2,12 +2,10 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { TauriService } from "../../services/TauriService";
 import { useUI, useAudio, useConfig } from "../../context/LauncherContext";
-export default function DevtoolsView({
-  playClickSound,
-  playBackSound,
-  setActiveView,
-}: any) {
+export default function DevtoolsView() {
+  const { setActiveView } = useUI();
   const [backHover, setBackHover] = useState(false);
+  const { playBackSound, playClickSound } = useAudio();
   const [focusIndex, setFocusIndex] = useState<number | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
