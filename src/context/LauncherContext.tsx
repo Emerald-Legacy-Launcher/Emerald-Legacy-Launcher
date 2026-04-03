@@ -47,7 +47,6 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
   const { updateMessage, clearUpdateMessage } = useUpdateCheck();
 
   const configRaw = useAppConfig();
-  const skinSync = useSkinSync();
   const gameRaw = useGameManager({
     profile: configRaw.profile,
     setProfile: configRaw.setProfile,
@@ -55,6 +54,7 @@ export function LauncherProvider({ children }: { children: React.ReactNode }) {
     setCustomEditions: configRaw.setCustomEditions,
     keepLauncherOpen: configRaw.keepLauncherOpen,
   });
+  const skinSync = useSkinSync({ profile: configRaw.profile, editions: gameRaw.editions });
   const audioRaw = useAudioController({
     musicVol: configRaw.musicVol,
     sfxVol: configRaw.sfxVol,
